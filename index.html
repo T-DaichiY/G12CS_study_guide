@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G12 Computer Science — Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --sf:#ffffff; --bd:#e4e2dd; --tx:#1a1e27; --mut:#6b7280;
+  --r:12px; --shadow:0 2px 10px rgba(0,0,0,.06); --shadow-lg:0 8px 30px rgba(0,0,0,.10);
+  --c13:#2563eb; --c14:#7c3aed; --c15:#059669; --c16:#d97706; --c17:#dc2626;
+  --c18:#0891b2; --c19:#c026d3; --c20:#4f46e5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+h1,h2,h3,.brand{font-family:'Syne',sans-serif}
+code,.mono{font-family:'JetBrains Mono',monospace}
+a{color:inherit;text-decoration:none}
+
+/* --- nav --- */
+nav{position:sticky;top:0;z-index:50;background:rgba(247,247,245,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
+.nav-in{max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:1.3em}
+.tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.tab-btn{padding:9px 18px;border-radius:999px;border:1px solid var(--bd);background:var(--sf);font-family:'DM Sans';font-weight:700;font-size:.92em;cursor:pointer;color:var(--tx)}
+.tab-btn.active{background:var(--tx);color:#fff;border-color:var(--tx)}
+
+.pg{display:none;max-width:1200px;margin:0 auto;padding:32px 24px 80px}
+.pg.active{display:block}
+
+/* --- home --- */
+.hero{text-align:center;padding:50px 20px 30px}
+.hero h1{font-size:2.4em;background:linear-gradient(90deg,#1a1e27,#4f46e5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);max-width:560px;margin:14px auto 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:30px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border-top:4px solid var(--ac,#000);cursor:pointer;transition:transform .15s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.card .icon{font-size:1.8em}
+.card h3{margin-top:8px;font-size:1.05em}
+.card .sub{color:var(--mut);font-size:.85em;margin-top:4px}
+.card .units{margin-top:10px;font-size:.78em;color:var(--mut)}
+
+/* --- study guide --- */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.chip{padding:8px 16px;border-radius:999px;border:2px solid var(--bd);background:var(--sf);font-weight:700;font-size:.88em;cursor:pointer}
+.chip.active{background:var(--ac,#000);border-color:var(--ac,#000);color:#fff}
+.unit-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.unit-nav button{padding:7px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--sf);cursor:pointer;font-size:.85em;font-weight:600}
+.unit-nav button.active{background:var(--ac,#000);color:#fff;border-color:var(--ac,#000)}
+.sg-content h2{font-size:1.5em;margin-bottom:6px;color:var(--ac,#000)}
+.sg-content h3{font-size:1.15em;margin-top:1.4em;margin-bottom:.4em}
+.sg-content p{margin:.7em 0}
+.sg-content ul,.sg-content ol{margin:.6em 0 .6em 1.4em}
+.sg-content table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.92em}
+.sg-content th,.sg-content td{border:1px solid var(--bd);padding:8px 10px;text-align:left;vertical-align:top}
+.sg-content th{background:#eef2ff}
+.sg-content code{background:#eee;padding:2px 5px;border-radius:4px}
+.sg-box{border-radius:8px;padding:14px 16px;margin:1em 0;border-left:5px solid #999}
+.sg-box.def{background:#eef2ff;border-color:#4f46e5}
+.sg-box.warn{background:#fef3c7;border-color:#d97706}
+.sg-box.tip{background:#d1fae5;border-color:#059669}
+.sg-box.ex{background:#f1f5f9;border-color:#64748b}
+.sg-box b:first-child{display:block;margin-bottom:4px}
+
+/* --- quiz --- */
+.quiz-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:26px;max-width:720px;margin:0 auto;box-shadow:var(--shadow)}
+.qtext{font-weight:700;font-size:1.15em;margin-bottom:18px}
+.opt{display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:10px;border:2px solid var(--bd);border-radius:10px;background:var(--sf);cursor:pointer;font-family:'DM Sans';font-size:.98em}
+.opt:hover{border-color:var(--ac,#4f46e5)}
+.opt.correct{background:#d1fae5;border-color:#059669}
+.opt.wrong{background:#fee2e2;border-color:#dc2626}
+.feedback{margin-top:14px;padding:12px;border-radius:8px;background:#f1f5f9;font-size:.92em}
+.progress-bar{height:8px;background:var(--bd);border-radius:99px;overflow:hidden;margin-bottom:20px}
+.progress-fill{height:100%;background:var(--ac,#4f46e5);transition:width .3s}
+.qmeta{display:flex;justify-content:space-between;color:var(--mut);font-size:.85em;margin-bottom:10px}
+.btn{padding:10px 20px;border-radius:8px;border:none;background:var(--tx);color:#fff;font-weight:700;cursor:pointer;font-family:'DM Sans'}
+.btn.sec{background:var(--sf);color:var(--tx);border:1px solid var(--bd)}
+.result-tier{font-size:2.2em;font-weight:800;margin:.3em 0}
+
+/* --- mock test --- */
+.mock-card{display:flex;justify-content:space-between;align-items:center;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px 22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.timer-bar{position:sticky;top:60px;background:var(--sf);border:1px solid var(--bd);border-radius:99px;height:10px;overflow:hidden;margin-bottom:20px;z-index:40}
+.timer-fill{height:100%;background:#059669;transition:width 1s linear,background .3s}
+.timer-text{text-align:center;font-weight:700;margin-bottom:8px;font-family:'JetBrains Mono'}
+
+@media(max-width:640px){
+  .tabs{width:100%;justify-content:center}
+  .hero h1{font-size:1.8em}
+  .grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="nav-in">
+  <div class="brand">📘 G12 CS Study Guide</div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPage('home')">Home</button>
+    <button class="tab-btn" onclick="showPage('study')">Study Guide</button>
+    <button class="tab-btn" onclick="showPage('quiz')">Topic Quiz</button>
+    <button class="tab-btn" onclick="showPage('mock')">Mock Tests</button>
+  </div>
+</div></nav>
+
+<!-- ============ HOME ============ -->
+<div class="pg active" id="pg-home">
+  <div class="hero">
+    <h1>Cambridge A-Level Computer Science (9618)</h1>
+    <p>Chapters 13–20 — study notes, topic quizzes, and timed mock tests, all in one place.</p>
+  </div>
+  <div class="grid" id="home-grid"></div>
+</div>
+
+<!-- ============ STUDY GUIDE ============ -->
+<div class="pg" id="pg-study">
+  <div class="chip-row" id="study-chips"></div>
+  <div class="unit-nav" id="study-units"></div>
+  <div class="sg-content" id="study-content"></div>
+</div>
+
+<!-- ============ TOPIC QUIZ ============ -->
+<div class="pg" id="pg-quiz">
+  <div id="quiz-picker">
+    <h2 style="margin-bottom:16px">Choose a chapter</h2>
+    <div class="grid" id="quiz-chapter-grid"></div>
+  </div>
+  <div id="quiz-set-picker" style="display:none">
+    <button class="btn sec" onclick="quizBackToPicker()" style="margin-bottom:18px">&larr; Back</button>
+    <h2 style="margin-bottom:16px" id="quiz-set-title"></h2>
+    <div class="grid" id="quiz-set-grid"></div>
+  </div>
+  <div id="quiz-play" style="display:none"></div>
+  <div id="quiz-results" style="display:none"></div>
+</div>
+
+<!-- ============ MOCK TESTS ============ -->
+<div class="pg" id="pg-mock">
+  <div id="mock-picker">
+    <h2 style="margin-bottom:6px">Timed Mock Tests</h2>
+    <p style="color:var(--mut);margin-bottom:20px">Mixed questions across chapters, under exam time pressure.</p>
+    <div id="mock-list"></div>
+  </div>
+  <div id="mock-play" style="display:none"></div>
+  <div id="mock-results" style="display:none"></div>
+</div>
+
+<script>
+/* =========================================================
+   DATA: chapters / units
+   ========================================================= */
+const CHAPTERS = [
+  {id:'ch13', num:13, title:'Data Representation', icon:'💾', color:'--c13',
+    units:[
+      {id:'13.1', title:'User-Defined Data Types'},
+      {id:'13.2', title:'File Organisation and Access'},
+      {id:'13.3', title:'Floating-Point Numbers'}
+    ]},
+  {id:'ch14', num:14, title:'Communication and Internet Technologies', icon:'🌐', color:'--c14',
+    units:[
+      {id:'14.1', title:'Protocols'},
+      {id:'14.2', title:'Circuit and Packet Switching'}
+    ]},
+  {id:'ch15', num:15, title:'Hardware and Virtual Machines', icon:'⚙️', color:'--c15',
+    units:[
+      {id:'15.1', title:'Processors and Parallel Processing'},
+      {id:'15.2a', title:'Boolean Algebra and Logic'},
+      {id:'15.2b', title:'Boolean Expressions and Karnaugh Maps'}
+    ]},
+  {id:'ch16', num:16, title:'System Software', icon:'🖥️', color:'--c16',
+    units:[
+      {id:'16.1a', title:'Process and Memory Management'},
+      {id:'16.1b', title:'Virtual Memory and Summary'},
+      {id:'16.2', title:'Virtual Machines'},
+      {id:'16.3', title:'Compilers, BNF and RPN'}
+    ]},
+  {id:'ch17', num:17, title:'Security', icon:'🔒', color:'--c17',
+    units:[
+      {id:'17.1', title:'Encryption Basics'},
+      {id:'17.2', title:'Quantum Cryptography'},
+      {id:'17.3', title:'SSL and TLS'},
+      {id:'17.4', title:'Digital Signatures and Certificates'}
+    ]},
+  {id:'ch18', num:18, title:'Artificial Intelligence', icon:'🤖', color:'--c18',
+    units:[
+      {id:'18.1', title:'Pathfinding Algorithms'},
+      {id:'18.2a', title:'AI, Machine Learning and Deep Learning'},
+      {id:'18.2b', title:'Comparison, Future and Backpropagation'}
+    ]},
+  {id:'ch19', num:19, title:'Computational Thinking and Problem-Solving', icon:'🧩', color:'--c19',
+    units:[
+      {id:'19.1a', title:'Search, Sort and Abstract Data Types'},
+      {id:'19.1b', title:'Implementing ADTs and Big-O'},
+      {id:'19.2', title:'Recursion'}
+    ]},
+  {id:'ch20', num:20, title:'Further Programming', icon:'💻', color:'--c20',
+    units:[
+      {id:'20.1', title:'Programming Paradigms'},
+      {id:'20.2', title:'Files and Exception Handling'}
+    ]}
+];
+
+/* STUDY[chapterId][unitId] = HTML string of study notes — filled in progressively */
+const STUDY = {};
+
+/* QB[chapterId] = array of "sets" (one per unit, same order as CHAPTERS[i].units),
+   each set = array of {q, o:[options], a:correctIndex, h:hint, f:feedback} — filled in progressively */
+const QB = {};
+
+/* MOCK_TESTS = [{title, seconds, picks:[{ch, set, q}, ...]}] — filled in progressively */
+const MOCK_TESTS = [
+  { title: 'Mock Test 1 — Data Representation & Communication (Ch13-14)', seconds: 1750, picks: [{ch:'ch13',set:0,q:0},{ch:'ch13',set:0,q:1},{ch:'ch13',set:0,q:2},{ch:'ch13',set:0,q:3},{ch:'ch13',set:0,q:4},{ch:'ch13',set:1,q:0},{ch:'ch13',set:1,q:1},{ch:'ch13',set:1,q:2},{ch:'ch13',set:1,q:3},{ch:'ch13',set:1,q:4},{ch:'ch13',set:2,q:0},{ch:'ch13',set:2,q:1},{ch:'ch13',set:2,q:2},{ch:'ch13',set:2,q:3},{ch:'ch13',set:2,q:4},{ch:'ch14',set:0,q:0},{ch:'ch14',set:0,q:1},{ch:'ch14',set:0,q:2},{ch:'ch14',set:0,q:3},{ch:'ch14',set:0,q:4},{ch:'ch14',set:1,q:0},{ch:'ch14',set:1,q:1},{ch:'ch14',set:1,q:2},{ch:'ch14',set:1,q:3},{ch:'ch14',set:1,q:4}] },
+  { title: 'Mock Test 2 — Hardware & System Software (Ch15-16)', seconds: 2450, picks: [{ch:'ch15',set:0,q:0},{ch:'ch15',set:0,q:1},{ch:'ch15',set:0,q:2},{ch:'ch15',set:0,q:3},{ch:'ch15',set:0,q:4},{ch:'ch15',set:1,q:0},{ch:'ch15',set:1,q:1},{ch:'ch15',set:1,q:2},{ch:'ch15',set:1,q:3},{ch:'ch15',set:1,q:4},{ch:'ch15',set:2,q:0},{ch:'ch15',set:2,q:1},{ch:'ch15',set:2,q:2},{ch:'ch15',set:2,q:3},{ch:'ch15',set:2,q:4},{ch:'ch16',set:0,q:0},{ch:'ch16',set:0,q:1},{ch:'ch16',set:0,q:2},{ch:'ch16',set:0,q:3},{ch:'ch16',set:0,q:4},{ch:'ch16',set:1,q:0},{ch:'ch16',set:1,q:1},{ch:'ch16',set:1,q:2},{ch:'ch16',set:1,q:3},{ch:'ch16',set:1,q:4},{ch:'ch16',set:2,q:0},{ch:'ch16',set:2,q:1},{ch:'ch16',set:2,q:2},{ch:'ch16',set:2,q:3},{ch:'ch16',set:2,q:4},{ch:'ch16',set:3,q:0},{ch:'ch16',set:3,q:1},{ch:'ch16',set:3,q:2},{ch:'ch16',set:3,q:3},{ch:'ch16',set:3,q:4}] },
+  { title: 'Mock Test 3 — Security & Artificial Intelligence (Ch17-18)', seconds: 2450, picks: [{ch:'ch17',set:0,q:0},{ch:'ch17',set:0,q:1},{ch:'ch17',set:0,q:2},{ch:'ch17',set:0,q:3},{ch:'ch17',set:0,q:4},{ch:'ch17',set:1,q:0},{ch:'ch17',set:1,q:1},{ch:'ch17',set:1,q:2},{ch:'ch17',set:1,q:3},{ch:'ch17',set:1,q:4},{ch:'ch17',set:2,q:0},{ch:'ch17',set:2,q:1},{ch:'ch17',set:2,q:2},{ch:'ch17',set:2,q:3},{ch:'ch17',set:2,q:4},{ch:'ch17',set:3,q:0},{ch:'ch17',set:3,q:1},{ch:'ch17',set:3,q:2},{ch:'ch17',set:3,q:3},{ch:'ch17',set:3,q:4},{ch:'ch18',set:0,q:0},{ch:'ch18',set:0,q:1},{ch:'ch18',set:0,q:2},{ch:'ch18',set:0,q:3},{ch:'ch18',set:0,q:4},{ch:'ch18',set:1,q:0},{ch:'ch18',set:1,q:1},{ch:'ch18',set:1,q:2},{ch:'ch18',set:1,q:3},{ch:'ch18',set:1,q:4},{ch:'ch18',set:2,q:0},{ch:'ch18',set:2,q:1},{ch:'ch18',set:2,q:2},{ch:'ch18',set:2,q:3},{ch:'ch18',set:2,q:4}] },
+  { title: 'Mock Test 4 — Computational Thinking & Further Programming (Ch19-20)', seconds: 1750, picks: [{ch:'ch19',set:0,q:0},{ch:'ch19',set:0,q:1},{ch:'ch19',set:0,q:2},{ch:'ch19',set:0,q:3},{ch:'ch19',set:0,q:4},{ch:'ch19',set:1,q:0},{ch:'ch19',set:1,q:1},{ch:'ch19',set:1,q:2},{ch:'ch19',set:1,q:3},{ch:'ch19',set:1,q:4},{ch:'ch19',set:2,q:0},{ch:'ch19',set:2,q:1},{ch:'ch19',set:2,q:2},{ch:'ch19',set:2,q:3},{ch:'ch19',set:2,q:4},{ch:'ch20',set:0,q:0},{ch:'ch20',set:0,q:1},{ch:'ch20',set:0,q:2},{ch:'ch20',set:0,q:3},{ch:'ch20',set:0,q:4},{ch:'ch20',set:1,q:0},{ch:'ch20',set:1,q:1},{ch:'ch20',set:1,q:2},{ch:'ch20',set:1,q:3},{ch:'ch20',set:1,q:4}] },
+  { title: 'Full Mixed Review — One Question per Unit (All Chapters)', seconds: 1680, picks: [{ch:'ch13',set:0,q:2},{ch:'ch13',set:1,q:2},{ch:'ch13',set:2,q:2},{ch:'ch14',set:0,q:2},{ch:'ch14',set:1,q:2},{ch:'ch15',set:0,q:2},{ch:'ch15',set:1,q:2},{ch:'ch15',set:2,q:2},{ch:'ch16',set:0,q:2},{ch:'ch16',set:1,q:2},{ch:'ch16',set:2,q:2},{ch:'ch16',set:3,q:2},{ch:'ch17',set:0,q:2},{ch:'ch17',set:1,q:2},{ch:'ch17',set:2,q:2},{ch:'ch17',set:3,q:2},{ch:'ch18',set:0,q:2},{ch:'ch18',set:1,q:2},{ch:'ch18',set:2,q:2},{ch:'ch19',set:0,q:2},{ch:'ch19',set:1,q:2},{ch:'ch19',set:2,q:2},{ch:'ch20',set:0,q:2},{ch:'ch20',set:1,q:2}] }
+];
+
+/* ===== CONTENT DATA — populated chapter by chapter below ===== */
+
+/* ---------- Chapter 13 — Data Representation ---------- */
+STUDY.ch13 = {
+'13.1': `
+<h2>13.1 User-Defined Data Types</h2>
+<p>Languages give you primitive types (INTEGER, REAL, CHAR, STRING, BOOLEAN). A <b>user-defined data type (UDT)</b> is built by the programmer from existing types, and splits into two families:</p>
+<table><tr><th>Non-composite</th><th>Composite</th></tr>
+<tr><td>Defined <i>without</i> referencing another type — enumerated, pointer</td><td>Definition <i>refers to</i> other types — record, set, class</td></tr></table>
+
+<h3>Enumerated data type</h3>
+<p>A list of all possible values in an <b>implied order</b>. Values are identifiers, not strings — no quotation marks.</p>
+<div class="sg-box ex"><code>TYPE Tmonth = (January, February, ..., December)<br>DECLARE thisMonth : Tmonth<br>thisMonth &lt;- January<br>nextMonth &lt;- thisMonth + 1  // now February</code></div>
+<div class="sg-box tip">Because values have an implied order, you can do <code>+1</code> to move to the next value and compare them (January &lt; March is true).</div>
+
+<h3>Pointer data type</h3>
+<p>Stores the <b>memory address</b> of data, not the data itself. <code>^</code> before a type means "pointer to"; <code>^</code> after a variable <b>dereferences</b> it (follows the address to get the value).</p>
+<div class="sg-box ex"><code>TYPE TmonthPointer = ^Tmonth<br>monthPointer &lt;- ^thisMonth   // address of thisMonth<br>myMonth &lt;- monthPointer^      // dereference: get the value</code></div>
+
+<h3>Record, Set, Class (composite)</h3>
+<ul>
+<li><b>Record</b> — groups several fields, each with its own type, under one type name.</li>
+<li><b>Set</b> — an <b>unordered</b> list of elements supporting <b>union</b> and <b>intersection</b>.</li>
+<li><b>Class</b> — bundles variables and methods; an <b>object</b> is created from a class.</li>
+</ul>
+<table><tr><th>Situation</th><th>Sensible type</th></tr>
+<tr><td>A fixed set of colours to choose from</td><td>Enumerated</td></tr>
+<tr><td>Data about each house an estate agent sells</td><td>Record</td></tr>
+<tr><td>Addresses of integers held in memory</td><td>Pointer</td></tr>
+<tr><td>The vowels of the alphabet</td><td>Set</td></tr></table>
+`,
+'13.2': `
+<h2>13.2 File Organisation and Access</h2>
+<p><b>File organisation</b> = how records are physically arranged. <b>File access</b> = how a record is physically found.</p>
+<table><tr><th>Organisation</th><th>How stored</th><th>Typical use</th></tr>
+<tr><td><b>Serial</b></td><td>Order added (chronological), appended to the end</td><td>Transaction files, e.g. meter readings</td></tr>
+<tr><td><b>Sequential</b></td><td>Sorted by key field, inserted in the correct place</td><td>Master files, e.g. customers by account number</td></tr>
+<tr><td><b>Random</b></td><td>Any available position, decided by a hashing algorithm</td><td>Fast direct access to individual records</td></tr></table>
+<div class="sg-box warn">Serial vs sequential is a favourite exam question: both are one-after-another, but serial = order added (unsorted), sequential = sorted by key field.</div>
+
+<h3>Access methods</h3>
+<p><b>Sequential access</b> — records checked one after another from the start. For a sequential file, you can stop early once the key exceeds the target. Efficient when almost every record is processed (high hit rate).</p>
+<p><b>Direct access</b> — finds a record without reading the others. Best for a single record (low hit rate). A sequential file uses an <b>index</b> of key fields → address; a random file uses a <b>hashing algorithm</b> to calculate the address directly.</p>
+
+<h3>Hashing algorithms</h3>
+<p>A mathematical formula on the <b>key field</b> that calculates a record's storage address.</p>
+<div class="sg-box ex"><b>Worked example:</b> 2000 records, key 1–9999, hash = key MOD 2000. Key 3024 → 3024 MOD 2000 = 1024 → stored at address 1024.</div>
+<p><b>Collision:</b> key 5024 also hashes to 1024 (5024 MOD 2000 = 1024) — two keys want the same location.</p>
+<table><tr><th>Open hash</th><th>Closed hash</th></tr>
+<tr><td>Store in the next free space in the main file</td><td>Store in the next free space in a separate overflow area</td></tr></table>
+<div class="sg-box tip">Hashing can also work on names — e.g. sum the ASCII values of the characters, divide by the number of locations, use the remainder.</div>
+`,
+'13.3': `
+<h2>13.3 Floating-Point Numbers</h2>
+<p>To store fractions and a wide range of values, computers use binary scientific notation: <b>M × 2<sup>E</sup></b>, where M is the <b>mantissa</b> (fractional part) and E is the <b>exponent</b> (power of 2). Here both use 8 bits, two's complement, binary point after the first bit.</p>
+<table><tr><th>Mantissa place values</th><td>−1</td><td>½</td><td>¼</td><td>⅛</td><td>1/16</td><td>1/32</td><td>1/64</td><td>1/128</td></tr>
+<tr><th>Exponent place values</th><td>−128</td><td>64</td><td>32</td><td>16</td><td>8</td><td>4</td><td>2</td><td>1</td></tr></table>
+<div class="sg-box tip">The first bit of each is the sign bit (two's complement): −1 for the mantissa, −128 for the exponent.</div>
+
+<h3>Binary floating-point → denary</h3>
+<div class="sg-box ex"><b>Example:</b> mantissa <code>01011010</code>, exponent <code>00000100</code>.<br>M = ½+⅛+1/16+1/64 = 45/64. E = 4.<br>M×2<sup>E</sup> = 45/64 × 16 = <b>11.25</b><br><i>Shortcut:</i> write mantissa as 0.1011010, move the point 4 places right → 01011.010 = 11.25.</div>
+
+<h3>Denary → binary floating-point</h3>
+<div class="sg-box ex"><b>Example: convert +4.5</b><br>4.5 = 9/2. Divide by 2 until the fraction is &lt;1: 9/16 (denominator&gt;numerator after 3 halvings) → exponent 2³ = <code>00000011</code>.<br>9/16 = ½+1/16 → mantissa <code>0.1001</code> padded to <code>01001000</code>.</div>
+
+<h3>Rounding, normalisation, overflow</h3>
+<ul>
+<li><b>Rounding error</b> — numbers not linked to a power of two can only be stored approximately (limited mantissa bits) — this is why <code>0.1+0.1+0.1</code> may not print exactly 0.3.</li>
+<li><b>Normalisation</b> — the standard form for best precision: positive mantissa starts <code>0.1…</code>, negative starts <code>1.0…</code>. Shift bits left to fix this; for every left shift, reduce the exponent by 1 (value unchanged).</li>
+<li><b>Overflow</b> — result too large for the word size. <b>Underflow</b> — result too small to store. <b>Zero problem</b> — a normalised mantissa can't literally represent 0, so a special reserved pattern is used.</li>
+</ul>
+<h3>Precision vs range trade-off</h3>
+<table><tr><th>Split (16-bit word)</th><th>Effect</th></tr>
+<tr><td>More mantissa bits, fewer exponent bits</td><td>Higher precision, smaller range</td></tr>
+<tr><td>Fewer mantissa bits, more exponent bits</td><td>Lower precision, much larger range</td></tr></table>
+<div class="sg-box tip">Mantissa bits → precision. Exponent bits → range. Always a trade-off for a fixed word size.</div>
+`
+};
+QB.ch13 = [
+[ // 13.1
+  {q:"Which two are the categories of user-defined data type?", o:["Primitive and derived","Non-composite and composite","Static and dynamic","Ordered and unordered"], a:1, f:"UDTs split into non-composite (enumerated, pointer) and composite (record, set, class)."},
+  {q:"In TYPE Tmonth = (January, February, ...), why no quotation marks?", o:["They are enumerated values, not strings","Quotation marks are optional in pseudocode","They are pointers to memory","Only numbers need quotation marks"], a:0, f:"The values are enumerated identifiers, not text strings."},
+  {q:"What does a pointer data type actually store?", o:["A copy of the data value","The memory address where the data is stored","A list of all values a variable can take","The name of the data type"], a:1, f:"A pointer stores the memory address of the data, not the data itself."},
+  {q:"Which user-defined type is composite?", o:["Enumerated","Pointer","Record","INTEGER"], a:2, f:"A record is composite because its definition refers to other data types (its fields)."},
+  {q:"Which pair of operations is characteristic of a set?", o:["Union and intersection","Push and pop","Read and append","Hash and collide"], a:0, f:"A set is unordered and supports set-theory operations like union and intersection."}
+],
+[ // 13.2
+  {q:"What is the key difference between serial and sequential file organisation?", o:["Serial is sorted by key field; sequential is order added","Serial is order added; sequential is sorted by key field","They are two names for the same thing","Serial uses hashing; sequential uses an index"], a:1, f:"Serial = order added (unsorted); sequential = sorted by key field."},
+  {q:"Which file organisation uses a hashing algorithm to decide where a record is stored?", o:["Serial","Sequential","Random","Indexed serial"], a:2, f:"Random organisation uses a hashing algorithm on the key field."},
+  {q:"A hash gives remainder(key ÷ 1000) added to start address 500. Where does key 9354 go?", o:["Address 354","Address 854","Address 9354","Address 500"], a:1, f:"9354 MOD 1000 = 354, then 500+354 = 854."},
+  {q:"Two keys hash to the same address. What is this, and what does an open hash do?", o:["An overflow; deletes the older record","A collision; stores the record in the next free space in the main file","A collision; stores the record in a separate overflow area","An index miss; rebuilds the hash table"], a:1, f:"That's a collision; open hash uses the next free space in the main file (closed hash uses an overflow area)."},
+  {q:"Which access method is most efficient for updating a single record (low hit rate)?", o:["Sequential access","Direct access","Serial access","Append access"], a:1, f:"Direct access finds one record without reading the others — ideal for a low hit rate."}
+],
+[ // 13.3
+  {q:"In binary floating-point M × 2^E, what are M and E called?", o:["Magnitude, error","Mantissa, exponent","Multiplier, element","Mask, encoding"], a:1, f:"M is the mantissa (fractional part), E is the exponent (power of 2)."},
+  {q:"A normalised positive mantissa must start with which bits?", o:["1.0","0.1","0.0","1.1"], a:1, f:"Positive normalised mantissas start 0.1; negative ones start 1.0."},
+  {q:"Mantissa 0.1011010 with exponent 4 converts to which denary value?", o:["11.25","2.5","45.0","1.125"], a:0, f:"Move the point 4 places right: 01011.010 = 8+2+1+¼ = 11.25."},
+  {q:"Increasing the exponent bits (fixed word size) mainly improves…", o:["Precision (accuracy)","Range","Both, with no trade-off","Neither"], a:1, f:"More exponent bits widen the range; more mantissa bits improve precision — always a trade-off."},
+  {q:"A calculation produces a value too large for the allocated word size. This is…", o:["Underflow","Overflow","Normalisation","A collision"], a:1, f:"Too large = overflow; too small to store = underflow."}
+]
+];
+
+/* ---------- Chapter 15 — Hardware and Virtual Machines ---------- */
+STUDY.ch15 = {
+'15.1': `
+<h2>15.1 Processors and Parallel Processing</h2>
+<h3>RISC vs CISC</h3>
+<p><b>CISC</b> — hardware handles complex, multi-cycle instructions (fewer lines of assembly). <b>RISC</b> — simple, single-cycle instructions, more of them, optimised with pipelining.</p>
+<table><tr><th>CISC</th><th>RISC</th></tr>
+<tr><td>Many instruction formats, more addressing modes</td><td>Fewer instruction formats/addressing modes</td></tr>
+<tr><td>Multi-cycle instructions, variable length</td><td>Single-cycle instructions, fixed length</td></tr>
+<tr><td>Longer execution time, complex decoding</td><td>Faster execution, general multi-purpose registers</td></tr>
+<tr><td>Harder to pipeline; emphasis on hardware</td><td>Easier to pipeline; emphasis on software</td></tr></table>
+<div class="sg-box warn">Know precisely which feature belongs to which — don't guess. If asked to state RISC features, answer only about RISC unless a comparison is explicitly requested.</div>
+<p><b>Pipelining</b> (a RISC development): several instructions processed simultaneously, without waiting for one to fully complete before starting the next.</p>
+
+<h3>SISD, SIMD, MISD, MIMD</h3>
+<table><tr><th>Type</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>SISD</td><td>Single instruction, single data — one processor, sequential, no parallelism</td><td>Early PCs, simple single-core</td></tr>
+<tr><td>SIMD</td><td>Many processors, same instruction, different data simultaneously</td><td>GPUs — e.g. 4000 processors each brightening one pixel at once</td></tr>
+<tr><td>MISD</td><td>Several processors, different instructions, same shared data</td><td>Space Shuttle flight control (redundant fault-checking)</td></tr>
+<tr><td>MIMD</td><td>Multiple processors, independent instructions AND independent data</td><td>Multicore chips, supercomputers</td></tr></table>
+<div class="sg-box warn">Don't confuse SIMD (same instruction, many data) with MIMD (independent instructions and data) — the most common source of confusion.</div>
+<p><b>Cluster</b> — networked computers, each remaining largely independent. <b>Massively parallel computer</b> — thousands of processors working together as one tightly-coupled system on one shared task, communicating via dedicated interconnects. Used for seismology, climate modelling, weather forecasting.</p>
+`,
+'15.2a': `
+<h2>15.2 Boolean Algebra and Logic Circuits</h2>
+<h3>Boolean notation</h3>
+<p>NOT A = A' &nbsp;·&nbsp; AND = A.B &nbsp;·&nbsp; OR = A+B. Key identity: (A')' = A.</p>
+<table><tr><th>Law</th><th>AND form</th><th>OR form</th></tr>
+<tr><td>Commutative</td><td>A.B = B.A</td><td>A+B = B+A</td></tr>
+<tr><td>Distributive</td><td>A.(B+C) = A.B+A.C</td><td>A+(B.C) = (A+B).(A+C)</td></tr>
+<tr><td>Inverse</td><td>A.A' = 0</td><td>A+A' = 1</td></tr>
+<tr><td>Absorption</td><td>A.(A+B) = A</td><td>A+(A.B) = A</td></tr>
+<tr><td><b>De Morgan's</b></td><td>(A.B)' = A'+B'</td><td>(A+B)' = A'.B'</td></tr></table>
+<div class="sg-box warn"><b>The #1 De Morgan's error (confirmed by examiner report):</b> when negating, you must BOTH distribute the NOT onto each term AND flip the operator. (A.B)' → <b>A'+B'</b>, NOT A'.B' (operator left unflipped is the common mistake).</div>
+<div class="sg-box tip">When asked to "simplify," name the law used at each step (e.g. "using the distributive law...") — don't just jump to the final answer.</div>
+
+<h3>Half adder and full adder</h3>
+<p>Both are <b>combination circuits</b> (output depends only on current inputs, no memory).</p>
+<table><tr><th></th><th>Inputs</th><th>Outputs</th></tr>
+<tr><td>Half adder</td><td>A, B</td><td>Sum S = A.B'+A'.B (XOR); Carry C = A.B. Cannot accept a carry-in.</td></tr>
+<tr><td>Full adder</td><td>A, B, Cin</td><td>Built from 2 half adders + an OR gate, so it can add a carry-in. Chain 4 full adders to add two 4-bit numbers.</td></tr></table>
+
+<h3>Flip-flops (sequential circuits)</h3>
+<p>Unlike combination circuits, a <b>sequential circuit's</b> output also depends on a previous output fed back in.</p>
+<p><b>SR flip-flop</b> — two cross-coupled NOR (or NAND) gates. Inputs S(Set)/R(Reset), outputs Q/Q'.</p>
+<table><tr><th>S</th><th>R</th><th>Effect</th></tr>
+<tr><td>0</td><td>0</td><td>No change — remembers previous state</td></tr>
+<tr><td>1</td><td>0</td><td>Set: Q=1</td></tr>
+<tr><td>0</td><td>1</td><td>Reset: Q=0</td></tr>
+<tr><td>1</td><td>1</td><td><b>Invalid</b> — Q and Q' would both be forced equal</td></tr></table>
+<p><b>JK flip-flop</b> fixes SR's problems (invalid state, instability) by adding a clock. When J=1,K=1 the output <b>toggles</b> each clock pulse instead of being invalid. Used to build shift registers/binary counters.</p>
+<div class="sg-box warn">When drawing a flip-flop: use exactly two cross-coupled gates of the <b>same type</b> (both NAND or both NOR) — mixing types is a common error.</div>
+`,
+'15.2b': `
+<h2>15.2 Boolean Expressions and Karnaugh Maps</h2>
+<h3>Deriving Boolean expressions from circuits</h3>
+<p><b>Method 1:</b> trace the gates stage by stage. <b>Method 2 — sum of products (SoP):</b> from a truth table, take every row where the output = 1, write it as an AND term, then OR all those terms together.</p>
+<div class="sg-box ex"><b>Example:</b> X=1 on rows A'B'C', A'BC', A'BC, AB'C', ABC' → SoP = A'.B'.C' + A'.B.C' + A'.B.C + A.B'.C' + A.B.C'</div>
+<div class="sg-box warn">If asked for a sum-of-products, give it in that exact form — don't simplify into a different shape unless asked. Also check any stated circuit purpose (e.g. "full adder") actually matches your truth table.</div>
+
+<h3>Karnaugh maps (K-maps)</h3>
+<p>A grid using <b>Gray code</b> ordering (00, 01, 11, 10 — only one bit changes between adjacent cells), used to simplify Boolean expressions visually instead of algebraically.</p>
+<ul>
+<li>Only cells with a 1 are grouped.</li>
+<li>Groups must have an <b>even</b> number of 1s (2, 4, 8...), as large as possible.</li>
+<li>Groups can wrap around edges, and may overlap.</li>
+<li>A variable is only kept in a group's term if it stays <b>constant</b> throughout that group.</li>
+</ul>
+<div class="sg-box ex"><b>Worked example:</b> 3 groups of two 1s found on a 3-variable map give terms B.C, A.C, A.B → simplified expression = <b>A.C + B.C + A.B</b>.</div>
+<div class="sg-box warn">A fully correct K-map needs BOTH the 1s and the 0s filled in — leaving 0s blank loses marks. Don't forget wraparound loops when grouping.</div>
+<div class="sg-box tip">K-maps become far more valuable than pure algebra as the number of variables grows (4+) — fewer steps, easier to spot the largest groups, less error-prone.</div>
+`
+};
+QB.ch15 = [
+[ // 15.1
+  {q:"Which design philosophy does RISC follow?", o:["Complex, multi-cycle instructions handled by powerful hardware","Simple, single-cycle instructions, optimised with pipelining","No instruction set at all","Instructions of variable length only"], a:1, f:"RISC keeps individual instructions simple and single-cycle, relying on pipelining for speed."},
+  {q:"When asked to state features of RISC processors, what does examiner evidence say is the best approach?", o:["Always compare RISC to CISC in every answer","State RISC features in isolation unless a comparison is explicitly asked for","Only mention pipelining","Describe CISC instead"], a:1, f:"Candidates who stated RISC features without contrasting to CISC (when not asked) achieved the marks."},
+  {q:"A GPU applying the same brightness change to every pixel simultaneously, each on its own processor, is an example of…", o:["SISD","SIMD","MISD","MIMD"], a:1, f:"SIMD = single instruction, multiple data — same operation, many data streams at once, as in GPUs."},
+  {q:"What is the key difference between a cluster and a massively parallel computer?", o:["Clusters have no processors at all","In a cluster each computer stays largely independent; in a massively parallel computer processors are tightly coupled on one shared task","Massively parallel computers use only SISD processors","There is no real difference"], a:1, f:"Clusters are loosely coupled independent machines; massively parallel computers work together as one tightly-coupled system via dedicated interconnects."},
+  {q:"Which architecture is most easily confused with SIMD, and why?", o:["SISD, because both use one processor","MIMD, because both use multiple processors but MIMD's instructions are independent","MISD, because both use a single data source","None — they are never confused"], a:1, f:"SIMD = many processors, same instruction; MIMD = many processors, independent instructions and data — the most common confusion in this topic."}
+],
+[ // 15.2a
+  {q:"What is the correct simplification of (A.B)' using De Morgan's Law?", o:["A'.B'","A'+B'","A+B","(A+B)'"], a:1, f:"De Morgan's: NOT of an AND becomes an OR of the NOTs — you must flip the operator, not just distribute the NOT (the #1 confirmed exam error)."},
+  {q:"What is the key difference between a half adder and a full adder?", o:["A half adder can accept a carry-in; a full adder cannot","A full adder can accept a carry-in (built from 2 half adders + an OR gate); a half adder cannot","They are identical circuits","A half adder has three inputs"], a:1, f:"A half adder only adds two bits with no carry-in; a full adder adds two bits plus a carry-in."},
+  {q:"In an SR flip-flop, what does S=1, R=1 represent?", o:["Set state","Reset state","No change","An invalid state, since Q and Q' would be forced equal"], a:3, f:"S=1,R=1 is invalid because it would force Q and Q' to both equal the same value, breaking the requirement that they be complements."},
+  {q:"What key problem does the JK flip-flop solve compared to the SR flip-flop?", o:["It removes the need for a clock","It eliminates the illegal state by toggling output when J=1,K=1","It uses only one input instead of two","It cannot store any value"], a:1, f:"JK flip-flops replace SR's invalid S=1,R=1 state with a useful toggle behaviour on J=1,K=1."},
+  {q:"When drawing an SR flip-flop, what is the most common source of lost marks?", o:["Using too few wires","Mixing gate types (one NAND, one NOR) instead of two of the same type","Labelling the inputs S and R","Drawing too many outputs"], a:1, f:"A correct SR flip-flop uses exactly two cross-coupled gates of the SAME type — both NAND or both NOR."}
+],
+[ // 15.2b
+  {q:"What is the sum-of-products (SoP) method for deriving a Boolean expression?", o:["Multiply every input together","Take every truth-table row where output=1, write as an AND term, OR them all together","Use only rows where output=0","Apply De Morgan's Law to the truth table"], a:1, f:"SoP: one AND (\"product\") term per row where the output is 1, combined with OR (\"sum\")."},
+  {q:"On a Karnaugh map, what ordering must the row/column headers follow?", o:["Normal binary counting order (00,01,10,11)","Gray code order (00,01,11,10)","Alphabetical order","Reverse binary order"], a:1, f:"K-maps use Gray code so only one bit changes between adjacent cells — required for valid groupings."},
+  {q:"What size must a valid group of 1s on a Karnaugh map be?", o:["Any odd number","An even number (2, 4, 8...), as large as possible","Exactly 3","Exactly 1 always"], a:1, f:"Groups must contain an even number of 1s and should be made as large as possible."},
+  {q:"A variable is kept in a K-map group's simplified term only if…", o:["It changes value within the group","It stays constant (always 1 or always 0) throughout the group","It appears in every cell of the map","It is the first variable listed"], a:1, f:"Only variables that stay constant throughout a group are kept in that group's term; variables that change are dropped."},
+  {q:"According to examiner evidence, what is a common way marks are lost when completing a Karnaugh map?", o:["Drawing too many loops","Filling in only the 1s and leaving the 0s blank","Using too much ink","Starting from the wrong corner"], a:1, f:"A fully correct K-map needs both 1s AND 0s filled in — leaving 0s blank costs marks."}
+]
+];
+
+/* ---------- Chapter 16 — System Software ---------- */
+STUDY.ch16 = {
+'16.1a': `
+<h2>16.1 Process and Memory Management</h2>
+<h3>Maximising resources</h3>
+<p>The <b>kernel</b> is the OS's core — handles process management, memory management, interrupts, device management and I/O. A <b>DMA controller</b> lets hardware access RAM independently of the CPU: it initiates a transfer, frees the CPU for other work, then interrupts the CPU when done — this is how the OS keeps the CPU from sitting idle waiting on slow I/O.</p>
+<p>The OS hides hardware complexity via a <b>GUI</b> instead of a CLI, <b>device drivers</b> (translate general instructions into hardware-specific ones), and file/folder abstractions instead of raw disk addresses.</p>
+
+<h3>Process management: multitasking &amp; scheduling</h3>
+<p>A <b>process</b> = a program that has started executing. <b>Multitasking</b> = the kernel rapidly switches between processes to give the appearance of simultaneity.</p>
+<table><tr><th>Preemptive</th><th>Non-preemptive</th></tr>
+<tr><td>Process gets a <b>quantum</b> (time slice); can be interrupted mid-execution</td><td>Process keeps the CPU until it finishes its <b>burst time</b> or voluntarily waits</td></tr>
+<tr><td>Risk: low-priority processes starved</td><td>Risk: short processes starved behind a long one</td></tr></table>
+
+<h3>Scheduling algorithms (worked example: P1=23ms, P2=4ms, P3=9ms, P4=3ms)</h3>
+<table><tr><th>Algorithm</th><th>Rule</th></tr>
+<tr><td>FCFS (First Come First Served)</td><td>Non-preemptive, pure FIFO queue — order of arrival only</td></tr>
+<tr><td>SJF (Shortest Job First)</td><td>Non-preemptive — shortest total burst time runs first</td></tr>
+<tr><td>SRTF (Shortest Remaining Time First)</td><td>Preemptive version of SJF — a newly-arrived shorter job pre-empts the running one</td></tr>
+<tr><td>Round Robin</td><td>Preemptive — each process gets one quantum in turn, cycling round</td></tr></table>
+<div class="sg-box ex">FCFS on P1,P2,P3,P4: average wait = 21.5ms. SJF (shortest first): average wait = 6.5ms — a big improvement.</div>
+
+<h3>Process states</h3>
+<table><tr><th>State</th><th>Meaning</th></tr>
+<tr><td>Running</td><td>Currently executing on the CPU</td></tr>
+<tr><td>Ready</td><td>Waiting in queue for CPU time, not blocked on anything</td></tr>
+<tr><td>Blocked</td><td>Waiting for an I/O operation or event</td></tr></table>
+<div class="sg-box warn">Always name the specific state and the specific event causing a transition (e.g. "moves from running to blocked because it requests an I/O operation") — never just "the process waits."</div>
+<p>The <b>process control block (PCB)</b> stores a process's state, privileges, register values, priority, remaining CPU time and ID. <b>Context switching</b> saves/restores a process's state as it's pre-empted and resumed.</p>
+
+<h3>Interrupts and the kernel as interrupt handler</h3>
+<p>An <b>interrupt</b> signals the CPU to stop and deal with an urgent event. Types: device interrupts, exceptions (e.g. divide by zero), traps/software interrupts.</p>
+<p>Exam-precise sequence: interrupt received (other interrupts disabled) → current task's state saved on the <b>kernel stack</b> → source and priority identified → jump to the interrupt service routine (found via the <b>interrupt dispatch table, IDT</b>) → state restored, interrupts re-enabled.</p>
+<div class="sg-box tip">Interrupts are prioritised by <b>IPL</b> (0-31) — a running process is only suspended if the new interrupt's IPL is <i>greater</i> than the current one.</div>
+`,
+'16.1b': `
+<h2>16.1 Memory Management (continued)</h2>
+<h3>Paging vs segmentation</h3>
+<table><tr><th>Paging</th><th>Segmentation</th></tr>
+<tr><td>Fixed-size blocks (frames/pages)</td><td>Variable-size blocks (segments)</td></tr>
+<tr><td>Risk: internal fragmentation</td><td>Risk: external fragmentation</td></tr>
+<tr><td>Page table maps logical→physical</td><td>Segment map table (number+offset) maps logical→physical</td></tr>
+<tr><td>Invisible to the user/programmer</td><td>Visible to the user/programmer</td></tr></table>
+<div class="sg-box warn">A "difference" question needs ONE true fact about BOTH sides — a fact about only paging (or only segmentation) is not a difference.</div>
+
+<h3>Virtual memory</h3>
+<p><b>Virtual memory = RAM + swap space on disk</b>, using <b>demand paging</b> (pages copied from disk only when needed). Gives the illusion of unlimited memory. Benefits: programs can exceed physical RAM, less fragmentation, no need for extra RAM.</p>
+<div class="sg-box warn"><b>Critical distinction (confirmed by examiner report):</b> virtual memory ≠ virtual machine. Virtual memory extends RAM using disk. A virtual machine emulates a whole computer system via a hypervisor. Never conflate them — this scores zero either way.</div>
+<p><b>Disk thrashing</b> — excessive swapping causes heavy disk head movement; if it gets bad enough, a <b>thrash point</b> is reached where the system is too busy paging to make progress. Fix: more RAM, fewer running programs, smaller swap file.</p>
+
+<h3>Page replacement</h3>
+<p>A <b>page fault</b> (an interrupt, not an error) occurs when a requested page isn't in memory. Goal: minimise page faults.</p>
+<table><tr><th>Algorithm</th><th>Rule</th></tr>
+<tr><td>FIFO</td><td>Replace the oldest page. Suffers <b>Belady's anomaly</b> (more frames can mean MORE faults)</td></tr>
+<tr><td>Optimal (OPR)</td><td>Replace the page not needed for longest — theoretical only, needs future knowledge</td></tr>
+<tr><td>LRU</td><td>Replace the page unused for longest in the past — practical approximation of Optimal</td></tr>
+<tr><td>Clock/second-chance</td><td>Circular queue; replace if R-flag=0, else give a second chance</td></tr></table>
+<div class="sg-box warn">Belady's anomaly is specific to <b>FIFO only</b> — don't claim more frames "always" reduces faults for every algorithm.</div>
+
+<h3>Process vs memory management — don't confuse them</h3>
+<p><b>Process management</b> decides <i>which</i> processes run and <i>in what order</i> (scheduling, process states). <b>Memory management</b> decides <i>where</i> data/programs are stored (paging, segmentation, virtual memory).</p>
+<div class="sg-box warn">"Memory management manages memory" or "process management manages processes" earns ZERO — always name the specific mechanism. If a question excludes an example (e.g. "other than memory management..."), never repeat it even indirectly.</div>
+`,
+'16.2': `
+<h2>16.2 Virtual Machines</h2>
+<p>A <b>virtual machine (VM)</b> emulates one computer system inside another — e.g. running Apple software on a Windows PC. <b>Emulation</b> = imitating the behaviour of another program/device.</p>
+<table><tr><th>Host OS</th><th>Guest OS</th></tr>
+<tr><td>Controls the actual physical hardware; runs/monitors the VM software</td><td>Runs inside the VM, controlling virtual hardware, unaware it's "on an alien machine"</td></tr></table>
+<p>The <b>hypervisor</b> is the VM software/emulation engine that maps virtual hardware (CPU, memory, HDD) to the host's real hardware.</p>
+<p><b>Layering (bottom to top):</b> physical hardware → host OS → VM software (hypervisor) → guest OS(es) → applications.</p>
+
+<h3>Benefits and limitations</h3>
+<table><tr><th>Benefits</th><th>Limitations</th></tr>
+<tr><td>Host and other VMs protected from a guest OS crash</td><td>Lower performance than running directly on hardware</td></tr>
+<tr><td>Runs apps incompatible with the host (e.g. legacy software on new hardware)</td><td>Expensive to build in-house</td></tr>
+<tr><td>Safe for testing a new OS/app — won't crash the host</td><td>Complex to manage and maintain</td></tr></table>
+<div class="sg-box warn"><b>The #1 confirmed error (two separate examiner reports):</b> candidates give benefits/limitations of <b>virtual memory</b> when asked about <b>virtual machines</b>. If the question says "virtual machine," your whole answer must be about emulation, hypervisors, host/guest OS — not paging or disk swapping.</div>
+`,
+'16.3': `
+<h2>16.3 Translation Software: Compilers, BNF, RPN</h2>
+<h3>Interpreter vs compiler</h3>
+<p>Key distinction: an <b>interpreter executes</b> the program it interprets; a <b>compiler does not execute</b> the program it compiles.</p>
+<table><tr><th>Compiler</th><th>Interpreter</th></tr>
+<tr><td>Translates the WHOLE program in one pass first</td><td>Translates and executes one <b>statement</b> at a time</td></tr>
+<tr><td>Produces reusable object code</td><td>No object code produced — re-translated every run</td></tr>
+<tr><td>Fast to re-run (object code reused)</td><td>Slow to re-run (source re-translated each time)</td></tr></table>
+<div class="sg-box warn">Use the word "<b>statement</b>," never "line" — a real Cambridge mark scheme explicitly penalises "line."</div>
+
+<h3>Stages of compilation</h3>
+<ol>
+<li><b>Lexical analysis</b> — removes whitespace/comments, converts to <b>tokens</b> (tokenisation) using a fixed <b>keyword table</b>; builds a fresh <b>symbol table</b> per program for identifiers.</li>
+<li><b>Syntax analysis (parsing)</b> — checks tokens against grammar rules; if errors found, compilation stops before code generation.</li>
+<li><b>Code generation</b> — produces the object program (direct machine code, or an intermediate form).</li>
+<li><b>Optimisation</b> — improves the object code's efficiency.</li>
+</ol>
+
+<h3>Syntax diagrams and BNF</h3>
+<p>Two equivalent ways to express a language's grammar: <b>syntax diagrams</b> (graphical — circles=fixed, stacked boxes=alternatives, loops=repetition) and <b>BNF</b> (textual).</p>
+<table><tr><th>BNF symbol</th><th>Meaning</th></tr>
+<tr><td>&lt; &gt;</td><td>Encloses an item to be defined</td></tr>
+<tr><td>::=</td><td>"is defined as"</td></tr>
+<tr><td>|</td><td>"or" (choice)</td></tr>
+<tr><td>;</td><td>End of rule</td></tr></table>
+<div class="sg-box ex">Recursive BNF for "any number of letters": &lt;variable&gt; ::= &lt;letter&gt; | &lt;variable&gt; &lt;letter&gt; ;</div>
+
+<h3>Reverse Polish Notation (RPN)</h3>
+<p>Postfix notation — operator written AFTER its operands (A+B → A B +). No brackets needed; can be evaluated strictly left-to-right with no backtracking.</p>
+<div class="sg-box ex"><b>Converting:</b> A − B*C → convert highest precedence first (B*C → BC*) → A BC* − → <b>A B C * −</b></div>
+<div class="sg-box ex"><b>Evaluating with a stack</b> (A B C * −, A=2,B=3,C=4): push 2, push 3, push 4 → operator * pops 4,3 → pushes 12 → operator − pops 12,2 → pushes 2−12 = <b>−10</b>.</div>
+<div class="sg-box warn">An operator is NEVER pushed onto the stack — only values. Every operator triggers an immediate pop-pop-push. When asked WHY RPN is used, give the reason ("no need for brackets or precedence rules"), not just HOW it's evaluated.</div>
+`
+};
+QB.ch16 = [
+[ // 16.1a
+  {q:"What does a DMA controller allow?", o:["The CPU to run faster","Hardware to access RAM independently of the CPU, freeing the CPU for other work","Two CPUs to share one memory bus","Interrupts to be permanently disabled"], a:1, f:"DMA lets I/O transfer data to/from RAM without tying up the CPU, which is then interrupted only once the transfer completes."},
+  {q:"Under preemptive multitasking, what happens when a process's quantum expires?", o:["The process is deleted","The process can be interrupted mid-execution and forced to give up the CPU","The process gets an extra quantum automatically","Nothing — quanta don't apply to preemptive scheduling"], a:1, f:"Preemptive scheduling allocates a fixed time slice (quantum); when it expires the process can be interrupted."},
+  {q:"Which scheduling algorithm processes P1(23ms),P2(4ms),P3(9ms),P4(3ms) purely in arrival order?", o:["SJF","FCFS","SRTF","Round Robin"], a:1, f:"FCFS (First Come First Served) is a pure FIFO queue based only on arrival order, ignoring burst time."},
+  {q:"A process is waiting for a printer to become free. What state is it in?", o:["Running","Ready","Blocked","Terminated"], a:2, f:"Blocked means waiting for an I/O operation or event — such as a printer becoming free."},
+  {q:"What is stored in a process control block (PCB)?", o:["Only the process's ID number","State, privileges, register values, priority, remaining CPU time and process ID","The entire source code of the process","Only the scheduling algorithm used"], a:1, f:"The PCB holds everything the OS needs to manage and resume a process: state, privileges, registers, priority, remaining time, and ID."}
+],
+[ // 16.1b
+  {q:"What is a genuine \"difference between paging and segmentation\" answer?", o:["\"Paging uses fixed-size blocks\" alone","One true fact about paging AND one true fact about segmentation, contrasted","\"Segmentation is better\"","\"They are the same thing\""], a:1, f:"Examiner reports confirm a single fact about only one side is not a difference — both sides must be stated."},
+  {q:"What does virtual memory actually consist of?", o:["Extra physical RAM chips","RAM plus swap space on the HDD/SSD, via demand paging","A second CPU","A virtual machine's hypervisor"], a:1, f:"Virtual memory = RAM + disk swap space, giving the illusion of more memory than physically exists."},
+  {q:"Which page-replacement algorithm can suffer from Belady's anomaly (more frames → more faults)?", o:["Optimal","LRU","FIFO","Clock/second-chance"], a:2, f:"Belady's anomaly is specific to FIFO among these algorithms — Optimal is explicitly free of it."},
+  {q:"What is the key distinction between process management and memory management?", o:["They are the same OS function under different names","Process management decides which/when processes run; memory management decides where data is stored","Process management only applies to printers","Memory management decides process priority"], a:1, f:"Process management = which processes run and in what order; memory management = where in memory data/programs are stored."},
+  {q:"Why does \"memory management manages memory\" earn zero marks?", o:["It's too short","It's a circular restatement with no specific mechanism named","It's factually wrong","It should say \"processes\" instead"], a:1, f:"Examiner reports explicitly flag this as too vague — you must name the actual mechanism (paging, segmentation, etc)."}
+],
+[ // 16.2
+  {q:"In a virtual machine, what does the host operating system do?", o:["Runs inside the emulation, unaware it's virtualised","Controls the actual physical hardware and runs/monitors the VM software","Only exists on Apple computers","Is the same thing as the hypervisor"], a:1, f:"The host OS controls the real hardware and monitors the virtual machine software; the guest OS runs inside the emulation."},
+  {q:"What is a hypervisor?", o:["A type of guest OS","The VM software/emulation engine that maps virtual hardware to the host's physical hardware","A physical hardware chip","A file system"], a:1, f:"The hypervisor creates and manages virtual machines, mapping virtual hardware (CPU, memory, HDD) onto the real host hardware."},
+  {q:"Which is a genuine LIMITATION of virtual machines?", o:["They protect the host from guest crashes","Lower performance than running directly on hardware, plus cost/complexity to manage","They can't run legacy software","They always crash the host OS"], a:1, f:"VMs trade performance and management complexity/cost for isolation and compatibility benefits."},
+  {q:"What is the single most common confirmed error on virtual machine exam questions?", o:["Forgetting to mention the hypervisor","Giving benefits/limitations of virtual MEMORY instead of virtual machines","Writing too much detail","Confusing host and guest OS names"], a:1, f:"Two separate examiner reports independently flag candidates confusing virtual machines with virtual memory — unrelated topics."},
+  {q:"Why are virtual machines useful for testing a new OS or app?", o:["They run faster than the host","They won't crash the host computer if something goes wrong — it's protected by the VM software","They require no hardware at all","They automatically fix bugs"], a:1, f:"The host and other VMs are protected from a crash inside a guest OS, making VMs safe for testing."}
+],
+[ // 16.3
+  {q:"What is the single most important distinction between an interpreter and a compiler?", o:["Interpreters are always slower","An interpreter executes the program it interprets; a compiler does not execute what it compiles","Compilers can't detect errors","Interpreters produce object code"], a:1, f:"This is the core distinction — a compiler only translates; an interpreter translates AND executes."},
+  {q:"What word should you use instead of \"line\" when describing interpreter behaviour?", o:["\"Token\"","\"Statement\"","\"Character\"","\"Instruction\""], a:1, f:"Cambridge mark schemes explicitly penalise \"line\" — the correct technical unit is \"statement.\""},
+  {q:"What are the four stages of compilation, in order?", o:["Code generation, optimisation, lexical analysis, syntax analysis","Lexical analysis, syntax analysis, code generation, optimisation","Syntax analysis, lexical analysis, optimisation, code generation","Tokenisation, compilation, execution, optimisation"], a:1, f:"Lexical analysis (tokenise) → syntax analysis (parse) → code generation → optimisation."},
+  {q:"In BNF, what does the symbol | mean?", o:["End of rule","\"is defined as\"","Choice between alternatives (\"or\")","Encloses an item to be defined"], a:2, f:"| means \"or\" — a choice between alternative definitions."},
+  {q:"When evaluating RPN \"A B C * −\" with a stack, what happens when an operator is read?", o:["The operator is pushed onto the stack","The top two values are popped, the operator applied, and the result pushed back","The stack is cleared","Nothing — operators are ignored"], a:1, f:"An operator is never pushed — it triggers pop-pop-push: pop the top two values, apply the operator, push the result."}
+]
+];
+
+/* ---------- Chapter 17 — Security ---------- */
+STUDY.ch17 = {
+'17.1': `
+<h2>17.1 Encryption Basics</h2>
+<p>Encryption alters data so an <b>eavesdropper</b> cannot make sense of it. Four security concerns: <b>Confidentiality</b> (only intended recipient reads it), <b>Authenticity</b> (verify who sent it), <b>Integrity</b> (unaltered in transit), <b>Non-repudiation</b> (neither side can deny taking part).</p>
+<div class="sg-box warn"><b>Exam-precise wording:</b> encryption does NOT prevent interception, and encrypted data is not "unreadable/inaccessible" — a hacker CAN still access it, but cannot <b>understand</b> it. Always say "prevents the data being understood."</div>
+<p><b>Plaintext</b> → encryption algorithm + key → <b>ciphertext</b> → decryption algorithm + key → plaintext. A <b>block cipher</b> encrypts a whole group of bits at once (vs a <b>stream cipher</b>, one bit at a time).</p>
+
+<h3>Symmetric encryption</h3>
+<p>ONE secret key encrypts AND decrypts — both parties must already have the identical key. Real systems use 256-bit keys (2<sup>256</sup> combinations, computationally infeasible to brute-force).</p>
+<div class="sg-box warn"><b>The key distribution problem</b> is the standard exam answer for symmetric encryption's biggest weakness: the shared key could be intercepted while being exchanged. A longer key does NOT fix this — length only resists brute-force, a separate issue.</div>
+
+<h3>Asymmetric encryption</h3>
+<p>TWO mathematically linked keys: a <b>public key</b> (shared freely) and a <b>private key</b> (kept secret). One key cannot feasibly be derived from the other.</p>
+<table><tr><th>Private message (public → individual)</th><th>Verified message (individual → public)</th></tr>
+<tr><td>Sender encrypts with the RECIPIENT'S public key. Only the recipient's private key can decrypt it.</td><td>Sender encrypts with THEIR OWN private key. Anyone can decrypt with the sender's public key — proves who sent it.</td></tr></table>
+<div class="sg-box warn">Full-mark answer needs 4 points: (1) both generate a key pair, (2) the recipient's public key is shared with the sender, (3) sender encrypts with recipient's public key, (4) recipient decrypts with their own private key. Candidates usually get (3)/(4) but forget (1)/(2).</div>
+`,
+'17.2': `
+<h2>17.2 Quantum Cryptography</h2>
+<p>Instead of relying on a key being merely hard to guess, quantum cryptography uses the physics of <b>photons</b> to make interception <b>physically detectable</b>.</p>
+<p>A <b>qubit</b> can be 0, 1, or both simultaneously until measured. Photon polarisations: vertical=1, horizontal=0, 45°right=1, 45°left=0 (diagonals represent 0 and 1 simultaneously until measured).</p>
+<h3>QKD (Quantum Key Distribution) protocol — e.g. BB84</h3>
+<ol>
+<li>Sender generates photons, each passed through one of four random polarising filters (giving a random bit).</li>
+<li>Photon travels via fibre-optic cable.</li>
+<li>Recipient randomly picks one of two beam splitters (diagonal "X" or vertical/horizontal "Y") to read it.</li>
+<li>This repeats until the whole key is sent.</li>
+<li>Recipient sends back (over a normal, non-secure channel) which splitters were used.</li>
+<li>Sender compares to the filters actually used, and tells recipient which positions <b>matched</b>.</li>
+<li>Only the bit values from matching positions are kept as the final shared key.</li>
+</ol>
+<div class="sg-box tip">Any eavesdropping attempt physically disturbs the photon's quantum state, making interception detectable — this is what makes QKD virtually unbreakable, unlike classical encryption's reliance on computational difficulty alone.</div>
+`,
+'17.3': `
+<h2>17.3 SSL and TLS</h2>
+<h3>SSL (Secure Sockets Layer)</h3>
+<p>Operates at the transport layer, secures client-server communication (e.g. browser ↔ web server). Normally only the <b>server is authenticated</b> — the client typically is not.</p>
+<p>Three functions: <b>encryption</b>, <b>data compression</b>, <b>data integrity checks</b>.</p>
+<div class="sg-box warn">Use these three precise terms — not vague phrases like "it makes the site safe." Visible indicator: https:// and a padlock icon — but that alone doesn't explain HOW SSL secures the connection.</div>
+<p>Appropriate uses: online banking, e-commerce, email, cloud storage, VPNs, VoIP, instant messaging.</p>
+
+<h3>TLS (Transport Layer Security)</h3>
+<p>The more modern successor to SSL. Two layers: <b>Record protocol</b> (holds the actual data) and <b>Handshake protocol</b> (authenticates client/server, agrees encryption algorithms).</p>
+<div class="sg-box warn"><b>Common exam error:</b> don't confuse the Handshake/Record protocols (internal to TLS) with unrelated application-layer protocols like HTTP or SMTP — different layer entirely.</div>
+<table><tr><th>SSL</th><th>TLS</th></tr>
+<tr><td>Older</td><td>More modern, based on SSL</td></tr>
+<tr><td>Cannot easily add new authentication methods</td><td>Extensible with new authentication methods</td></tr>
+<tr><td>No session caching</td><td>Supports <b>session caching</b> (resumes a previous session, boosting performance)</td></tr>
+<tr><td>Handshake/record less separated</td><td>Cleanly separates Handshake from Record protocol</td></tr></table>
+
+<h3>The TLS handshake, step by step</h3>
+<ol><li>Client requests a secure (https) page.</li><li>Server sends its <b>digital certificate</b> (contains its public key).</li><li>Browser checks: (a) CA's signature against its trusted store, (b) validity dates, (c) domain name matches.</li><li>Browser generates a temporary session key using the certificate's public key.</li></ol>
+`,
+'17.4': `
+<h2>17.4 Digital Signatures and Certificates</h2>
+<h3>Digital signatures</h3>
+<p>Instead of encrypting a whole message with the private key (slow), a <b>digest</b> (small fixed-size fingerprint) is used.</p>
+<ol>
+<li>Message passed through a hashing algorithm (e.g. MD5) → produces a <b>digest</b>.</li>
+<li>Digest encrypted with the SENDER's private key → the <b>digital signature</b>.</li>
+<li>Plaintext + signature sent together.</li>
+<li>Recipient decrypts the signature with the sender's <b>public key</b> → recovers original digest.</li>
+<li>Recipient independently hashes the received plaintext → produces a second digest.</li>
+<li>If the two digests <b>match</b>, the message is authentic and unaltered.</li>
+</ol>
+<div class="sg-box warn">This process alone does NOT provide confidentiality — the plaintext travels unencrypted. For confidentiality too, you'd ALSO need to encrypt with the recipient's public key (17.1.3).</div>
+<div class="sg-box warn"><b>Remaining weakness:</b> the sender's public key itself could be forged/substituted by an impersonator — this is exactly why CA-issued digital certificates are needed.</div>
+
+<h3>Digital certificates</h3>
+<p>An electronic document proving identity, containing a <b>public key</b> + owner details, issued by a <b>Certificate Authority (CA)</b> (e.g. Symantec, Entrust) after independently verifying the applicant.</p>
+<p><b>Acquiring one:</b> apply to a CA → CA verifies identity → CA generates and issues the certificate.</p>
+<div class="sg-box warn"><b>Self-signed certificates</b> (not CA-verified) are NOT trusted by browsers by default — users see a security warning. This is exactly why independent CA verification matters.</div>
+<p>The certificate's own digital signature: all its details are hashed → digest encrypted with the <b>CA's private key</b>. Any browser holding the CA's public key can verify the certificate is genuine and unaltered.</p>
+<div class="sg-box warn">"A digital certificate contains a public key" alone is only partial credit — full marks require explaining what that key is used FOR (validating the organisation's identity/private key).</div>
+`
+};
+QB.ch17 = [
+[ // 17.1
+  {q:"What is the exam-precise description of what encryption actually prevents?", o:["It prevents the data from being intercepted at all","It prevents the intercepted data from being understood","It prevents any transmission from happening","It makes data physically inaccessible"], a:1, f:"A hacker can still access/intercept encrypted data — encryption only stops them from understanding it. \"Unreadable\" or \"inaccessible\" is marked imprecise."},
+  {q:"What is the standard exam answer for symmetric encryption's biggest weakness?", o:["The key is too short to be secure","The key distribution problem — the shared key could be intercepted during exchange","It cannot encrypt large files","It requires two separate keys"], a:1, f:"The key distribution problem is the expected answer — a longer key does not fix this, it only resists brute-force separately."},
+  {q:"To send Meera a PRIVATE message using asymmetric encryption, what key does Tom encrypt with?", o:["Tom's own private key","Tom's own public key","Meera's public key","Meera's private key"], a:2, f:"Encrypting with the recipient's (Meera's) public key means only her matching private key can decrypt it."},
+  {q:"If Tom encrypts a message with HIS OWN private key, what does successful decryption with Tom's public key prove?", o:["Nothing useful","That the message is confidential","That the message genuinely came from Tom (verifies his identity)","That the message was never intercepted"], a:2, f:"Only Tom's private key could produce ciphertext decryptable by his public key — this verifies the sender's identity, though it doesn't keep the message confidential."},
+  {q:"What are the four full-mark points for explaining asymmetric encryption use, per real examiner evidence?", o:["Only encrypting and decrypting","Both generate key pairs, recipient's public key is shared, sender encrypts with it, recipient decrypts with their private key","Just using one shared key","Only mentioning the hashing algorithm"], a:1, f:"Candidates usually got encrypt/decrypt but forgot to mention generating key pairs and sharing the public key first."}
+],
+[ // 17.2
+  {q:"What makes quantum cryptography fundamentally different from classical encryption?", o:["It uses longer keys","It uses the physics of photons to make interception physically detectable, not just computationally hard to break","It doesn't use keys at all","It only works over Wi-Fi"], a:1, f:"Classical encryption relies on computational difficulty; quantum cryptography uses physical laws so interception itself disturbs the system and becomes detectable."},
+  {q:"What can a qubit represent that a normal bit cannot?", o:["Only the value 2","Both 0 and 1 simultaneously, until measured","Negative numbers","Nothing different"], a:1, f:"A qubit can be in a superposition of 0 and 1 simultaneously until it is measured/detected."},
+  {q:"In the QKD protocol, what does the recipient send back over the non-secure channel?", o:["The actual secret key","Which beam splitters were used for each photon","The plaintext message","Nothing is sent back"], a:1, f:"The recipient sends back the sequence of beam splitters used; the sender then confirms which positions matched, and only those bits form the final key."},
+  {q:"Which polarisation represents bit value 1?", o:["Horizontal only","Vertical and 45° right (diagonal)","45° left only","None of them"], a:1, f:"Vertical polarisation = 1, and 45° right (diagonal) = 1; horizontal = 0, 45° left = 0."},
+  {q:"Why is intercepting a QKD-transmitted key detectable?", o:["It isn't detectable at all","Measuring a photon's quantum state disturbs it, revealing interception occurred","The key is broadcast publicly","Fibre-optic cables cannot be tapped"], a:1, f:"Because of quantum mechanics, measuring/observing a photon changes its state — an eavesdropper's interception leaves a detectable trace."}
+],
+[ // 17.3
+  {q:"In SSL, which party is normally authenticated?", o:["Only the client","Only the server","Both equally","Neither"], a:1, f:"Normally only the server is authenticated to the client; the client itself typically remains unauthenticated."},
+  {q:"What are SSL/TLS's three precise functions?", o:["Compression, storage, backup","Encryption, data compression, data integrity checks","Routing, switching, addressing","Login, logout, authentication only"], a:1, f:"The exam-precise terms are encryption, data compression, and data integrity checks — not vague phrases like \"makes it safe.\""},
+  {q:"What is a key improvement TLS has over SSL?", o:["TLS cannot be extended with new authentication methods","TLS supports session caching, improving performance","TLS uses no encryption at all","TLS is older than SSL"], a:1, f:"Session caching lets a previous session be resumed rather than starting a costly new handshake each time — a genuine TLS improvement over SSL."},
+  {q:"What is a common error when naming TLS's two main protocols?", o:["Naming them correctly as Handshake and Record","Incorrectly naming application-layer protocols like HTTP or SMTP instead","Forgetting TLS exists","Naming too many protocols"], a:1, f:"Examiner reports flag candidates confusing TLS's own Handshake/Record protocols with unrelated application-layer protocols like HTTP or SMTP."},
+  {q:"During the TLS handshake, what does the browser check about the received digital certificate?", o:["Only the file size","CA's signature against the trusted store, validity dates, and domain name match","The server's IP address only","Nothing — certificates are trusted automatically"], a:1, f:"Three checks: the CA's digital signature against the browser's trusted store, current validity dates, and an exact domain name match."}
+],
+[ // 17.4
+  {q:"Why is a digest used instead of encrypting the whole message for a digital signature?", o:["Digests are more secure than encryption","Encrypting the entire message would take far more processing time; a digest is small and fast to compare","Digests can't be forged","Whole messages cannot be hashed"], a:1, f:"A digest is a small fixed-size fingerprint — comparing two digests is vastly faster than comparing entire documents."},
+  {q:"In creating a digital signature, what key does the SENDER use to encrypt the digest?", o:["The sender's own public key","The sender's own private key","The recipient's public key","The CA's private key"], a:1, f:"The sender encrypts the digest with their own private key; the recipient then decrypts it using the sender's public key."},
+  {q:"Does a digital signature alone (without additional encryption) keep the message confidential?", o:["Yes, fully confidential","No — the plaintext document is sent unencrypted alongside the signature","Only for text messages","Only if using SSL"], a:1, f:"Digital signatures verify authenticity/integrity but do NOT provide confidentiality — the plaintext travels unencrypted unless separately encrypted too."},
+  {q:"Why are self-signed digital certificates typically distrusted by browsers?", o:["They use weaker encryption","They have not been independently verified by a trusted CA","They are always fake","Browsers cannot process them technically"], a:1, f:"Without independent CA verification, browsers cannot confirm the certificate's claimed identity is genuine, so they show a security warning."},
+  {q:"What is the full-mark point about a digital certificate's public key that many candidates miss?", o:["That it exists in the certificate at all","Explaining what the public key is used FOR — validating the organisation's identity/private key","That it is very long","That it changes daily"], a:1, f:"Simply stating \"it contains a public key\" is only partial credit — full marks require explaining its purpose (validating the organisation)."}
+]
+];
+
+/* ---------- Chapter 18 — Artificial Intelligence ---------- */
+STUDY.ch18 = {
+'18.1': `
+<h2>18.1 Pathfinding Algorithms</h2>
+<h3>Graphs — why AI uses them</h3>
+<p>A <b>graph</b> records relationships between entities using <b>nodes</b> (vertices) and <b>edges</b> (connections), where edges may be <b>weighted</b> (a numerical cost — distance, time, money).</p>
+<div class="sg-box warn">Exam-precise definition: mention BOTH nodes and edges, and that edges can be weighted — this is the full-mark phrasing.</div>
+
+<h3>Dijkstra's algorithm</h3>
+<p>Finds the shortest path between two nodes on a weighted graph. You must be able to <b>trace it by hand</b> — not code it.</p>
+<ol>
+<li>Give the start vertex a final value of 0.</li>
+<li>Give every connected vertex a <b>working value</b> = final value of the vertex just reached + edge weight. Only replace an existing working value if the new one is lower.</li>
+<li>The vertex with the smallest working value (among those without a final value) gets that value as its final value.</li>
+<li>Repeat from step 2 until the destination has a final value.</li>
+</ol>
+
+<h3>A* algorithm</h3>
+<p>Builds on Dijkstra's but adds a <b>heuristic</b> — an estimate (not exact) of remaining distance to the goal, letting it prioritise promising directions instead of expanding blindly in every direction.</p>
+<table><tr><th>Value</th><th>Meaning</th></tr>
+<tr><td>h</td><td>Heuristic — estimated remaining distance to goal (e.g. via the Manhattan method)</td></tr>
+<tr><td>g</td><td>Actual movement cost from current node to the neighbour</td></tr>
+<tr><td>f</td><td>f = g + h — total estimated cost; A* always expands the LOWEST f next</td></tr></table>
+<div class="sg-box ex"><b>Manhattan method:</b> h = number of squares to cross to the goal, ignoring blocked squares. Movement cost: horizontal/vertical = 10, diagonal = 14 (approximating √200).</div>
+`,
+'18.2a': `
+<h2>18.2 AI, Machine Learning and Deep Learning</h2>
+<h3>How they relate (nested circles)</h3>
+<p><b>AI</b> (outermost) — machines think/behave like humans. <b>Machine Learning</b> (middle) — systems learn without being explicitly programmed. <b>Deep Learning</b> (innermost) — machines process huge data via artificial neural networks, similar to the human brain.</p>
+<div class="sg-box tip">Every deep learning system is also ML, and every ML system is also AI — but not every AI system uses ML, and not every ML system uses DL.</div>
+<p>AI categories: <b>Narrow AI</b> (one task, better than a human — e.g. chess engine), <b>General AI</b> (human-level across any task), <b>Strong AI</b> (outperforms humans across many tasks).</p>
+
+<h3>Machine learning types</h3>
+<table><tr><th>Type</th><th>Data used</th><th>How it works</th></tr>
+<tr><td>Supervised</td><td>Labelled (input + correct output known)</td><td>Trained against known answers, tested, refined; predicts outcomes on new data</td></tr>
+<tr><td>Unsupervised</td><td>Unlabelled</td><td>Finds hidden patterns/clusters (e.g. k-means clustering) with no "right answer" given</td></tr>
+<tr><td>Reinforcement</td><td>None — trial and error</td><td>Learns via reward/punishment feedback, maximising positive outcomes</td></tr>
+<tr><td>Semi-supervised (active)</td><td>Small labelled + large unlabelled</td><td>Interactively queries data to reach the desired result — cheaper than fully labelling everything</td></tr></table>
+<div class="sg-box tip"><b>Labelled data</b> = the correct classification is already known. <b>Unlabelled data</b> = objects are undefined, need recognising first.</div>
+
+<h3>Deep learning — artificial neural networks</h3>
+<p>Structured in layers: <b>input layer</b> (raw data) → <b>hidden layer(s)</b> (processes data) → <b>output layer</b> (final result). Connections carry <b>weightings</b>, initially random, refined through training (see 18.2.6, back propagation).</p>
+<p>Deep learning can work with <b>unlabelled</b> data too — e.g. analysing pixel densities to recognise objects without manual labelling.</p>
+`,
+'18.2b': `
+<h2>18.2 Comparison, Future and Backpropagation</h2>
+<h3>Machine Learning vs Deep Learning</h3>
+<table><tr><th>Machine Learning</th><th>Deep Learning</th></tr>
+<tr><td>Needs only a small amount of training data</td><td>Needs LARGE amounts of data</td></tr>
+<tr><td>Features must be identified in advance, manually coded</td><td>Learns features from the data itself</td></tr>
+<tr><td>Modular approach — stages solved then combined</td><td>End-to-end — solved as one single entity</td></tr>
+<tr><td>Testing takes a long time</td><td>Testing is much faster</td></tr>
+<tr><td>Clear rules explain each stage's decisions</td><td>Reasoning is a "black box" — hard for humans to interpret</td></tr></table>
+<div class="sg-box warn">Write comparison answers as MATCHED PAIRS (one ML point directly contrasted with the DL equivalent) — marks are for a stated <i>difference</i>, not a fact about only one side.</div>
+
+<h3>Future developments (examples, by category)</h3>
+<table><tr><th>Category</th><th>Example</th></tr>
+<tr><td>AI</td><td>Predictive crime detection, humanoid androids</td></tr>
+<tr><td>Machine Learning</td><td>Better healthcare diagnostics, marketing based on buying behaviour</td></tr>
+<tr><td>Deep Learning</td><td>Hyper-personalised treatment, hyper-intelligent assistants</td></tr></table>
+<div class="sg-box tip">To categorise a new example: relies on huge data + a neural network → Deep Learning. Learns from past behaviour without deep neural processing → Machine Learning. A broad capability not tied to a specific mechanism → AI generally.</div>
+
+<h3>Back propagation of errors</h3>
+<p>Neural network weightings start <b>random</b>. Back propagation trains them:</p>
+<ol><li>Network produces initial (likely poor) outputs from training inputs.</li><li>Compare actual vs expected outputs → calculate the <b>error</b>.</li><li>Error is propagated backwards; calculus finds how much each neuron's weighting contributed.</li><li>Every weighting adjusted to reduce the error.</li><li>Repeat until error is eliminated or within an acceptable limit.</li></ol>
+
+<h3>Regression vs classification (both used in supervised learning)</h3>
+<table><tr><th>Regression</th><th>Classification</th></tr>
+<tr><td>Predicts a <b>continuous numerical</b> value (e.g. tomorrow's temperature)</td><td>Predicts a <b>discrete category</b> (e.g. spam / not spam)</td></tr></table>
+<div class="sg-box warn">Regression and classification are NOT the same thing — treat them as two separate named techniques.</div>
+`
+};
+QB.ch18 = [
+[ // 18.1
+  {q:"What is the exam-precise definition of a graph in the context of AI?", o:["A chart showing data trends","A structure for recording relationships between entities using nodes and edges (which may be weighted)","A list of numbers in order","A type of neural network"], a:1, f:"Full marks require mentioning BOTH nodes and edges, and that edges can carry a weight."},
+  {q:"In Dijkstra's algorithm, when is a vertex's working value replaced with a new one?", o:["Never — the first value always stays","Only if the new value is LOWER than the existing working value","Only if the new value is higher","Every time a connected vertex is checked, regardless of value"], a:1, f:"A working value is only updated if the newly calculated value is lower than what's already there."},
+  {q:"What does the A* algorithm add on top of Dijkstra's algorithm?", o:["A random number generator","A heuristic estimate of remaining distance to the goal, to prioritise promising directions","A second start node","Nothing — they are identical"], a:1, f:"A* adds a heuristic (h) so it can prioritise nodes likely to lead toward the goal, instead of expanding blindly like Dijkstra's."},
+  {q:"In A*, what does f(n) = g(n) + h(n) represent, and which does A* expand next?", o:["Total estimated route cost through node n; A* expands the LOWEST f next","Total estimated cost; A* expands the HIGHEST f next","Only the heuristic value","Only the movement cost"], a:0, f:"f is the total estimated cost (actual cost so far + estimated remaining cost); A* always expands the node with the lowest f value."},
+  {q:"In the Manhattan method's movement costs, what is the cost of a diagonal move (vs horizontal/vertical)?", o:["Diagonal = 10, same as horizontal/vertical","Diagonal = 14 (approximating the hypotenuse), horizontal/vertical = 10","Diagonal moves are not allowed","Diagonal = 20"], a:1, f:"Horizontal/vertical moves cost 10; diagonal moves cost 14, approximating √(10²+10²) to avoid decimals."}
+],
+[ // 18.2a
+  {q:"In the nested-circle model, which statement is true?", o:["Every AI system is a deep learning system","Every deep learning system is also a machine learning system, and every ML system is also AI","AI, ML and DL are unrelated, separate fields","Every ML system is a deep learning system"], a:1, f:"DL ⊂ ML ⊂ AI — but not every AI system uses ML, and not every ML system uses DL."},
+  {q:"Which type of machine learning uses NO training data at all, learning purely through trial and error?", o:["Supervised learning","Unsupervised learning","Reinforcement learning","Semi-supervised learning"], a:2, f:"Reinforcement learning learns via reward/punishment feedback with no training data given upfront."},
+  {q:"What is the key difference between labelled and unlabelled data?", o:["Labelled data is always numerical","Labelled data's correct classification is already known; unlabelled data's objects are undefined and need recognising", "There is no difference","Unlabelled data is always larger in volume"], a:1, f:"Labelled = target answer already known. Unlabelled = objects undefined, must be recognised/processed first."},
+  {q:"In an artificial neural network, what happens in the hidden layer(s)?", o:["Raw data is received directly from the user","Data from the input layer is processed before being passed toward the output layer","The final classification decision is made","Nothing — hidden layers are unused"], a:1, f:"Hidden layers process the input data; the output layer then produces the final result."},
+  {q:"Why can deep learning work even with unlabelled data?", o:["It cannot work with unlabelled data","It can identify patterns (e.g. pixel densities) and build understanding without pre-existing human labels","It requires manual labelling first, always","It only works on labelled text"], a:1, f:"Deep learning can analyse raw, unlabelled data (like pixel densities) to recognise objects without a human labelling it beforehand."}
+],
+[ // 18.2b
+  {q:"According to the exam tip, how should a \"compare ML and DL\" answer be structured?", o:["List facts about ML only","List facts about DL only","As matched pairs — one ML point directly contrasted with the corresponding DL point","In no particular order"], a:2, f:"Marks are awarded for a stated DIFFERENCE — matched, paired contrasts score better than two separate lists."},
+  {q:"Which needs MORE training data: machine learning or deep learning?", o:["Machine learning needs more","Deep learning needs large amounts; ML needs only a small amount","Both need exactly the same amount","Neither needs training data"], a:1, f:"Deep learning requires large volumes of data; machine learning can be trained on comparatively little."},
+  {q:"What is back propagation's overall goal?", o:["To randomise neuron weightings","To adjust neuron weightings, using the calculated error, until the error is eliminated or acceptably small","To delete poorly performing neurons","To increase every weighting simultaneously"], a:1, f:"Back propagation iteratively adjusts weightings backwards through the network to reduce the error between actual and expected outputs."},
+  {q:"What is the key difference between regression and classification?", o:["They are the same technique with different names","Regression predicts a continuous numerical value; classification predicts a discrete category","Classification is only used in unsupervised learning","Regression cannot be used for prediction"], a:1, f:"Regression → continuous value (e.g. temperature). Classification → discrete category (e.g. spam/not spam). Both are used within supervised learning."},
+  {q:"A future development relying on huge data volumes AND a neural network belongs to which category?", o:["AI in general only","Machine Learning","Deep Learning","None of the three"], a:2, f:"Huge data + neural network processing = deep learning, per the categorisation reasoning from the nested-circle model."}
+]
+];
+
+/* ---------- Chapter 19 — Computational Thinking and Problem-Solving ---------- */
+STUDY.ch19 = {
+'19.1a': `
+<h2>19.1 Search, Sort and Abstract Data Types</h2>
+<div class="sg-box tip">Cambridge expects the 9618 pseudocode conventions (DECLARE, FOR...NEXT, REPEAT...UNTIL, WHILE...ENDWHILE) and a FULL TRACE TABLE (every variable at every step) — partial credit is usually for correct intermediate working, not just the final answer.</div>
+
+<h3>Linear search</h3>
+<p>Checks every element in order from the start until found or the list ends. Works on data in ANY order (sorted or not). Worst case: every element checked.</p>
+
+<h3>Binary search</h3>
+<p>Far more efficient, but REQUIRES the list to already be <b>sorted</b>. Repeatedly tests the middle item; discards the half that can't contain the target; repeats on the remaining half.</p>
+
+<h3>Bubble sort</h3>
+<p>Repeatedly compares adjacent pairs, swapping if out of order — the largest unsorted value "bubbles" to the end each pass. Stops when a full pass makes NO swaps.</p>
+<div class="sg-box ex">[5,1,4,2,8] → pass 1: [1,4,2,5,8] → pass 2: [1,2,4,5,8] → pass 3: no swaps, done.</div>
+
+<h3>Insertion sort</h3>
+<p>Builds a sorted section one item at a time. Each new "key" is compared backwards against the sorted section; larger elements shift right to make room. Good for incremental/partially-sorted data.</p>
+
+<h3>Abstract Data Types (ADTs)</h3>
+<p>An ADT = a collection of data + a defined set of operations — defined by WHAT it does, not HOW it's implemented.</p>
+<table><tr><th>ADT</th><th>Behaviour</th><th>Key operations</th></tr>
+<tr><td><b>Stack</b></td><td>LIFO — Last In, First Out</td><td>push (add to top), pop (remove from top)</td></tr>
+<tr><td><b>Queue</b></td><td>FIFO — First In, First Out</td><td>enqueue (add to rear), dequeue (remove from front)</td></tr>
+<tr><td><b>Linked list</b></td><td>Nodes each pointing to the next</td><td>insert, delete, traverse via pointers</td></tr></table>
+<div class="sg-box ex"><b>RPN evaluation with a stack</b> (5 3 4 * +): push 5, push 3, push 4 → * pops 4,3 pushes 12 → + pops 12,5 pushes <b>17</b>.</div>
+<div class="sg-box warn">When asked to "describe key features," describe BEHAVIOUR (e.g. "LIFO") not a specific array/pointer implementation — that's a different sub-topic (19.1.4).</div>
+`,
+'19.1b': `
+<h2>19.1 Implementing ADTs and Big-O</h2>
+<h3>Implementing one ADT from another</h3>
+<p>An ADT's definition can be built from built-in types (INTEGER) or other ADTs — e.g. a linked list implemented using an ARRAY of records (item + pointer).</p>
+<div class="sg-box warn"><b>Confirmed exam trap:</b> when a question says "implement," describing the ADT abstractly (just "LIFO" or "pointers in the abstract") is NOT enough. You must name the actual array(s), the pointer variable names, their initial values, and exactly how each operation updates them.</div>
+<div class="sg-box ex"><b>Model answer (linked list via array):</b> "Two 1D arrays are declared — one holds the data, the other holds the pointers as integers. Array elements with the same index make up one node. A start pointer variable holds the index of the first node. The last node's pointer is set to −1 (a null pointer, not a valid index)."</div>
+
+<h3>Comparing algorithms: Big O notation</h3>
+<p>Big O describes an algorithm's <b>worst-case</b> time or space complexity as the data size (n) grows — lets you compare algorithms independent of any specific computer's speed.</p>
+<table><tr><th>Big O</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>O(1)</td><td>Constant — same time regardless of data size</td><td>Checking if a number is even/odd</td></tr>
+<tr><td>O(log n)</td><td>Very efficient at scale — grows slowly</td><td>Binary search</td></tr>
+<tr><td>O(n)</td><td>Linear — grows in direct proportion to n</td><td>Linear search</td></tr>
+<tr><td>O(n²)</td><td>Grows with the square of n</td><td>Bubble sort, insertion sort</td></tr>
+<tr><td>O(2ⁿ)</td><td>Doubles with every extra item — very inefficient</td><td>Naive recursive Fibonacci</td></tr></table>
+<div class="sg-box tip">For huge datasets, O(n) vs O(n²) can mean seconds vs days. Binary search's O(log n) requires sorted data in exchange for that efficiency.</div>
+`,
+'19.2': `
+<h2>19.2 Recursion</h2>
+<h3>What recursion is</h3>
+<p>A function/procedure defined in terms of itself. Every valid recursive routine needs exactly two parts:</p>
+<ul><li><b>Base case</b> — a non-recursive, directly-answerable terminating case.</li><li><b>General case</b> — defined in terms of a SMALLER version of the same problem, moving closer to the base case.</li></ul>
+<div class="sg-box warn">No reachable base case → <b>infinite recursion</b> → exhausts the call stack → <b>stack overflow</b> runtime error.</div>
+<div class="sg-box ex"><b>Factorial:</b> base case 0!=1; general case n! = n × (n−1)!. factorial(3): calls down to factorial(0)=1, then unwinds: 1×1=1, 2×1=2, 3×2=<b>6</b>.</div>
+
+<h3>How a compiler implements recursion — the call stack</h3>
+<p>Every function call creates a <b>stack frame</b> (return address + local variables) on the <b>call stack</b>. Recursion is special because MANY of a routine's own stack frames can exist on the stack simultaneously — one per unfinished call.</p>
+<table><tr><th>Winding</th><th>Unwinding</th></tr>
+<tr><td>Repeated self-calls, pushing new stack frames, base case not yet reached — nothing computed yet</td><td>Base case reached; each paused call resumes, computes its answer, and pops its stack frame off</td></tr></table>
+<div class="sg-box warn">Deep/unbounded recursion risks a stack overflow because each pushed frame consumes real memory not released until it unwinds — this is also why recursion generally uses MORE memory than the equivalent iterative loop (which needs only one stack frame).</div>
+`
+};
+QB.ch19 = [
+[ // 19.1a
+  {q:"What condition MUST be true for a binary search to work correctly?", o:["The list must contain only integers","The list must already be sorted","The list must have an even number of items","The list must be stored in a linked list"], a:1, f:"Binary search only works on sorted data — it repeatedly halves the search space based on ordering."},
+  {q:"When does a bubble sort algorithm terminate?", o:["After exactly one pass, always","When a full pass through the list makes no swaps","After the array is reversed","It never terminates"], a:1, f:"A full pass with zero swaps proves the list is already sorted, so the algorithm stops."},
+  {q:"What is the defining behaviour of a stack ADT?", o:["FIFO — First In, First Out","LIFO — Last In, First Out","Random access to any element","Elements sorted automatically"], a:1, f:"A stack is LIFO: the most recently pushed item is the first one popped."},
+  {q:"Evaluating RPN \"5 3 4 * +\" using a stack, what is the final result?", o:["12","17","9","20"], a:1, f:"Push 5,3,4 → * pops 4,3 pushes 12 → + pops 12,5 pushes 17. Final result 17."},
+  {q:"When asked to \"describe key features\" of a stack, what should the answer focus on?", o:["The exact array implementation and pointer variables used","Its behaviour and rules (e.g. LIFO), not a specific implementation","Its Big-O complexity","The programming language used to build it"], a:1, f:"An ADT is defined by WHAT it does; implementation detail belongs to a separate sub-topic (19.1.4)."}
+],
+[ // 19.1b
+  {q:"According to a real examiner report, what is the most common mistake when a question asks to \"implement\" an ADT?", o:["Using too much pseudocode","Giving only an abstract description of the ADT's behaviour instead of the actual array/pointer implementation","Writing the answer in the wrong language","Not naming the ADT at all"], a:1, f:"Candidates repeatedly overlooked the word \"implemented\" and just described LIFO/FIFO behaviour abstractly instead of naming actual arrays and pointer variables."},
+  {q:"In the model answer for implementing a linked list with an array, what does a null pointer value of −1 indicate?", o:["An error occurred","The end of the list — not a valid array index","The start of the list","The array is full"], a:1, f:"−1 is used as a null pointer because it is not a valid array index, signalling the end of the chain."},
+  {q:"Which Big O complexity describes binary search?", o:["O(n)","O(n²)","O(log n)","O(1)"], a:2, f:"Binary search is O(log n) — each comparison halves the remaining search space, very efficient at scale."},
+  {q:"Which Big O complexity describes both bubble sort and insertion sort (worst case)?", o:["O(1)","O(log n)","O(n)","O(n²)"], a:3, f:"Both bubble sort and insertion sort have worst-case O(n²) time complexity, due to nested comparisons/shifts."},
+  {q:"Why is Big O notation useful for comparing algorithms?", o:["It measures the exact number of seconds an algorithm takes on one specific computer","It describes worst-case growth in time/space independent of any specific computer's speed","It only applies to sorting algorithms","It measures how much electricity an algorithm uses"], a:1, f:"Big O lets algorithms be compared mathematically and fairly, regardless of the hardware they happen to run on."}
+],
+[ // 19.2
+  {q:"What are the two essential, compulsory parts of any correct recursive routine?", o:["A loop and a variable","A base case and a general case","An input and an output","A stack and a queue"], a:1, f:"Every recursive routine needs a base case (terminates directly) and a general case (moves closer to the base case)."},
+  {q:"What happens if a recursive routine's base case is never reached?", o:["The program runs faster","Infinite recursion, eventually causing a stack overflow","The function returns 0 automatically","Nothing — it self-corrects"], a:1, f:"Without a reachable base case, the routine calls itself forever, exhausting the call stack and crashing with a stack overflow."},
+  {q:"What is stored in a stack frame when a function is called?", o:["Only the function's name","The return address and that call's local variables/parameters","The entire program's source code","Nothing significant"], a:1, f:"A stack frame holds the return address plus the local variables/parameters needed to resume that specific call later."},
+  {q:"What is \"winding\" in the context of recursion?", o:["The final calculation being returned","Repeated self-calls building up stack frames before the base case is reached","Deleting stack frames after use","Converting recursion into a loop"], a:1, f:"Winding = the phase of repeated recursive calls pushing new stack frames, before the base case is reached and any value can be computed."},
+  {q:"Why does recursion typically use MORE memory than an equivalent iterative loop?", o:["Recursion always processes more data","Each recursive call pushes its own stack frame, which stays on the stack until it unwinds; a loop needs only one stack frame total","Loops cannot use variables","Recursion doesn't use the call stack at all"], a:1, f:"Multiple stack frames can exist simultaneously during recursion (one per unfinished call), unlike a loop which reuses a single frame."}
+]
+];
+
+/* ---------- Chapter 20 — Further Programming ---------- */
+STUDY.ch20 = {
+'20.1': `
+<h2>20.1 Programming Paradigms</h2>
+<div class="sg-box tip">A paradigm isn't "better" in the abstract — each suits different problems. Justify a choice by connecting to the PROBLEM's nature (e.g. "this needs direct hardware control, so low-level"), not just "X is good."</div>
+
+<h3>Low-level programming</h3>
+<p>Uses assembly language/machine code directly — precise control over memory/registers (e.g. device drivers). Maximum control and efficiency, but slow to write, hard to read, poor portability.</p>
+<table><tr><th>Addressing mode</th><th>Meaning</th></tr>
+<tr><td>Immediate</td><td>The operand IS the actual data value</td></tr>
+<tr><td>Direct</td><td>Operand gives the memory address holding the data</td></tr>
+<tr><td>Indirect</td><td>Operand gives an address that itself contains the address of the data (pointer to a pointer)</td></tr>
+<tr><td>Indexed</td><td>Address = operand + contents of the index register (IX)</td></tr>
+<tr><td>Relative</td><td>Used in branching — address is an offset from the current program counter</td></tr></table>
+
+<h3>Imperative (procedural) programming</h3>
+<p>Steps written explicitly in the exact order executed. "Structured programming" = a disciplined version adding procedures/functions with properly scoped variables. Smaller/faster than OOP for simple programs, but hard to maintain as programs grow large.</p>
+
+<h3>Object-oriented programming (OOP)</h3>
+<table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Class</td><td>A template defining methods/data for a type of object (no real data until an object is made)</td></tr>
+<tr><td>Object / Instance</td><td>A created variable of a class type — a self-contained unit with its own data + methods</td></tr>
+<tr><td>Attribute</td><td>A data item defined within a class</td></tr>
+<tr><td>Method</td><td>A procedure/function defined as part of a class</td></tr></table>
+<p><b>Encapsulation</b> — bundling data + methods together as one unit (the class). <b>Data hiding</b> — restricting outside access via private attributes + public methods.</p>
+<table><tr><th>Constructor</th><th>Setter</th><th>Getter</th><th>Destructor</th></tr>
+<tr><td>Initialises a new object</td><td>Controls changes to a private variable</td><td>Returns a property's value</td><td>Destroys an object, frees memory</td></tr></table>
+
+<h3>Declarative programming</h3>
+<p>States <b>facts</b> and <b>rules</b>, then poses a <b>query</b> (a "goal") — no step-by-step sequence given. Prolog is the syllabus's worked example; SQL SELECT is also declarative (describes WHAT is wanted, not HOW to find it).</p>
+<div class="sg-box warn"><b>Prolog syntax (exam-tested exactly):</b> facts/rules are lower case and end with a full stop. Query VARIABLES start with a capital letter. Getting either wrong is one of the most heavily penalised mistakes.</div>
+<div class="sg-box ex"><code>country(france).</code> is a fact. <code>?- language(Country,english).</code> is a query using variable Country.</div>
+`,
+'20.2': `
+<h2>20.2 Files and Exception Handling</h2>
+<h3>File processing operations</h3>
+<table><tr><th>Mode</th><th>Meaning</th></tr>
+<tr><td>Read</td><td>Reads data; existing contents unchanged</td></tr>
+<tr><td>Write</td><td>Writes data; existing data is OVERWRITTEN</td></tr>
+<tr><td>Append</td><td>Adds to the end, without disturbing existing data</td></tr></table>
+<p>Key operations: <code>OPEN...FOR</code>, <code>PUTRECORD</code>, <code>GETRECORD</code>, <code>SEEK</code> (jump directly to an address — random access), <code>CLOSEFILE</code>, <code>EOF()</code>.</p>
+<div class="sg-box warn">Every file that is opened MUST be closed — leaving it open wastes resources and can lose unsaved data. Every OPEN must be matched by a CLOSE, correctly placed (not lost inside the wrong part of a loop).</div>
+<table><tr><th>Organisation</th><th>Description</th><th>Access</th></tr>
+<tr><td>Serial</td><td>Order added, no field ordering</td><td>Sequential only</td></tr>
+<tr><td>Sequential</td><td>Sorted by key field</td><td>Sequential, or direct via an index</td></tr>
+<tr><td>Random</td><td>Location computed via a hashing function</td><td>Direct access</td></tr></table>
+
+<h3>Exception handling</h3>
+<p>An <b>exception</b> = an unexpected event disrupting normal execution (programming errors, user errors, hardware failure). Exception handling makes a program more <b>robust</b> by trapping the error instead of crashing.</p>
+<div class="sg-box warn">Simple input validation only guards against problems the programmer can anticipate in advance. Exception handling is for UNPREDICTABLE runtime failures outside the program's control (a file deleted externally, a printer losing power, a dropped connection) — validation and exception handling are NOT the same thing.</div>
+<div class="sg-box ex"><b>TRY/EXCEPT structure:</b><br><code>TRY<br>&nbsp;&nbsp;&lt;statements that might raise an exception&gt;<br>EXCEPT<br>&nbsp;&nbsp;&lt;statements that run only if an exception was raised&gt;<br>ENDTRY</code><br>If an exception occurs, the rest of the TRY block is skipped immediately and control jumps to EXCEPT. A <b>FINALLY</b> block (where supported) always runs regardless — commonly used to guarantee files get closed.</div>
+<table><tr><th>Exception</th><th>Typical cause</th></tr>
+<tr><td>Division by zero</td><td>Dividing by zero / arithmetic overflow</td></tr>
+<tr><td>File not found</td><td>Opening a file that doesn't exist</td></tr>
+<tr><td>Type/value error</td><td>Wrong data type used, e.g. converting non-numeric text to an integer</td></tr>
+<tr><td>Index out of range</td><td>Accessing an array/list element beyond its bounds</td></tr></table>
+`
+};
+QB.ch20 = [
+[ // 20.1
+  {q:"Which addressing mode uses the operand itself as the actual data value?", o:["Direct","Immediate","Indirect","Indexed"], a:1, f:"Immediate addressing: the operand IS the data — no memory access needed to find the value."},
+  {q:"In indexed addressing, how is the actual address calculated?", o:["It's given directly by the operand","Operand address + the contents of the index register (IX)","It's always address 0","It's chosen randomly"], a:1, f:"Indexed addressing: address used = operand's given address + the value currently in the index register IX."},
+  {q:"What is \"structured programming\"?", o:["A completely different paradigm from imperative programming","A disciplined form of procedural programming adding properly scoped procedures/functions and variables","A synonym for OOP","A type of declarative programming"], a:1, f:"Structured programming develops imperative/procedural programming further, adding procedures, functions, and proper variable scoping."},
+  {q:"In OOP, what is the difference between a class and an object?", o:["They are exactly the same thing","A class is a template defining methods/data; an object is an actual created instance with real data","An object defines methods; a class stores data only","Classes can only exist inside objects"], a:1, f:"A class holds no real data until an object (an instance of that class) is actually created."},
+  {q:"In Prolog, what rule governs how facts and query variables must be written?", o:["Facts are capitalised; variables are lower case","Facts/rules are lower case ending in a full stop; query variables start with a capital letter","Everything must be capitalised","There are no syntax rules in Prolog"], a:1, f:"This exact syntax rule is heavily exam-tested — getting it backwards is one of the most penalised mistakes."}
+],
+[ // 20.2
+  {q:"What happens to a file's existing data when opened in WRITE mode?", o:["It is preserved and added to", "It is overwritten", "It is automatically backed up first", "Nothing can be written until the file is empty"], a:1, f:"Write mode overwrites any existing data in the file — Append mode is the one that preserves existing data and adds to the end."},
+  {q:"Which file organisation allows direct access by computing a record's location via a hashing function?", o:["Serial", "Sequential", "Random", "None of them support direct access"], a:2, f:"Random file organisation computes a record's storage location using a hashing function, enabling direct access."},
+  {q:"Why is exception handling needed in addition to simple input validation?", o:["It isn't needed if validation is used","Exception handling deals with unpredictable runtime failures outside the program's control that validation can't anticipate","Validation and exception handling are the same thing","Exception handling replaces the need for any error checking"], a:1, f:"Validation guards against anticipated bad input; exception handling covers unpredictable failures like a deleted file or lost connection."},
+  {q:"In a TRY/EXCEPT structure, what happens the moment an exception is raised inside the TRY block?", o:["The whole program stops immediately with no message","Execution of the TRY block stops immediately and control jumps to the EXCEPT block","The exception is silently ignored","The TRY block restarts from the beginning"], a:1, f:"Remaining TRY statements are skipped entirely, and control jumps straight to the matching EXCEPT block."},
+  {q:"What is a FINALLY block (where supported) used for?", o:["Code that only runs if no exception occurred","Code guaranteed to run whether or not an exception occurred, e.g. ensuring a file is closed","Code that only runs if an exception occurred","It replaces the need for a TRY block"], a:1, f:"FINALLY runs regardless of whether an exception happened — commonly used to guarantee resources like open files get closed."}
+]
+];
+
+/* ---------- Chapter 14 — Communication and Internet Technologies ---------- */
+STUDY.ch14 = {
+'14.1': `
+<h2>14.1 Protocols</h2>
+<p>Whenever two devices communicate across a network, both sides must agree in advance on the exact rules governing that communication — a <b>protocol</b>. A protocol defines syntax (data format), semantics (meaning) and timing.</p>
+<div class="sg-box def"><b>Exam rule:</b> a protocol is a set of rules — it cannot "do" anything itself. It is always the <b>device</b> that acts, <i>because the protocol requires it</i>. Write "the sending device transmits the data, as required by the protocol," never "the protocol sends the data."</div>
+<div class="sg-box warn"><b>A-Level vs AS-Level:</b> "a protocol is a set of rules" alone earns no credit. The A-Level point: protocols are essential because they enable communication between devices on <b>different platforms/manufacturers</b> — always state this explicitly.</div>
+
+<h3>Protocols as a layered stack (TCP/IP, 4 layers)</h3>
+<p>Breaking the process into independent layers (<b>decomposition</b>) lets each layer be developed/replaced independently, keeps different manufacturers' hardware compatible, and each layer only ever talks to the layer directly above/below it. Data passes <b>down</b> the stack at the sender (each layer adding a header = <b>encapsulation</b>) and <b>up</b> at the receiver (each layer stripping its header).</p>
+<table><tr><th>Layer</th><th>Function</th><th>Protocols</th></tr>
+<tr><td><b>4 Application</b></td><td>Programs/services exchanging data with the user</td><td>HTTP, FTP, SMTP, POP3/4, IMAP, BitTorrent</td></tr>
+<tr><td><b>3 Transport</b></td><td>Splits message into segments, adds port numbers, manages reliable end-to-end delivery</td><td>TCP</td></tr>
+<tr><td><b>2 Internet</b></td><td>Exam phrasing: <i>"source and destination IP addresses are added to the packet header"</i></td><td>IP</td></tr>
+<tr><td><b>1 Link</b></td><td>Physical transmission on the local network; uses MAC addresses</td><td>Ethernet, Wi-Fi</td></tr></table>
+<div class="sg-box warn">"It uses IP addresses" is NOT enough for the Internet layer — the exact required phrasing is "source and destination IP addresses are added to the packet header."</div>
+
+<h3>Application-layer protocols</h3>
+<ul>
+<li><b>HTTP</b> — transfers web pages; browser sends a request, server sends a response + status code. HTTPS = HTTP secured with TLS.</li>
+<li><b>FTP</b> — transfers whole files; uses a separate <b>control connection</b> (commands) and <b>data connection</b> (file contents).</li>
+<li><b>SMTP</b> — <b>sending</b> mail only, a <b>push protocol</b> (client keeps connection open, uploads as sent).</li>
+<li><b>POP3/POP4</b> — <b>receiving</b> mail, downloads then <b>deletes from server</b> (pull protocol) — best for one device.</li>
+<li><b>IMAP</b> — <b>receiving</b> mail, keeps messages on the server, <b>synchronised</b> across devices.</li>
+</ul>
+<div class="sg-box warn"><b>Common mistake:</b> IMAP is NOT a sending protocol. Only SMTP sends. POP3/4 and IMAP only receive.</div>
+
+<h3>BitTorrent — peer-to-peer (P2P)</h3>
+<p>No central file server — peers share files directly with each other, all of equal status.</p>
+<table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Peer</td><td>Any client in the P2P community</td></tr>
+<tr><td>Swarm</td><td>The whole group sharing one file</td></tr>
+<tr><td>Tracker</td><td>Coordinates which peers have which pieces — does NOT hold/transfer the file itself</td></tr>
+<tr><td>Seed</td><td>Has the complete file, keeps sharing it</td></tr>
+<tr><td>Leech</td><td>Still downloading (may also upload)</td></tr>
+<tr><td>Lurker</td><td>Downloads but never uploads back</td></tr></table>
+<div class="sg-box ex"><b>Worked example:</b> ratio = uploaded ÷ downloaded. Uploaded 200MB, downloaded 800MB → ratio = 200/800 = <b>0.25</b> (took more than contributed).</div>
+`,
+'14.2': `
+<h2>14.2 Circuit and Packet Switching</h2>
+<h3>Circuit switching</h3>
+<p>A dedicated circuit is reserved for the <b>entire duration</b> of one communication (e.g. a phone call). Three stages: <b>Establish</b> → <b>Transfer</b> → <b>Terminate</b>.</p>
+<table><tr><th>Pros</th><th>Cons</th></tr>
+<tr><td>No other traffic competes; constant predictable delay; data arrives in order (one fixed path)</td><td>Inflexible — line reserved even when idle; if any link on the path fails, the whole connection is lost</td></tr></table>
+<div class="sg-box tip">Best suited to real-time voice/video, where predictable delay matters more than efficiency.</div>
+
+<h3>Packet switching</h3>
+<p>A message is split into <b>packets</b>, each sent independently and possibly by a <b>different route</b>; reassembled at the destination using sequence numbers.</p>
+<table><tr><th>Packet header field</th><th>Purpose</th></tr>
+<tr><td>Source / destination IP</td><td>Who sent it / where it must go</td></tr>
+<tr><td>Sequence number</td><td>Position in the message, for reassembly if packets arrive out of order</td></tr>
+<tr><td>Hop count (TTL)</td><td>Decreased by 1 at every router; packet discarded at 0 — stops endless circulation</td></tr>
+<tr><td>Checksum</td><td>Error-detection value; recalculated at destination to detect corruption</td></tr></table>
+
+<h3>Role of a router (full exam sequence)</h3>
+<ol><li><b>Receives</b> the packet</li><li><b>Reads/checks</b> the destination address</li><li>Consults its <b>routing table</b></li><li><b>Forwards</b> the packet toward the next hop, hop count −1</li></ol>
+<div class="sg-box warn">"It connects the LAN to the internet" earns NO marks — you must give the full receive → check → routing table → forward sequence. Say "packet," never "package" or "data."</div>
+
+<table><tr><th>Pros of packet switching</th><th>Cons</th></tr>
+<tr><td>Bandwidth shared efficiently; can route around failures; easy to expand capacity</td><td>More complex protocols; lost packets must be resent; variable delay (poor for real-time)</td></tr></table>
+<div class="sg-box warn">Every benefit/drawback needs TWO parts: name it, then the mechanism. "Faster" alone = 0 marks. Model answer: "completeness of message, because missing packets can be detected and a re-send request sent."</div>
+
+<h3>Circuit vs packet — comparison</h3>
+<table><tr><th>Feature</th><th>Circuit</th><th>Packet</th></tr>
+<tr><td>Path</td><td>Dedicated, set up first</td><td>Independent per packet, no path set up in advance</td></tr>
+<tr><td>Order</td><td>Always in order</td><td>May arrive out of order — reassembled by sequence number</td></tr>
+<tr><td>Bandwidth</td><td>Reserved even if idle</td><td>Shared, not wasted</td></tr>
+<tr><td>Best for</td><td>Real-time voice/video</td><td>Web browsing, email, file downloads</td></tr>
+<tr><td>Failure</td><td>Whole connection lost</td><td>Routed around the fault</td></tr></table>
+<div class="sg-box warn">"Packet switching is always better" is wrong — for real-time voice/video, circuit switching's predictable delay can be preferable. Justify with the scenario, not a blanket rule. Don't bring in pros/cons when asked only to "describe the process."</div>
+`
+};
+QB.ch14 = [
+[ // 14.1
+  {q:"What is the exam-creditable reason protocols are essential (beyond \"a set of rules\")?", o:["They physically move data between devices","They enable communication between devices on different platforms/manufacturers","They make networks faster","They replace the need for routers"], a:1, f:"The A-Level point is cross-platform/cross-manufacturer interoperability — \"a set of rules\" alone is AS-Level standard."},
+  {q:"Which statement about a protocol is correct exam phrasing?", o:["\"TCP checks the packet\"","\"The protocol sends the data\"","\"The receiving device checks the packet, following the rules of the protocol\"","\"The protocol connects the devices\""], a:2, f:"A protocol cannot act — the device acts, following the protocol's rules."},
+  {q:"In the TCP/IP stack, which layer's exam-required description is \"source and destination IP addresses are added to the packet header\"?", o:["Application","Transport","Internet","Link"], a:2, f:"\"It uses IP addresses\" is not enough — this exact phrasing is required for the Internet layer."},
+  {q:"Which protocol is used for SENDING email?", o:["IMAP","POP3","SMTP","FTP"], a:2, f:"SMTP is the only sending (push) protocol; POP3/4 and IMAP only receive."},
+  {q:"What makes BitTorrent's model fundamentally different from HTTP's client-server model?", o:["It uses a faster cable","There is no central file server — peers share directly with each other","It only works on local networks","It doesn't use IP addresses"], a:1, f:"Peer-to-peer means no central server; files are shared directly between equal peers."}
+],
+[ // 14.2
+  {q:"What are the three stages of circuit switching, in order?", o:["Transfer, Establish, Terminate","Establish, Transfer, Terminate","Connect, Send, Disconnect","Route, Transfer, Reassemble"], a:1, f:"Establish the dedicated path → transfer data continuously → terminate/release the circuit."},
+  {q:"Why might packets from the same message arrive at the destination out of order?", o:["The sender scrambles them deliberately","Different packets can take different routes through the network","The checksum reorders them","Routers always reverse packet order"], a:1, f:"Each packet is routed independently, so different packets may take different paths and arrive out of order — sequence numbers fix this on reassembly."},
+  {q:"What happens to a packet's hop count (TTL) at each router it passes through?", o:["It increases by 1","It resets to the maximum","It decreases by 1, and the packet is discarded at 0","It is deleted immediately"], a:2, f:"Hop count/TTL decreases by 1 per router; reaching 0 causes the packet to be discarded, preventing endless circulation."},
+  {q:"What is the full exam-required sequence describing a router's role?", o:["Connects the LAN to the internet","Receive → check destination address → consult routing table → forward","Encrypt → compress → transmit","Store → forward → delete"], a:1, f:"\"Connects the LAN to the internet\" earns no marks — the full receive/check/routing-table/forward sequence is required."},
+  {q:"Which is generally better suited to real-time voice calls, and why?", o:["Packet switching, because it's always more efficient","Circuit switching, because it gives a constant, predictable delay","Packet switching, because packets are smaller","Neither is suitable for voice calls"], a:1, f:"Circuit switching's dedicated path gives a constant, predictable delay, well suited to real-time voice — \"packet switching is always better\" is a common misconception."}
+]
+];
+
+/* =========================================================
+   NAV / ROUTING
+   ========================================================= */
+function showPage(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  event && event.target && event.target.classList.add('active');
+  if(id==='home') renderHome();
+  if(id==='study') renderStudyChips();
+  if(id==='quiz') renderQuizPicker();
+  if(id==='mock') renderMockList();
+}
+
+/* =========================================================
+   HOME
+   ========================================================= */
+function renderHome(){
+  const grid = document.getElementById('home-grid');
+  grid.innerHTML = CHAPTERS.map(c=>`
+    <div class="card" style="--ac:var(${c.color})" onclick="openChapterStudy('${c.id}')">
+      <div class="icon">${c.icon}</div>
+      <h3>Ch${c.num} — ${c.title}</h3>
+      <div class="sub">${c.units.length} unit${c.units.length>1?'s':''}</div>
+      <div class="units">${c.units.map(u=>u.title).join(' · ')}</div>
+    </div>`).join('');
+}
+function openChapterStudy(chId){
+  showPage('study');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  selectStudyChapter(chId);
+}
+
+/* =========================================================
+   STUDY GUIDE
+   ========================================================= */
+let curStudyCh = CHAPTERS[0].id;
+let curStudyUnit = CHAPTERS[0].units[0].id;
+
+function renderStudyChips(){
+  const row = document.getElementById('study-chips');
+  row.innerHTML = CHAPTERS.map(c=>`
+    <button class="chip ${c.id===curStudyCh?'active':''}" style="--ac:var(${c.color})"
+      onclick="selectStudyChapter('${c.id}')">${c.icon} Ch${c.num}</button>`).join('');
+  renderStudyUnits();
+}
+function selectStudyChapter(chId){
+  curStudyCh = chId;
+  const ch = CHAPTERS.find(c=>c.id===chId);
+  curStudyUnit = ch.units[0].id;
+  renderStudyChips();
+}
+function renderStudyUnits(){
+  const ch = CHAPTERS.find(c=>c.id===curStudyCh);
+  const nav = document.getElementById('study-units');
+  nav.innerHTML = ch.units.map(u=>`
+    <button class="${u.id===curStudyUnit?'active':''}" style="--ac:var(${ch.color})"
+      onclick="selectStudyUnit('${u.id}')">${u.id} ${u.title}</button>`).join('');
+  renderStudyContent();
+}
+function selectStudyUnit(uId){
+  curStudyUnit = uId;
+  renderStudyUnits();
+}
+function renderStudyContent(){
+  const box = document.getElementById('study-content');
+  const html = (STUDY[curStudyCh] && STUDY[curStudyCh][curStudyUnit])
+    || '<p style="color:var(--mut)">Content coming soon.</p>';
+  box.style.setProperty('--ac', `var(${CHAPTERS.find(c=>c.id===curStudyCh).color})`);
+  box.innerHTML = html;
+}
+
+/* =========================================================
+   TOPIC QUIZ ENGINE
+   ========================================================= */
+let quizState = null; // {chId, setIdx, questions, cur, score, ac}
+
+function renderQuizPicker(){
+  document.getElementById('quiz-picker').style.display='';
+  document.getElementById('quiz-set-picker').style.display='none';
+  document.getElementById('quiz-play').style.display='none';
+  document.getElementById('quiz-results').style.display='none';
+  const grid = document.getElementById('quiz-chapter-grid');
+  grid.innerHTML = CHAPTERS.map(c=>`
+    <div class="card" style="--ac:var(${c.color})" onclick="quizPickChapter('${c.id}')">
+      <div class="icon">${c.icon}</div><h3>Ch${c.num} — ${c.title}</h3>
+      <div class="sub">${(QB[c.id]||[]).length} quiz set${(QB[c.id]||[]).length===1?'':'s'}</div>
+    </div>`).join('');
+}
+function quizPickChapter(chId){
+  const ch = CHAPTERS.find(c=>c.id===chId);
+  document.getElementById('quiz-picker').style.display='none';
+  document.getElementById('quiz-set-picker').style.display='';
+  document.getElementById('quiz-set-title').textContent = `Ch${ch.num} — ${ch.title}`;
+  const grid = document.getElementById('quiz-set-grid');
+  const sets = QB[chId] || [];
+  grid.innerHTML = ch.units.map((u,i)=>`
+    <div class="card" style="--ac:var(${ch.color})" onclick="startQuiz('${chId}',${i})">
+      <h3>${u.id} ${u.title}</h3>
+      <div class="sub">${(sets[i]||[]).length} question${(sets[i]||[]).length===1?'':'s'}</div>
+    </div>`).join('');
+}
+function quizBackToPicker(){ renderQuizPicker(); }
+
+function shuffleArray(a){
+  a = a.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function prepareQuestions(rawSet){
+  return shuffleArray(rawSet).map(q=>{
+    const order = shuffleArray(q.o.map((opt,i)=>i));
+    return { q:q.q, h:q.h, f:q.f, o:order.map(i=>q.o[i]), a:order.indexOf(q.a) };
+  });
+}
+function startQuiz(chId, setIdx){
+  const ch = CHAPTERS.find(c=>c.id===chId);
+  const rawSet = (QB[chId]||[])[setIdx] || [];
+  quizState = { chId, setIdx, ch, questions: prepareQuestions(rawSet), cur:0, score:0 };
+  document.getElementById('quiz-set-picker').style.display='none';
+  document.getElementById('quiz-play').style.display='';
+  renderQ();
+}
+function renderQ(){
+  const s = quizState;
+  const box = document.getElementById('quiz-play');
+  if(s.cur >= s.questions.length){ return showQuizResults(); }
+  const q = s.questions[s.cur];
+  box.innerHTML = `
+    <div class="quiz-box" style="--ac:var(${s.ch.color})">
+      <div class="qmeta"><span>${s.ch.title}</span><span>Question ${s.cur+1} / ${s.questions.length}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${(s.cur/s.questions.length)*100}%"></div></div>
+      <div class="qtext">${q.q}</div>
+      <div id="opts">${q.o.map((opt,i)=>`<button class="opt" onclick="checkAns(${i})">${opt}</button>`).join('')}</div>
+      <div id="fb"></div>
+    </div>`;
+}
+function checkAns(i){
+  const s = quizState, q = s.questions[s.cur];
+  document.querySelectorAll('#opts .opt').forEach((btn,idx)=>{
+    btn.onclick = null;
+    if(idx===q.a) btn.classList.add('correct');
+    else if(idx===i) btn.classList.add('wrong');
+  });
+  if(i===q.a) s.score++;
+  document.getElementById('fb').innerHTML = `
+    <div class="feedback"><b>${i===q.a?'✅ Correct.':'❌ Not quite.'}</b> ${q.f||''}</div>
+    <button class="btn" style="margin-top:14px" onclick="nextQ()">Continue →</button>`;
+}
+function nextQ(){ quizState.cur++; renderQ(); }
+function showQuizResults(){
+  const s = quizState;
+  document.getElementById('quiz-play').style.display='none';
+  document.getElementById('quiz-results').style.display='';
+  const pct = Math.round((s.score/s.questions.length)*100);
+  const tier = pct>=90?'🏆 Excellent':pct>=75?'👍 Good':pct>=50?'📚 Keep revising':'🔁 Review this unit';
+  document.getElementById('quiz-results').innerHTML = `
+    <div class="quiz-box" style="--ac:var(${s.ch.color});text-align:center">
+      <div class="result-tier">${tier}</div>
+      <p style="font-size:1.3em;font-weight:700">${s.score} / ${s.questions.length} correct (${pct}%)</p>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+        <button class="btn sec" onclick="quizPickChapter('${s.chId}')">Choose another unit</button>
+        <button class="btn" onclick="startQuiz('${s.chId}',${s.setIdx})">Retry this unit</button>
+      </div>
+    </div>`;
+}
+
+/* =========================================================
+   MOCK TEST ENGINE
+   ========================================================= */
+let mockState = null; // {test, questions, cur, score, timeLeft, timerId}
+
+function renderMockList(){
+  document.getElementById('mock-picker').style.display='';
+  document.getElementById('mock-play').style.display='none';
+  document.getElementById('mock-results').style.display='none';
+  const list = document.getElementById('mock-list');
+  if(MOCK_TESTS.length===0){
+    list.innerHTML = '<p style="color:var(--mut)">Mock tests coming soon.</p>';
+    return;
+  }
+  list.innerHTML = MOCK_TESTS.map((t,i)=>`
+    <div class="mock-card">
+      <div><h3>${t.title}</h3><div class="sub" style="color:var(--mut)">${t.picks.length} questions · ${Math.round(t.seconds/60)} min</div></div>
+      <button class="btn" onclick="startMock(${i})">Start</button>
+    </div>`).join('');
+}
+function resolveMockQuestions(test){
+  return test.picks.map(p=>{
+    const raw = QB[p.ch][p.set][p.q];
+    const order = shuffleArray(raw.o.map((opt,i)=>i));
+    return { q:raw.q, h:raw.h, f:raw.f, o:order.map(i=>raw.o[i]), a:order.indexOf(raw.a), chColor:CHAPTERS.find(c=>c.id===p.ch).color };
+  });
+}
+function startMock(idx){
+  const test = MOCK_TESTS[idx];
+  mockState = { test, questions: shuffleArray(resolveMockQuestions(test)), cur:0, score:0, timeLeft: test.seconds };
+  document.getElementById('mock-picker').style.display='none';
+  document.getElementById('mock-play').style.display='';
+  renderMockQ();
+  mockState.timerId = setInterval(mockTick, 1000);
+}
+function mockTick(){
+  mockState.timeLeft--;
+  updateTimerBar();
+  if(mockState.timeLeft<=0){ clearInterval(mockState.timerId); showMockResults(); }
+}
+function updateTimerBar(){
+  const pct = Math.max(0, mockState.timeLeft / mockState.test.seconds) * 100;
+  const fill = document.getElementById('mock-timer-fill');
+  if(!fill) return;
+  fill.style.width = pct+'%';
+  fill.style.background = pct<15?'#dc2626':pct<40?'#d97706':'#059669';
+  const m = Math.floor(mockState.timeLeft/60), s2 = mockState.timeLeft%60;
+  document.getElementById('mock-timer-text').textContent = `${m}:${s2.toString().padStart(2,'0')} remaining`;
+}
+function renderMockQ(){
+  const s = mockState;
+  const box = document.getElementById('mock-play');
+  if(s.cur >= s.questions.length){ clearInterval(s.timerId); return showMockResults(); }
+  const q = s.questions[s.cur];
+  box.innerHTML = `
+    <div class="timer-text" id="mock-timer-text"></div>
+    <div class="timer-bar"><div class="timer-fill" id="mock-timer-fill"></div></div>
+    <div class="quiz-box" style="--ac:var(${q.chColor})">
+      <div class="qmeta"><span>${s.test.title}</span><span>Question ${s.cur+1} / ${s.questions.length}</span></div>
+      <div class="qtext">${q.q}</div>
+      <div id="mopts">${q.o.map((opt,i)=>`<button class="opt" onclick="mockCheckAns(${i})">${opt}</button>`).join('')}</div>
+      <div id="mfb"></div>
+    </div>`;
+  updateTimerBar();
+}
+function mockCheckAns(i){
+  const s = mockState, q = s.questions[s.cur];
+  document.querySelectorAll('#mopts .opt').forEach((btn,idx)=>{
+    btn.onclick = null;
+    if(idx===q.a) btn.classList.add('correct');
+    else if(idx===i) btn.classList.add('wrong');
+  });
+  if(i===q.a) s.score++;
+  document.getElementById('mfb').innerHTML = `
+    <div class="feedback"><b>${i===q.a?'✅ Correct.':'❌ Not quite.'}</b> ${q.f||''}</div>
+    <button class="btn" style="margin-top:14px" onclick="mockNextQ()">Continue →</button>`;
+}
+function mockNextQ(){ mockState.cur++; renderMockQ(); }
+function showMockResults(){
+  const s = mockState;
+  document.getElementById('mock-play').style.display='none';
+  document.getElementById('mock-results').style.display='';
+  const pct = Math.round((s.score/s.questions.length)*100);
+  const tier = pct>=90?'🏆 Excellent':pct>=75?'👍 Good':pct>=50?'📚 Keep revising':'🔁 Review these chapters';
+  document.getElementById('mock-results').innerHTML = `
+    <div class="quiz-box" style="text-align:center">
+      <div class="result-tier">${tier}</div>
+      <p style="font-size:1.3em;font-weight:700">${s.score} / ${s.questions.length} correct (${pct}%)</p>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+        <button class="btn sec" onclick="renderMockList()">Back to mock tests</button>
+      </div>
+    </div>`;
+}
+
+/* init */
+renderHome();
+</script>
+</body>
+</html>
