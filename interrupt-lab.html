@@ -1,4 +1,4 @@
-<title>割り込み処理ラボ / Interrupt Lab</title>
+<title>Interrupt &amp; Scheduling Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Noto+Sans+SC:wght@400;700;900&family=Prompt:wght@600;700&family=Sarabun:wght@400;700&display=swap">
@@ -247,9 +247,14 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .langin{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
 .langin .brand{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
 .langin .seg button{font-family:"Atkinson Hyperlegible","Zen Kaku Gothic New","Noto Sans SC","Sarabun",system-ui,sans-serif}
+.schednote{max-width:1100px;margin:10px auto 0;font-size:13px;color:var(--muted)}
+#schedwrap{max-width:1100px;margin:0 auto}
+.langin .seg+.seg{margin-left:0}
+body.t-sched .langin .seg[aria-label="Language"]{display:none}
 </style>
-<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · INTERRUPTS</span>
+<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-sched" aria-pressed="false">Scheduling</button></div>
 <div class="seg" role="group" aria-label="Language"><span class="cap">Language</span><button id="lg-en" data-l="en" aria-pressed="true">English</button><button id="lg-ja" data-l="ja" aria-pressed="false">日本語</button><button id="lg-zh" data-l="zh" aria-pressed="false">中文</button><button id="lg-th" data-l="th" aria-pressed="false">ไทย</button></div></div></div>
+<div id="intro">
 <div class="v-en" id="ven" lang="en">
 <div class="wrap">
 <header>
@@ -824,6 +829,393 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 </section>
 </div>
 </div>
+</div>
+<div id="schedwrap" hidden><p class="schednote">Scheduling page: English only for now. Language buttons apply to the Interrupts tab.</p><iframe id="schedframe" title="Preemptive vs Non-preemptive scheduling" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;title&gt;Preemptive vs Non-preemptive&lt;/title&gt;
+&lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap&quot;&gt;
+&lt;style&gt;
+/* Layout concept: a calm lab-notebook page. Narrow reading column, one wide animator panel, CPU timeline as the visual signature. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --surface-2:#E8EDF2; --ink:#13202C; --ink-2:#4A5B6B; --line:#D3DCE4;
+  --accent:#1B5FC1; --accent-bg:#DCE9FA; --ok:#0B7A3E;
+  --p1:#D9480F; --p2:#0B7A6A; --p3:#6741D9;
+  --font-display:&quot;Bricolage Grotesque&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
+  --font-body:&quot;IBM Plex Sans&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
+  --font-mono:&quot;IBM Plex Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme=&quot;light&quot;]){
+    --bg:#0E151C; --surface:#16202A; --surface-2:#1E2A36; --ink:#E7EDF2; --ink-2:#9DAEBD; --line:#2B3A48;
+    --accent:#7DB0F5; --accent-bg:#1B3350; --ok:#5FD08F; color-scheme:dark;
+  }
+}
+:root[data-theme=&quot;dark&quot;]{
+  --bg:#0E151C; --surface:#16202A; --surface-2:#1E2A36; --ink:#E7EDF2; --ink-2:#9DAEBD; --line:#2B3A48;
+  --accent:#7DB0F5; --accent-bg:#1B3350; --ok:#5FD08F; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.65;
+  padding-block:0 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:960px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:700;letter-spacing:-0.02em}
+h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:700;letter-spacing:-0.01em}
+h3{font-size:1.1rem;font-weight:500}
+p{margin:0}
+.lede{color:var(--ink-2);font-size:1.12rem;max-width:60ch}
+.eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header.hero{padding-block:48px 28px;display:grid;gap:16px}
+section{padding-block:36px 8px;display:grid;gap:16px}
+.read{max-width:64ch;display:grid;gap:12px}
+code,.mono{font-family:var(--font-mono);font-size:.92em}
+.term{font-family:var(--font-mono);font-size:.92em;background:var(--surface-2);padding:1px 6px;border-radius:4px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.lab{font-size:.82rem;color:var(--ink-2)}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:34px;padding:0 8px;border-radius:6px;color:#fff;font-family:var(--font-mono);font-weight:500;font-size:.92rem}
+.p1{background:var(--p1)} .p2{background:var(--p2)} .p3{background:var(--p3)}
+
+.burst-demo{display:grid;gap:10px}
+.burst-row{display:grid;grid-template-columns:2.4rem 1fr;gap:12px;align-items:center}
+.burst-bar{height:26px;border-radius:5px;display:flex;align-items:center;padding-left:10px;color:#fff;font-family:var(--font-mono);font-size:.82rem}
+.life{display:flex;flex-wrap:wrap;gap:4px;align-items:stretch}
+.life span{padding:6px 10px;border-radius:5px;font-family:var(--font-mono);font-size:.8rem}
+.life .cpu{background:var(--accent);color:#fff}
+.life .io{background:var(--surface-2);color:var(--ink-2);border:1px dashed var(--line)}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px}
+button:hover,select:hover{border-color:var(--ink-2)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[aria-pressed=&quot;true&quot;]{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+button.go{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]) button.go{color:#0E151C}}
+:root[data-theme=&quot;dark&quot;] button.go{color:#0E151C}
+.spacer{flex:1}
+.clock{font-family:var(--font-mono);font-size:.95rem;color:var(--ink-2)}
+.clock b{font-size:1.5rem;color:var(--ink);font-weight:500}
+
+.procs{display:grid;gap:10px}
+.proc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.proc .name{width:2.2rem;font-family:var(--font-mono);font-weight:500}
+.proc .track{flex:1 1 140px;min-width:0}
+.proc .outer{height:20px;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--surface-2)}
+.proc .inner{height:100%;transition:width .25s}
+.proc .info{font-size:.84rem;color:var(--ink-2);min-width:9.5rem}
+.proc .state{font-size:.84rem;font-weight:500;width:5rem}
+.state.run{color:var(--ok)} .state.done{color:var(--ink-2)} .state.wait{color:var(--ink-2)}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:12px}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
+.cpu-box{height:72px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.5rem;font-weight:500;margin-block:8px;color:#fff;transition:background .2s}
+.cpu-box.idle{background:transparent;border:1px dashed var(--ink-2);color:var(--ink-2);font-size:1rem}
+.qmeter{display:flex;gap:3px;min-height:12px}
+.qmeter i{flex:1;height:10px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
+.qmeter i.on{background:var(--ink-2);border-color:var(--ink-2)}
+.queue{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:46px;margin-block:8px}
+.msg{min-height:3.2em;font-size:.95rem}
+
+.gantt{display:flex}
+.cell{flex:1;height:38px;border:1px solid var(--line);margin-left:-1px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.82rem;color:#fff}
+.cell:first-child{margin-left:0}
+.cell.sw{box-shadow:inset 3px 0 0 var(--ink)}
+.axis{display:flex;margin-top:3px}
+.axis span{flex:1;font-family:var(--font-mono);font-size:.72rem;color:var(--ink-2);position:relative}
+.axis span:last-child em{position:absolute;right:0;font-style:normal}
+.result{margin-top:12px;font-size:.95rem;min-height:1.6em}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:4px}
+.glance div{background:var(--surface-2);border-radius:8px;padding:12px 14px}
+.glance b{display:block;font-family:var(--font-mono);font-size:1.4rem;font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;height:10px;box-shadow:inset 3px 0 0 var(--ink);border:1px solid var(--line);margin-right:6px;vertical-align:baseline}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;padding:12px 16px;vertical-align:top;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--font-display);font-weight:500;background:var(--surface-2)}
+td:first-child{font-weight:500;width:22%}
+
+.mix{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mix .panel{display:grid;gap:8px;align-content:start}
+.say{border-left:3px solid var(--accent);padding:4px 0 4px 16px;max-width:64ch}
+.note{font-size:.88rem;color:var(--ink-2);max-width:64ch}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){.proc .inner,.cpu-box{transition:none}}
+&lt;/style&gt;
+
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;header class=&quot;hero&quot;&gt;
+  &lt;p class=&quot;eyebrow&quot;&gt;CPU scheduling · Operating systems&lt;/p&gt;
+  &lt;h1&gt;Who gets the CPU next?&lt;/h1&gt;
+  &lt;p class=&quot;lede&quot;&gt;One CPU, three processes, and one question: can the OS take the CPU back from a process that is still running? Step through both answers below, one millisecond at a time.&lt;/p&gt;
+&lt;/header&gt;
+
+&lt;section id=&quot;burst&quot;&gt;
+  &lt;h2&gt;Burst time in one picture&lt;/h2&gt;
+  &lt;div class=&quot;read&quot;&gt;
+    &lt;p&gt;&lt;span class=&quot;term&quot;&gt;Burst time&lt;/span&gt; is how long a process needs the CPU in one continuous stretch. A process with a burst time of 8 ms needs 8 ms of CPU time to finish that stretch. Waiting in the ready queue does not count, and neither does waiting for the disk.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;panel burst-demo&quot; aria-label=&quot;Burst times of the three example processes&quot;&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p1&quot;&gt;P1&lt;/span&gt;&lt;div class=&quot;burst-bar p1&quot; style=&quot;width:100%&quot;&gt;burst time 8 ms&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p2&quot;&gt;P2&lt;/span&gt;&lt;div class=&quot;burst-bar p2&quot; style=&quot;width:25%;min-width:110px&quot;&gt;2 ms&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p3&quot;&gt;P3&lt;/span&gt;&lt;div class=&quot;burst-bar p3&quot; style=&quot;width:12.5%;min-width:64px&quot;&gt;1 ms&lt;/div&gt;&lt;/div&gt;
+    &lt;p class=&quot;lab&quot;&gt;Bar length is proportional to burst time. These three processes are used in every animation on this page. All three arrive at t = 0, queued in the order P1, P2, P3.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;read&quot;&gt;
+    &lt;p&gt;Real processes alternate between using the CPU and waiting for input or output:&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;life&quot; aria-label=&quot;CPU burst, I/O wait, CPU burst, I/O wait, CPU burst, finish&quot;&gt;
+    &lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;I/O wait&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;I/O wait&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;done&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;animator&quot;&gt;
+  &lt;h2&gt;Run the scheduler&lt;/h2&gt;
+  &lt;div class=&quot;panel&quot;&gt;
+    &lt;div class=&quot;controls&quot; style=&quot;margin-bottom:14px&quot;&gt;
+      &lt;button id=&quot;m0&quot; aria-pressed=&quot;true&quot;&gt;Non-preemptive (FCFS)&lt;/button&gt;
+      &lt;button id=&quot;m1&quot; aria-pressed=&quot;false&quot;&gt;Preemptive (Round Robin)&lt;/button&gt;
+      &lt;label id=&quot;qwrap&quot; class=&quot;lab&quot; hidden&gt;Time quantum
+        &lt;select id=&quot;qsel&quot; aria-label=&quot;Time quantum in milliseconds&quot;&gt;
+          &lt;option value=&quot;1&quot;&gt;1 ms&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;2 ms&lt;/option&gt;&lt;option value=&quot;3&quot; selected&gt;3 ms&lt;/option&gt;&lt;option value=&quot;4&quot;&gt;4 ms&lt;/option&gt;&lt;option value=&quot;8&quot;&gt;8 ms&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/label&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;controls&quot; style=&quot;margin-bottom:16px&quot;&gt;
+      &lt;button id=&quot;play&quot; class=&quot;go&quot;&gt;Play&lt;/button&gt;
+      &lt;button id=&quot;step&quot;&gt;Step 1 ms&lt;/button&gt;
+      &lt;button id=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+      &lt;label class=&quot;lab&quot;&gt;Speed
+        &lt;select id=&quot;speed&quot; aria-label=&quot;Animation speed&quot;&gt;
+          &lt;option value=&quot;1300&quot;&gt;Slow&lt;/option&gt;&lt;option value=&quot;850&quot; selected&gt;Normal&lt;/option&gt;&lt;option value=&quot;400&quot;&gt;Fast&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/label&gt;
+      &lt;span class=&quot;spacer&quot;&gt;&lt;/span&gt;
+      &lt;span class=&quot;clock&quot;&gt;time &lt;b id=&quot;clock&quot;&gt;0&lt;/b&gt; ms&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;procs&quot; id=&quot;procs&quot; style=&quot;margin-bottom:16px&quot;&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;two&quot; style=&quot;margin-bottom:16px&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;lab&quot;&gt;CPU&lt;/div&gt;
+        &lt;div id=&quot;cpu&quot; class=&quot;cpu-box idle&quot;&gt;idle&lt;/div&gt;
+        &lt;div id=&quot;qmeter&quot; class=&quot;qmeter&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;lab&quot; id=&quot;qinfo&quot; style=&quot;min-height:1.6em;margin-top:4px&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;lab&quot;&gt;Ready queue (waiting for the CPU)&lt;/div&gt;
+        &lt;div id=&quot;queue&quot; class=&quot;queue&quot;&gt;&lt;/div&gt;
+        &lt;p id=&quot;msg&quot; class=&quot;msg&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;lab&quot; style=&quot;margin-bottom:6px&quot;&gt;CPU timeline&lt;/div&gt;
+    &lt;div id=&quot;gantt&quot; class=&quot;gantt&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;axis&quot; class=&quot;axis&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;legend&quot; style=&quot;margin-top:10px&quot;&gt;&lt;span&gt;&lt;i&gt;&lt;/i&gt;thick edge = context switch (CPU handed to a different process)&lt;/span&gt;&lt;/div&gt;
+    &lt;p id=&quot;result&quot; class=&quot;result&quot;&gt;&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;read&quot;&gt;
+    &lt;h3&gt;Both modes at a glance&lt;/h3&gt;
+    &lt;p class=&quot;note&quot;&gt;Waiting time = finish time minus burst time. Context-switch cost is set to zero here, so the preemptive numbers look better than they would on a real machine.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;glance&quot; class=&quot;glance&quot;&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;compare&quot;&gt;
+  &lt;h2&gt;The difference, side by side&lt;/h2&gt;
+  &lt;div class=&quot;tablewrap&quot;&gt;
+    &lt;table&gt;
+      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;Preemptive&lt;/th&gt;&lt;th&gt;Non-preemptive&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;&lt;td&gt;CPU allocation&lt;/td&gt;&lt;td&gt;A process gets the CPU for a limited time.&lt;/td&gt;&lt;td&gt;A process keeps the CPU until its burst time is used up or it moves to a waiting state.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Interruption&lt;/td&gt;&lt;td&gt;The OS can interrupt a running process.&lt;/td&gt;&lt;td&gt;A running process cannot be interrupted. It must finish or start waiting first.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Who can starve&lt;/td&gt;&lt;td&gt;Low-priority processes, if high-priority ones keep arriving.&lt;/td&gt;&lt;td&gt;Short-burst processes, if a long-burst process holds the CPU.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Flexibility&lt;/td&gt;&lt;td&gt;More flexible.&lt;/td&gt;&lt;td&gt;More rigid.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Overhead&lt;/td&gt;&lt;td&gt;More context switches.&lt;/td&gt;&lt;td&gt;Fewer context switches.&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;The first four rows follow the usual textbook comparison, reworded. The overhead row is added from general operating-systems knowledge.&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;mixups&quot;&gt;
+  &lt;h2&gt;Three common mix-ups&lt;/h2&gt;
+  &lt;div class=&quot;mix&quot;&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Order is a separate rule&lt;/h3&gt;
+      &lt;p&gt;FCFS orders processes by arrival. SJF orders them by shortest burst time. &quot;Non-preemptive&quot; only says that a process that has the CPU cannot lose it by force. Any ordering rule can be paired with either answer.&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Quantum is an upper limit&lt;/h3&gt;
+      &lt;p&gt;A time quantum is the longest a process may use the CPU in one turn. P2 and P3 finish well inside a 3 ms quantum, so they give the CPU back early.&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Quantum is not the only trigger&lt;/h3&gt;
+      &lt;p&gt;Round Robin pre-empts when the quantum runs out. A priority scheduler can also pre-empt when a higher-priority process arrives. Both are preemptive.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;exam&quot;&gt;
+  &lt;h2&gt;How to say it in an exam&lt;/h2&gt;
+  &lt;div class=&quot;say&quot;&gt;&lt;p&gt;&lt;b&gt;Non-preemptive:&lt;/b&gt; once a process is given the CPU, it keeps it until it finishes its burst time or moves to a waiting state. Other processes wait in the ready queue.&lt;/p&gt;&lt;/div&gt;
+  &lt;div class=&quot;say&quot;&gt;&lt;p&gt;&lt;b&gt;Preemptive:&lt;/b&gt; each process may use the CPU for a limited time, such as one time quantum. If it has not finished, the OS interrupts it, saves its state, and gives the CPU to the next process.&lt;/p&gt;&lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;These are study wordings, not an official mark scheme. Check your syllabus and textbook for the exact terms your exam expects.&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;bridge&quot;&gt;&lt;h2&gt;Where interrupts come in&lt;/h2&gt;
+&lt;div class=&quot;read&quot;&gt;&lt;p&gt;Round Robin needs a way to take the CPU back when the quantum ends. The OS sets a hardware timer. When the timer fires, it raises a &lt;span class=&quot;term&quot;&gt;timer interrupt&lt;/span&gt;. The CPU saves the running process on the kernel stack, the IDT points to the scheduler&#x27;s ISR, and the scheduler picks the next process. That is what &quot;pre-empted&quot; means in practice.&lt;/p&gt;&lt;/div&gt;
+&lt;div class=&quot;controls&quot;&gt;&lt;button class=&quot;go&quot; id=&quot;gointr&quot;&gt;Open the Interrupts tab and choose Timer&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;footer&gt;
+  &lt;p class=&quot;note&quot;&gt;Example data: P1 = 8 ms, P2 = 2 ms, P3 = 1 ms, all arriving at t = 0. Non-preemptive uses first come, first served. Preemptive uses Round Robin with the quantum you choose.&lt;/p&gt;
+&lt;/footer&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+(function(){
+  var B=[8,2,1],N=[&#x27;P1&#x27;,&#x27;P2&#x27;,&#x27;P3&#x27;];
+  var mode=0,q=3,c=0,timer=null,speed=850,ticks=[];
+  function $(id){return document.getElementById(id);}
+  function build(qq){
+    var rem=B.slice(),queue=[0,1,2],t=[],first=true;
+    while(queue.length){
+      var p=queue.shift(),run=Math.min(qq,rem[p]);
+      for(var i=0;i&lt;run;i++){
+        rem[p]--;
+        t.push({p:p,q:queue.slice(),sw:(i===0&amp;&amp;!first),qu:i+1,end:(i===run-1),done:rem[p]===0});
+      }
+      first=false;
+      if(rem[p]&gt;0)queue.push(p);
+    }
+    return t;
+  }
+  function finish(t){
+    var f=[0,0,0];
+    for(var i=0;i&lt;t.length;i++){if(t[i].done)f[t[i].p]=i+1;}
+    return f;
+  }
+  function waits(t){var f=finish(t);return f.map(function(x,p){return x-B[p];});}
+  function avg(w){return Math.round((w[0]+w[1]+w[2])/3*100)/100;}
+  function chip(p){return &#x27;&lt;span class=&quot;chip p&#x27;+(p+1)+&#x27;&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;;}
+  function stop(){
+    if(timer){clearInterval(timer);timer=null;}
+    $(&#x27;play&#x27;).textContent=&#x27;Play&#x27;;
+  }
+  function setup(){
+    stop();
+    ticks=build(mode===0?99:q);
+    c=0;
+    $(&#x27;qwrap&#x27;).hidden=(mode===0);
+    $(&#x27;m0&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===0?&#x27;true&#x27;:&#x27;false&#x27;);
+    $(&#x27;m1&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===1?&#x27;true&#x27;:&#x27;false&#x27;);
+    draw();
+  }
+  function glance(){
+    var a=waits(build(99)),b=waits(build(q));
+    $(&#x27;glance&#x27;).innerHTML=
+      &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;Non-preemptive (FCFS)&lt;/span&gt;&lt;b&gt;&#x27;+avg(a)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;average wait (P1 &#x27;+a[0]+&#x27;, P2 &#x27;+a[1]+&#x27;, P3 &#x27;+a[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;Preemptive (Round Robin, quantum &#x27;+q+&#x27; ms)&lt;/span&gt;&lt;b&gt;&#x27;+avg(b)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;average wait (P1 &#x27;+b[0]+&#x27;, P2 &#x27;+b[1]+&#x27;, P3 &#x27;+b[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;;
+  }
+  function draw(){
+    var rem=B.slice(),fin=[null,null,null],i,p;
+    for(i=0;i&lt;c;i++){rem[ticks[i].p]--;if(ticks[i].done)fin[ticks[i].p]=i+1;}
+    var finished=c&gt;=ticks.length;
+    var cur=c&gt;0?ticks[c-1]:null;
+    $(&#x27;clock&#x27;).textContent=c;
+
+    var h=&#x27;&#x27;;
+    for(p=0;p&lt;3;p++){
+      var st=&#x27;waiting&#x27;,cl=&#x27;wait&#x27;;
+      if(fin[p]!==null){st=&#x27;done&#x27;;cl=&#x27;done&#x27;;}
+      else if(cur&amp;&amp;cur.p===p&amp;&amp;!finished){st=&#x27;running&#x27;;cl=&#x27;run&#x27;;}
+      h+=&#x27;&lt;div class=&quot;proc&quot;&gt;&lt;span class=&quot;name&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;+
+        &#x27;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;outer&quot; style=&quot;width:&#x27;+(B[p]/8*100)+&#x27;%&quot;&gt;&lt;div class=&quot;inner p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(rem[p]/B[p]*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
+        &#x27;&lt;span class=&quot;info&quot;&gt;burst &#x27;+B[p]+&#x27; ms · &#x27;+rem[p]+&#x27; left&lt;/span&gt;&#x27;+
+        &#x27;&lt;span class=&quot;state &#x27;+cl+&#x27;&quot;&gt;&#x27;+st+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;
+    }
+    $(&#x27;procs&#x27;).innerHTML=h;
+
+    var cpu=$(&#x27;cpu&#x27;);
+    if(cur&amp;&amp;!finished){cpu.className=&#x27;cpu-box p&#x27;+(cur.p+1);cpu.textContent=N[cur.p];}
+    else{cpu.className=&#x27;cpu-box idle&#x27;;cpu.textContent=finished?&#x27;all done&#x27;:&#x27;idle&#x27;;}
+
+    var qm=&#x27;&#x27;;
+    if(mode===1&amp;&amp;cur&amp;&amp;!finished){
+      for(i=1;i&lt;=q;i++){qm+=&#x27;&lt;i class=&quot;&#x27;+(i&lt;=cur.qu?&#x27;on&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;;}
+      $(&#x27;qinfo&#x27;).textContent=&#x27;quantum used: &#x27;+cur.qu+&#x27; of &#x27;+q+&#x27; ms&#x27;;
+    }else if(mode===0&amp;&amp;cur&amp;&amp;!finished){
+      $(&#x27;qinfo&#x27;).textContent=&#x27;keeps the CPU until its burst ends&#x27;;
+    }else{$(&#x27;qinfo&#x27;).textContent=&#x27;&#x27;;}
+    $(&#x27;qmeter&#x27;).innerHTML=qm;
+
+    var qh=&#x27;&#x27;;
+    if(c===0){qh=chip(0)+chip(1)+chip(2);}
+    else if(!finished){
+      qh=cur.q.length?cur.q.map(chip).join(&#x27;&#x27;):&#x27;&lt;span class=&quot;lab&quot;&gt;nobody is waiting&lt;/span&gt;&#x27;;
+      if(mode===1&amp;&amp;cur.end&amp;&amp;!cur.done){qh+=&#x27;&lt;span class=&quot;lab&quot;&gt;then &#x27;+N[cur.p]+&#x27; joins at the back&lt;/span&gt;&#x27;;}
+    }else{qh=&#x27;&lt;span class=&quot;lab&quot;&gt;empty&lt;/span&gt;&#x27;;}
+    $(&#x27;queue&#x27;).innerHTML=qh;
+
+    var m=&#x27;Press Play or Step. All three processes arrive at t = 0, queued as P1, P2, P3.&#x27;;
+    if(c&gt;0){
+      if(finished)m=&#x27;All three processes are done. Compare the waiting times below the timeline.&#x27;;
+      else if(cur.done)m=N[cur.p]+&#x27; used up its burst time and finished. The CPU goes to the next process.&#x27;;
+      else if(mode===1&amp;&amp;cur.end)m=N[cur.p]+&#x27; used its full &#x27;+q+&#x27; ms quantum and still has burst time left. It is pre-empted and goes to the back of the queue.&#x27;;
+      else if(mode===1&amp;&amp;cur.sw)m=&#x27;Context switch: &#x27;+N[cur.p]+&#x27; now has the CPU.&#x27;;
+      else if(mode===0)m=N[cur.p]+&#x27; is running. Nothing can interrupt it until it finishes.&#x27;;
+      else m=N[cur.p]+&#x27; is running.&#x27;;
+    }
+    $(&#x27;msg&#x27;).textContent=m;
+
+    var g=&#x27;&#x27;,a=&#x27;&#x27;;
+    for(i=0;i&lt;ticks.length;i++){
+      var on=i&lt;c;
+      g+=&#x27;&lt;div class=&quot;cell&#x27;+(on?&#x27; p&#x27;+(ticks[i].p+1):&#x27;&#x27;)+(on&amp;&amp;ticks[i].sw?&#x27; sw&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+(on?N[ticks[i].p]:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
+      a+=&#x27;&lt;span&gt;&#x27;+i+(i===ticks.length-1?&#x27;&lt;em&gt;&#x27;+ticks.length+&#x27;&lt;/em&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/span&gt;&#x27;;
+    }
+    $(&#x27;gantt&#x27;).innerHTML=g;
+    $(&#x27;axis&#x27;).innerHTML=a;
+
+    var r=&#x27;&#x27;;
+    if(finished){
+      var w=[fin[0]-B[0],fin[1]-B[1],fin[2]-B[2]];
+      r=&#x27;Waiting time = finish time − burst time. P1: &#x27;+fin[0]+&#x27; − &#x27;+B[0]+&#x27; = &#x27;+w[0]+&#x27; ms. P2: &#x27;+fin[1]+&#x27; − &#x27;+B[1]+&#x27; = &#x27;+w[1]+&#x27; ms. P3: &#x27;+fin[2]+&#x27; − &#x27;+B[2]+&#x27; = &#x27;+w[2]+&#x27; ms. Average: &#x27;+avg(w)+&#x27; ms.&#x27;;
+    }
+    $(&#x27;result&#x27;).textContent=r;
+    glance();
+  }
+  function next(){
+    if(c&lt;ticks.length){c++;draw();}
+    if(c&gt;=ticks.length)stop();
+  }
+  $(&#x27;m0&#x27;).onclick=function(){mode=0;setup();};
+  $(&#x27;m1&#x27;).onclick=function(){mode=1;setup();};
+  $(&#x27;qsel&#x27;).onchange=function(){q=parseInt(this.value,10);setup();};
+  $(&#x27;speed&#x27;).onchange=function(){
+    speed=parseInt(this.value,10);
+    if(timer){clearInterval(timer);timer=setInterval(next,speed);}
+  };
+  $(&#x27;step&#x27;).onclick=function(){stop();next();};
+  $(&#x27;reset&#x27;).onclick=function(){stop();c=0;draw();};
+  $(&#x27;play&#x27;).onclick=function(){
+    if(timer){stop();return;}
+    if(c&gt;=ticks.length){c=0;}
+    $(&#x27;play&#x27;).textContent=&#x27;Pause&#x27;;
+    next();
+    if(c&lt;ticks.length){timer=setInterval(next,speed);}
+  };
+  setup();
+})();
+&lt;/script&gt;
+
+&lt;script&gt;document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <script>
 (function(root){
 
@@ -1005,7 +1397,7 @@ $('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=(
 $('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ Pause';
   timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
 $('spd').onchange=()=>{if(timer){stop();$('play').click()}};
-document.addEventListener('keydown',e=>{if(root.hidden||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
 buildStatic();buildRegs();buildTrack();render(false);
 
 const qs=[
@@ -1215,7 +1607,7 @@ $('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=(
 $('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ 一時停止';
   timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
 $('spd').onchange=()=>{if(timer){stop();$('play').click()}};
-document.addEventListener('keydown',e=>{if(root.hidden||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
 buildStatic();buildRegs();buildTrack();render(false);
 
 const qs=[
@@ -1423,7 +1815,7 @@ $('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=(
 $('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ 暂停';
   timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
 $('spd').onchange=()=>{if(timer){stop();$('play').click()}};
-document.addEventListener('keydown',e=>{if(root.hidden||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
 buildStatic();buildRegs();buildTrack();render(false);
 
 const qs=[
@@ -1632,7 +2024,7 @@ $('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=(
 $('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ หยุดชั่วคราว';
   timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
 $('spd').onchange=()=>{if(timer){stop();$('play').click()}};
-document.addEventListener('keydown',e=>{if(root.hidden||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
 buildStatic();buildRegs();buildTrack();render(false);
 
 const qs=[
@@ -1677,5 +2069,27 @@ root.addEventListener('langhide',()=>stop());
   if(!l){try{const s=localStorage.getItem('lang4');if(L.includes(s))l=s}catch(e){}}
   setLang(l||'en',false);
   window.addEventListener('hashchange',()=>{const h=fromHash();if(h)setLang(h,false)});
+})();
+</script>
+<script>
+(function(){
+  const intro=document.getElementById('intro'),sw=document.getElementById('schedwrap');
+  const bi=document.getElementById('tp-intr'),bs=document.getElementById('tp-sched');
+  function topic(t,pick){
+    const s=t==='sched';
+    if(s)document.querySelectorAll('#intro > div:not([hidden])').forEach(v=>v.dispatchEvent(new Event('langhide')));
+    intro.hidden=s;sw.hidden=!s;document.body.classList.toggle('t-sched',s);
+    bi.setAttribute('aria-pressed',!s);bs.setAttribute('aria-pressed',s);
+    document.querySelectorAll('.flyer').forEach(x=>x.remove());
+    if(!s&&pick){const v=document.querySelector('#intro > div:not([hidden])');const b=v&&v.querySelector('.src[data-k="'+pick+'"]');if(b)b.click();}
+    try{history.replaceState(null,'',s?'#sched':'#'+(document.documentElement.lang||'en').slice(0,2));}catch(e){}
+    window.scrollTo(0,0);
+  }
+  bi.onclick=()=>topic('intr');bs.onclick=()=>topic('sched');
+  window.addEventListener('message',e=>{const d=e.data||{};
+    if(typeof d.h==='number')document.getElementById('schedframe').style.height=Math.max(600,d.h)+'px';
+    if(d.go==='intr')topic('intr',d.pick)});
+  if(location.hash==='#sched')topic('sched');
+  window.addEventListener('hashchange',()=>{if(location.hash==='#sched')topic('sched');else if(!intro.hidden===false)topic('intr')});
 })();
 </script>
