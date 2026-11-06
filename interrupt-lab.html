@@ -1,0 +1,2095 @@
+<title>Interrupt &amp; Scheduling Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Noto+Sans+SC:wght@400;700;900&family=Prompt:wght@600;700&family=Sarabun:wght@400;700&display=swap">
+<style>
+/* Layout: lab notebook. Color = ownership: blue = original program, green = ISR, purple = ISR B (nested). Red is reserved for the interrupt signal only. */
+:root{
+  --bg:#F4F5F7; --panel:#FFFFFF; --ink:#141A22; --muted:#56606C; --line:#D5DAE1; --soft:#ECEEF2;
+  --prog:#1F55D0; --prog-soft:#E3EBFC;
+  --isra:#13793A; --isra-soft:#DCF2E4;
+  --isrb:#7A3FC4; --isrb-soft:#EFE6FB;
+  --sig:#E0201B; --sig-soft:#FCE3E0;
+  --on-solid:#FFFFFF;
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
+  --prog:#8AB0FF; --prog-soft:#1B2B4F; --isra:#6BD893; --isra-soft:#14351F; --isrb:#C9A2FF; --isrb-soft:#2E2147;
+  --sig:#FF5A52; --sig-soft:#401A17; --on-solid:#0F1318; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
+  --prog:#8AB0FF; --prog-soft:#1B2B4F; --isra:#6BD893; --isra-soft:#14351F; --isrb:#C9A2FF; --isrb-soft:#2E2147;
+  --sig:#FF5A52; --sig-soft:#401A17; --on-solid:#0F1318; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h2{font-size:clamp(22px,3vw,30px);font-weight:800}
+h3{font-size:17px;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{margin-top:56px;display:flex;flex-direction:column;gap:18px}
+.lead{color:var(--muted);max-width:65ch}
+header{padding-top:40px;display:flex;flex-direction:column;gap:14px}
+header h1{font-size:clamp(32px,5.6vw,56px);font-weight:800;letter-spacing:-.02em}
+header h1 em{font-style:normal;color:var(--prog)}
+button:focus-visible,select:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+.o-P{--c:var(--prog);--cs:var(--prog-soft)} .o-A{--c:var(--isra);--cs:var(--isra-soft)} .o-B{--c:var(--isrb);--cs:var(--isrb-soft)} .o-W{--c:var(--muted);--cs:var(--soft)}
+
+.switches{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:4px;background:var(--panel);gap:4px;flex-wrap:wrap}
+.seg .cap{font-size:12px;color:var(--muted);padding:0 6px;align-self:center}
+.seg button{appearance:none;font:inherit;font-size:14px;font-weight:700;border:0;border-radius:9px;padding:7px 14px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+.srcwrap{display:flex;flex-direction:column;gap:8px}
+.srcwrap .cap{font-size:14px;font-weight:700}
+.srcwrap .cap span{font-weight:400;color:var(--muted)}
+.srcs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.src{appearance:none;text-align:left;font:inherit;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:var(--ink);min-width:0}
+.src:hover{border-color:var(--ink)}
+.src .nm{font-weight:700;font-size:15px;line-height:1.3}
+.src .ty{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.src .ex{font-size:12px;color:var(--muted);line-height:1.4}
+.src .pg{font-size:12px;font-weight:700;line-height:1.4;color:var(--prog);margin-top:2px}
+.src[aria-pressed="true"]{border:2px solid var(--isra);background:var(--isra-soft);padding:7px 9px}
+.src[aria-pressed="true"] .ty{color:var(--isra);font-weight:600}
+
+.track{display:flex;flex-wrap:wrap;gap:6px}
+.tstep{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:10px;padding:6px 10px;cursor:pointer;font:inherit;font-size:12px;line-height:1.3;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.tstep b{font-family:var(--f-mono);font-size:12px}
+.tstep:hover{border-color:var(--ink)}
+.tstep.done{color:var(--ink)}
+.tstep.now{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.now-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;border-bottom:1px solid var(--line);padding-bottom:14px}
+.figtag{font-family:var(--f-mono);font-size:13px;font-weight:600;padding:5px 12px;border-radius:8px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.figtag.extra{background:transparent;color:var(--ink);border:2px dashed var(--ink)}
+.now-card h3{font-size:22px;font-weight:800}
+.now-card .en{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-top:2px}
+.now-card .desc{margin-top:6px;max-width:72ch;font-size:16.5px}
+
+.lab{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px}
+.cpu{border:3px solid var(--c);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0;transition:border-color .4s}
+.cpu.land{animation:land .7s ease-out}
+@keyframes land{0%{box-shadow:0 0 0 0 var(--c)}35%{box-shadow:0 0 0 10px var(--cs)}100%{box-shadow:0 0 0 0 transparent}}
+.cpu-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.cpu-head .t{font-family:var(--f-mono);font-weight:600;font-size:13px;letter-spacing:.06em}
+.running{font-size:14px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--c);color:var(--on-solid);transition:background .4s}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;padding:10px;border-radius:10px;background:var(--cs);border:2px dashed var(--c)}
+.flow .fs{flex:1 1 150px;display:flex;flex-direction:column;gap:2px;padding:6px 10px;border-radius:8px;background:var(--panel);border:2px solid var(--c);font-size:12px;color:var(--muted);line-height:1.45;animation:fin .45s both}
+.flow .fs b{font-size:14px;color:var(--ink)}
+.flow .fa{align-self:center;font-weight:900;font-size:18px;color:var(--c);animation:fin .3s both}
+.flow>:nth-child(1){animation-delay:.1s}.flow>:nth-child(2){animation-delay:.6s}.flow>:nth-child(3){animation-delay:.8s}.flow>:nth-child(4){animation-delay:1.3s}.flow>:nth-child(5){animation-delay:1.5s}
+@keyframes fin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.regs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mode-num .regs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.reg{border:1px solid var(--line);border-left:6px solid var(--c);border-radius:0;padding:8px 10px;display:flex;flex-direction:column;gap:3px;background:var(--cs);min-width:0;position:relative;transition:background .4s,border-color .4s}
+.reg .n{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;padding-right:40px}
+.reg .n b{font-family:var(--f-mono);color:var(--ink);font-size:12px}
+.reg .v{font-weight:700;font-size:15px;line-height:1.4;color:var(--ink)}
+.mode-num .reg .v{font-family:var(--f-mono);font-size:22px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.reg .new{position:absolute;top:6px;right:8px;font-family:var(--f-mono);font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--ink);color:var(--bg);opacity:0;transition:opacity .3s}
+.reg.chg .new{opacity:1}
+.reg.chg .v{animation:flash .6s}
+@keyframes flash{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.box{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .3s}
+.box.hot{box-shadow:0 0 0 3px var(--ink)}
+.box.hot.own{box-shadow:0 0 0 4px var(--c)}
+.lab-label{font-size:12px;color:var(--muted)}
+.lab-label b{font-family:var(--f-mono);color:var(--ink);font-weight:600}
+.sw{display:flex;align-items:center;gap:10px}
+.toggle{width:52px;height:28px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .3s}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--panel);transition:left .3s}
+.toggle.on{background:var(--ink)} .toggle.on::after{left:27px}
+.toggle.half{background:repeating-linear-gradient(45deg,var(--ink) 0 4px,var(--muted) 4px 8px)} .toggle.half::after{left:15px}
+.sw .st{font-weight:700;font-size:16px;line-height:1.3}
+.sw .sub{font-size:12px;color:var(--muted);line-height:1.4}
+.bits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 6px repeat(2,minmax(0,1fr));gap:10px 8px;padding:18px 4px 4px}
+.bits .div{background:var(--line);border-radius:3px}
+.bit{border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;gap:2px;background:var(--panel);position:relative;transition:background .3s,border-color .3s;min-width:0}
+.bit .d{font-family:var(--f-mono);font-size:20px;font-weight:600;color:var(--muted)}
+.bit .l{font-size:11px;color:var(--muted);line-height:1.3}
+.bit .k{font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+.bit.own{border-color:var(--c)}
+.bit.one{background:var(--c);border-color:var(--c);outline:4px solid var(--sig);outline-offset:3px;animation:sigpulse 1.4s ease-in-out infinite}
+.bit.one .d,.bit.one .l,.bit.one .k{color:var(--on-solid)}
+.bit .tagsig{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;line-height:1.5;padding:0 7px;border-radius:4px;background:var(--sig);color:var(--on-solid);white-space:nowrap;opacity:0;transition:opacity .3s;z-index:1}
+.bit.one .tagsig{opacity:1}
+@keyframes sigpulse{50%{outline-offset:6px}}
+.bitnote{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stack-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.stack-title .t{font-weight:700;font-size:15px}
+.stack-title .t span{font-size:12px;color:var(--muted);font-weight:400}
+.stackwrap{border:3px solid var(--ink);border-top:0;border-radius:0 0 14px 14px;padding:10px;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end}
+.frames{display:flex;flex-direction:column-reverse;gap:8px}
+.frame{border:2px solid var(--c);background:var(--cs);border-radius:10px;padding:8px 10px;animation:push .5s both}
+.frame .h{font-size:14px;font-weight:700;color:var(--ink);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.frame .h .who{display:inline-flex;align-items:center;gap:6px}
+.frame .h .who::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.frame .sp{font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.frame ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px;font-size:13px;line-height:1.45}
+.frame li{display:grid;grid-template-columns:3.2em 1fr;gap:6px}
+.frame li i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--muted);padding-top:2px}
+.mode-num .frame ul{grid-template-columns:repeat(2,minmax(0,1fr));font-family:var(--f-mono)}
+.flyer{box-shadow:0 14px 32px rgba(0,0,0,.28)}
+.empty{font-size:13px;color:var(--muted);text-align:center;padding:12px 0}
+@keyframes push{from{opacity:0;transform:translateY(-34px)}to{opacity:1;transform:none}}
+table.idt{width:100%;border-collapse:collapse;font-size:13px}
+.idt td{padding:4px 6px;border-bottom:1px solid var(--line);line-height:1.4}
+.idt td.ty{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.idt td:last-child{text-align:right;font-family:var(--f-mono);font-size:12px;white-space:nowrap}
+.idt tr.own td:first-child{box-shadow:inset 4px 0 0 var(--c)}
+.idt tr.hit td{background:var(--c);color:var(--on-solid);font-weight:700;animation:idtblink .9s ease-in-out infinite}
+.idt tr.hit td:first-child::before{content:"▶ ";}
+@keyframes idtblink{50%{background:transparent;color:var(--c)}}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--ink);padding-top:10px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--c);display:inline-block}
+.newk{font-family:var(--f-mono);font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--ink);color:var(--bg)}
+.ring{width:14px;height:14px;border-radius:4px;box-shadow:0 0 0 3px var(--ink);display:inline-block}
+.sigk{width:14px;height:14px;border-radius:3px;outline:3px solid var(--sig);outline-offset:1px;display:inline-block}
+.flowk{width:22px;height:12px;border-radius:3px;border:2px dashed var(--ink);display:inline-block}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{appearance:none;font:inherit;font-size:14px;font-weight:700;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.sm{font-size:13px;padding:5px 10px}
+.speed{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted)}
+
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+table.cmp{width:100%;min-width:900px;border-collapse:collapse;font-size:14px}
+.cmp th,.cmp td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.5}
+.cmp th{font-size:12px;color:var(--muted);font-weight:700;background:var(--soft)}
+.cmp td.m{font-family:var(--f-mono);font-size:12px}
+.cmp tr:last-child td{border-bottom:0}
+.tyb{display:inline-block;font-family:var(--f-mono);font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid var(--ink);white-space:nowrap}
+.tyb.hw{background:var(--ink);color:var(--bg)}
+.tyb.tr{border-style:dashed}
+
+.pairs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pair{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.pair .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-family:var(--f-mono);font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;border:1px solid var(--ink)}
+.pill.solid{background:var(--ink);color:var(--bg)}
+.arrow{color:var(--muted);font-family:var(--f-mono)}
+.small{font-size:13px;color:var(--muted)}
+.analogy{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.an{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.an .n{font-family:var(--f-mono);font-size:12px;font-weight:600}
+.an .real{font-weight:700}
+.an .cs{font-size:13px;color:var(--muted)}
+.pit{display:flex;flex-direction:column;gap:10px}
+.pitem{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.pitem .x{color:var(--sig)} .pitem .o{color:var(--isra)}
+.pitem .k{font-size:12px;font-weight:700}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.opts{display:grid;gap:6px}
+.opt{appearance:none;text-align:left;font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--ink)}
+.opt.right{background:var(--isra-soft);border-color:var(--isra);font-weight:700}
+.opt.right::after{content:"  ✓ Correct";color:var(--isra)}
+.opt.wrong{background:var(--sig-soft);border-color:var(--sig)}
+.opt.wrong::after{content:"  ✕";color:var(--sig)}
+.fb{font-size:14px;color:var(--muted)}
+.score{font-family:var(--f-mono);font-size:14px;color:var(--muted)}
+
+@media (max-width:980px){.srcs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:860px){
+  .lab{grid-template-columns:1fr}
+  .stackwrap{min-height:0}
+  .analogy{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pitem{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .srcs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .regs{grid-template-columns:1fr}
+  .mode-num .regs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bits{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:24px}
+  .bits .div{display:none}
+  .pairs,.analogy{grid-template-columns:1fr}
+  .now-card{grid-template-columns:1fr;gap:8px}
+  .figtag{justify-self:start}
+  .speed{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.v-ja{--f-display:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;--f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;line-height:1.75}
+.v-zh{--f-display:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.75}
+.v-th{--f-display:"Prompt","Noto Sans Thai",sans-serif;--f-body:"Sarabun","Noto Sans Thai","Leelawadee UI",system-ui,sans-serif;line-height:1.8;font-size:17px}
+.v-en,.v-ja,.v-zh,.v-th{font-family:var(--f-body)}
+.v-ja h1,.v-ja h2,.v-ja .now-card h3,.v-zh h1,.v-zh h2,.v-zh .now-card h3{font-weight:900}
+.v-th h1,.v-th h2,.v-th .now-card h3{font-weight:700;line-height:1.35}
+.v-ja .opt.right::after{content:"  ✓ 正解"} .v-zh .opt.right::after{content:"  ✓ 正确"} .v-th .opt.right::after{content:"  ✓ ถูกต้อง"}
+.ram{border:2px dashed var(--muted);border-radius:16px;padding:12px;background:var(--soft)}
+.ram .box,.ram .stackwrap{background:var(--panel)}
+.ramhead{display:flex;flex-direction:column;gap:2px}
+.ramhead .rt{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ink)}
+.ramhead .rs{font-size:12px;color:var(--muted);line-height:1.45}
+.isrs{display:flex;flex-wrap:wrap;gap:6px}
+.isr{font-family:var(--f-mono);font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted);display:inline-flex;gap:6px;transition:background .3s}
+.isr.own{border-color:var(--c);color:var(--ink)}
+.isr.act{background:var(--c);color:var(--on-solid);border-color:var(--c)}
+.isr.act::before{content:"▶"}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.langbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.langin{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.langin .brand{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.langin .seg button{font-family:"Atkinson Hyperlegible","Zen Kaku Gothic New","Noto Sans SC","Sarabun",system-ui,sans-serif}
+.schednote{max-width:1100px;margin:10px auto 0;font-size:13px;color:var(--muted)}
+#schedwrap{max-width:1100px;margin:0 auto}
+.langin .seg+.seg{margin-left:0}
+body.t-sched .langin .seg[aria-label="Language"]{display:none}
+</style>
+<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-sched" aria-pressed="false">Scheduling</button></div>
+<div class="seg" role="group" aria-label="Language"><span class="cap">Language</span><button id="lg-en" data-l="en" aria-pressed="true">English</button><button id="lg-ja" data-l="ja" aria-pressed="false">日本語</button><button id="lg-zh" data-l="zh" aria-pressed="false">中文</button><button id="lg-th" data-l="th" aria-pressed="false">ไทย</button></div></div></div>
+<div id="intro">
+<div class="v-en" id="ven" lang="en">
+<div class="wrap">
+<header>
+  <span class="eyebrow">Cambridge 9618 · Topic 16 · Figure 16.9</span>
+  <h1>When an interrupt comes, where does the <em>unfinished work</em> go?</h1>
+  <p class="lead">A program is running. Suddenly, an interrupt arrives. The CPU puts the unfinished work on the kernel stack, uses the IDT to choose the right ISR, and then takes the work back. Choose different interrupts and see which IDT row is used.</p>
+</header>
+
+<section aria-labelledby="sim-h" id="sim">
+  <div><span class="eyebrow">Simulator</span><h2 id="sim-h">CPU and stack simulator</h2></div>
+  <div class="switches">
+    <div class="seg" role="group" aria-label="Scenario"><span class="cap">Scenario</span>
+      <button id="scBasic" aria-pressed="true">Basic: one interrupt</button>
+      <button id="scNest" aria-pressed="false">Extension: interrupting an interrupt</button>
+    </div>
+    <div class="seg" role="group" aria-label="View"><span class="cap">View</span>
+      <button id="mWord" aria-pressed="true">Words</button>
+      <button id="mNum" aria-pressed="false">Numbers (register values)</button>
+    </div>
+  </div>
+  <div class="srcwrap" id="srcwrap">
+    <span class="cap">Choose an interrupt <span>(you can switch at any step and the content changes)</span></span>
+    <div class="srcs" id="srcs"></div>
+  </div>
+  <div class="track" id="track"></div>
+
+  <div class="bench" id="bench">
+    <div class="now-card" aria-live="polite">
+      <span class="figtag" id="fig">—</span>
+      <div>
+        <h3 id="capT"></h3>
+        <p class="en" id="capE"></p>
+        <p class="desc" id="capB"></p>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="cpu o-P" id="cpu">
+        <div class="cpu-head"><span class="t">CPU</span><span class="running" id="running">Running: original program</span></div>
+        <div class="flow" id="flow" hidden></div>
+        <div class="regs" id="regs"></div>
+        <div class="box" id="irbox">
+          <span class="lab-label">Interrupt signals (<b>Interrupt register</b>)</span>
+          <div class="bits" id="bits"></div>
+          <div class="bitnote"><span>← External devices (hardware). Left = higher priority</span><span>From inside the CPU (exception / trap) →</span></div>
+        </div>
+        <div class="box" id="cu">
+          <span class="lab-label">Interrupt switch (<b>Control Unit</b>)</span>
+          <div class="sw"><span class="toggle on" id="tg"></span><div><div class="st" id="flagT">ON: accepting</div><div class="sub" id="flagS">All interrupts are accepted</div></div></div>
+        </div>
+      </div>
+
+      <div class="side ram"><div class="ramhead"><span class="rt">MEMORY (RAM)</span><span class="rs">Outside the CPU. The kernel stack, the IDT and the ISRs are stored here.</span></div>
+        <div>
+          <div class="stack-title"><span class="t">Kernel stack <span>saved work, last in first out</span></span><span class="small" id="stackN">Empty</span></div>
+          <div class="stackwrap"><div class="frames" id="frames"></div></div>
+        </div>
+        <div class="box" id="idtbox">
+          <span class="lab-label"><b>IDT</b> (Interrupt Descriptor Table): which interrupt goes to which ISR</span>
+          <table class="idt"><tbody id="idtb"></tbody></table>
+        </div>
+        <div class="box" id="isrbox"><span class="lab-label"><b>ISR</b> programs in memory (address · name)</span><div class="isrs" id="isrs"></div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="o-P"><i class="dot"></i>Original program (the work that is stopped)</span>
+      <span class="o-A"><i class="dot"></i>ISR: handles the chosen interrupt</span>
+      <span class="o-B"><i class="dot"></i>ISR B: a second interrupt (extension)</span>
+      <span><i class="sigk"></i>Red frame: where the signal comes from</span>
+      <span><i class="flowk"></i>Dashed band: reading the IDT / restoring from the stack</span>
+      <span><i class="newk">NEW</i>Value changed</span>
+      <span><i class="ring"></i>Look here</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="prev">← Back</button>
+      <button class="btn primary" id="play">▶ Play</button>
+      <button class="btn" id="next">Next →</button>
+      <button class="btn" id="reset">Restart</button>
+      <label class="speed" for="spd">Speed
+        <select id="spd"><option value="5000">Slow</option><option value="3300" selected>Normal</option><option value="2200">Fast</option></select>
+      </label>
+    </div>
+    <p class="hint">Colors show whose work it is. Red is only used for interrupt signals. You can also use the ← → keys. Register values and addresses in Numbers view are examples.</p>
+  </div>
+</section>
+
+<section aria-labelledby="cmp-h">
+  <div><span class="eyebrow">Patterns</span><h2 id="cmp-h">Six interrupts and the IDT</h2></div>
+  <p class="lead">The six steps are the same for every interrupt. What changes is where the signal comes from and which ISR the IDT chooses. Press "Show" to jump to STEP 4 for that interrupt.</p>
+  <div class="tablewrap">
+    <table class="cmp"><thead><tr><th>Interrupt</th><th>Type</th><th>Work that is stopped</th><th>Signal comes from</th><th>What happened</th><th>ISR chosen by the IDT</th><th>What the ISR does</th><th></th></tr></thead><tbody id="cmpb"></tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="pair-h">
+  <div><span class="eyebrow">Structure</span><h2 id="pair-h">The six steps are made of two pairs</h2></div>
+  <p class="lead">Do not just memorise the order. Learn which steps go together. The word "restore" appears twice, so be clear about what is being restored each time.</p>
+  <div class="pairs">
+    <div class="pair">
+      <h3>Interrupt switch: OFF and ON</h3>
+      <div class="row"><span class="pill solid">STEP 1 disable</span><span class="arrow">⇄</span><span class="pill">STEP 6 re-enable</span></div>
+      <p class="small">In STEP 6, the thing restored is the ability to accept interrupts. It is not the program's work.</p>
+    </div>
+    <div class="pair">
+      <h3>Unfinished work: save and restore</h3>
+      <div class="row"><span class="pill solid">STEP 2 push</span><span class="arrow">⇄</span><span class="pill">STEP 5 pop</span></div>
+      <p class="small">STEP 5 restores the registers and the program continues. Both happen in STEP 5.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="an-h">
+  <div><span class="eyebrow">Analogy</span><h2 id="an-h">Your phone rings while you are reading</h2></div>
+  <div class="analogy">
+    <div class="an"><span class="n">STEP 1</span><span class="real">The phone rings. You turn on "Do Not Disturb".</span><span class="cs">Interrupt switch OFF</span></div>
+    <div class="an"><span class="n">STEP 2</span><span class="real">You put a bookmark in your book.</span><span class="cs">Save the work on the kernel stack</span></div>
+    <div class="an"><span class="n">STEP 3</span><span class="real">You check who is calling and if it is urgent.</span><span class="cs">Identify the source and priority</span></div>
+    <div class="an"><span class="n">STEP 4</span><span class="real">You check your contacts list and answer the call.</span><span class="cs">Use the IDT to find and run the ISR</span></div>
+    <div class="an"><span class="n">STEP 5</span><span class="real">You open the book at the bookmark and keep reading.</span><span class="cs">Restore the work and continue</span></div>
+    <div class="an"><span class="n">STEP 6</span><span class="real">You turn off "Do Not Disturb".</span><span class="cs">Interrupt switch ON</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="pit-h">
+  <div><span class="eyebrow">Exam tips</span><h2 id="pit-h">Common mistakes</h2></div>
+  <div class="pit">
+    <div class="pitem"><div><span class="k x">✕ Common answer</span><p>The CPU switches to the interrupt immediately, even in the middle of an instruction.</p></div><div><span class="k o">○ Correct</span><p>The CPU checks the interrupt register at the end of each FDE cycle, then switches.</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ Common answer</span><p>In STEP 6, the CPU checks if there are more interrupts.</p></div><div><span class="k o">○ Correct</span><p>In STEP 6, the interrupts disabled in STEP 1 are enabled again.</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ Common answer</span><p>In STEP 6, the saved process continues.</p></div><div><span class="k o">○ Correct</span><p>The process continues in STEP 5. Restoring and continuing happen together.</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ Common answer</span><p>The ISR runs (no mention of the IDT).</p></div><div><span class="k o">○ Correct</span><p>The IDT is used to find the ISR's address, which is loaded into the PC.</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ Common answer</span><p>There are two sources: hardware and software.</p></div><div><span class="k o">○ Correct</span><p>There are three: hardware, exception, and trap (software interrupt).</p></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="qz-h">
+  <div><span class="eyebrow">Quick check</span><h2 id="qz-h">Check your understanding</h2></div>
+  <div id="quiz" style="display:flex;flex-direction:column;gap:12px"></div>
+  <p class="score" id="score">0 / 5</p>
+</section>
+</div>
+
+</div>
+<div class="v-ja" id="vja" lang="ja" hidden>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Cambridge 9618 · Topic 16 · Figure 16.9</span>
+  <h1>割り込みで、<em>「やりかけの作業」</em>はどこへ行く？</h1>
+  <p class="lead">ワープロで文章を打っている途中に割り込みが来たら、CPU は「やりかけの作業」をスタックにしまい、IDT を見て処理を選び、終わったらまた取り出します。割り込みの種類を変えて、IDT のどの行が読まれるかを見比べてください。</p>
+</header>
+
+<section aria-labelledby="sim-h" id="sim">
+  <div><span class="eyebrow">Simulator</span><h2 id="sim-h">CPU とスタックのシミュレーター</h2></div>
+  <div class="switches">
+    <div class="seg" role="group" aria-label="シナリオ"><span class="cap">シナリオ</span>
+      <button id="scBasic" aria-pressed="true">基本：割り込み1回</button>
+      <button id="scNest" aria-pressed="false">発展：割り込み中の割り込み</button>
+    </div>
+    <div class="seg" role="group" aria-label="表示"><span class="cap">表示</span>
+      <button id="mWord" aria-pressed="true">ことば</button>
+      <button id="mNum" aria-pressed="false">数字（レジスタ値）</button>
+    </div>
+  </div>
+  <div class="srcwrap" id="srcwrap">
+    <span class="cap">割り込みの種類を選ぶ <span>（途中で切り替えると、同じステップのまま中身が変わります）</span></span>
+    <div class="srcs" id="srcs"></div>
+  </div>
+  <div class="track" id="track"></div>
+
+  <div class="bench" id="bench">
+    <div class="now-card" aria-live="polite">
+      <span class="figtag" id="fig">—</span>
+      <div>
+        <h3 id="capT"></h3>
+        <p class="en" id="capE"></p>
+        <p class="desc" id="capB"></p>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="cpu o-P" id="cpu">
+        <div class="cpu-head"><span class="t">CPU</span><span class="running" id="running">実行中：元のプログラム</span></div>
+        <div class="flow" id="flow" hidden></div>
+        <div class="regs" id="regs"></div>
+        <div class="box" id="irbox">
+          <span class="lab-label">割り込みの知らせ（<b>Interrupt register</b>）</span>
+          <div class="bits" id="bits"></div>
+          <div class="bitnote"><span>← 外の装置（hardware）左ほど優先度が高い</span><span>CPU 内部から（exception / trap）→</span></div>
+        </div>
+        <div class="box" id="cu">
+          <span class="lab-label">割り込みスイッチ（<b>Control Unit</b>）</span>
+          <div class="sw"><span class="toggle on" id="tg"></span><div><div class="st" id="flagT">ON：受け付ける</div><div class="sub" id="flagS">どの割り込みも受け付ける</div></div></div>
+        </div>
+      </div>
+
+      <div class="side ram"><div class="ramhead"><span class="rt">メモリ（RAM）</span><span class="rs">CPU の外にある場所。保存棚（kernel stack）・IDT・ISR はここに置かれている。</span></div>
+        <div>
+          <div class="stack-title"><span class="t">保存棚 <span>kernel stack</span></span><span class="small" id="stackN">空</span></div>
+          <div class="stackwrap"><div class="frames" id="frames"></div></div>
+        </div>
+        <div class="box" id="idtbox">
+          <span class="lab-label">対応表（<b>IDT</b>）：どの割り込みなら、どの処理へ行くか</span>
+          <table class="idt"><tbody id="idtb"></tbody></table>
+        </div>
+        <div class="box" id="isrbox"><span class="lab-label"><b>ISR</b>（メモリ上のプログラム：アドレス・名前）</span><div class="isrs" id="isrs"></div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="o-P"><i class="dot"></i>元のプログラム（中断される作業）</span>
+      <span class="o-A"><i class="dot"></i>ISR：選んだ割り込みの処理</span>
+      <span class="o-B"><i class="dot"></i>ISR B：割り込み中に来た割り込み（発展）</span>
+      <span><i class="sigk"></i>赤枠：割り込み信号の出どころ</span>
+      <span><i class="flowk"></i>破線の帯：IDT を読む／保存棚から戻す</span>
+      <span><i class="newk">NEW</i>中身が変わった</span>
+      <span><i class="ring"></i>ここに注目</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="prev">← 前へ</button>
+      <button class="btn primary" id="play">▶ 自動再生</button>
+      <button class="btn" id="next">次へ →</button>
+      <button class="btn" id="reset">最初から</button>
+      <label class="speed" for="spd">速さ
+        <select id="spd"><option value="5000">ゆっくり</option><option value="3300" selected>ふつう</option><option value="2200">はやい</option></select>
+      </label>
+    </div>
+    <p class="hint">色は「だれの作業か」を表し、赤は割り込み信号だけに使っています。キーボードの ← → でも操作できます。数字表示のレジスタ値・アドレスは説明用の例です。</p>
+  </div>
+</section>
+
+<section aria-labelledby="cmp-h">
+  <div><span class="eyebrow">Patterns</span><h2 id="cmp-h">6つの割り込みと IDT の対応</h2></div>
+  <p class="lead">どの割り込みでも6ステップの流れは同じです。違うのは「信号の出どころ」と「IDT で選ばれる ISR」です。「見る」を押すと、シミュレーターがその割り込みの STEP 4 に切り替わります。</p>
+  <div class="tablewrap">
+    <table class="cmp"><thead><tr><th>割り込み</th><th>種類</th><th>中断される作業</th><th>信号の出どころ</th><th>きっかけ</th><th>IDT で選ばれる ISR</th><th>ISR の仕事</th><th></th></tr></thead><tbody id="cmpb"></tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="pair-h">
+  <div><span class="eyebrow">Structure</span><h2 id="pair-h">6ステップは「2つの対」でできている</h2></div>
+  <p class="lead">順番を丸暗記するより、何と何が対になっているかを押さえると忘れにくくなります。どちらにも restore という単語が出てくるので、何を戻しているのかを区別してください。</p>
+  <div class="pairs">
+    <div class="pair">
+      <h3>割り込みスイッチ OFF / ON</h3>
+      <div class="row"><span class="pill solid">STEP 1 disable</span><span class="arrow">⇄</span><span class="pill">STEP 6 re-enable</span></div>
+      <p class="small">STEP 6 で restore されるのは「割り込みを受け付ける機能」。作業内容ではありません。</p>
+    </div>
+    <div class="pair">
+      <h3>やりかけの作業 しまう / 取り出す</h3>
+      <div class="row"><span class="pill solid">STEP 2 push</span><span class="arrow">⇄</span><span class="pill">STEP 5 pop</span></div>
+      <p class="small">STEP 5 は「作業内容を戻す」と「続きから再開」がセット。再開まで STEP 5 で完結します。</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="an-h">
+  <div><span class="eyebrow">Analogy</span><h2 id="an-h">読書中に電話が鳴ったら</h2></div>
+  <div class="analogy">
+    <div class="an"><span class="n">STEP 1</span><span class="real">電話が鳴る。スマホを「おやすみモード」にする</span><span class="cs">割り込みスイッチを OFF</span></div>
+    <div class="an"><span class="n">STEP 2</span><span class="real">読んでいたページにしおりを挟む</span><span class="cs">やりかけの作業を保存棚へ</span></div>
+    <div class="an"><span class="n">STEP 3</span><span class="real">誰からか見て、今すぐ出るべきか判断する</span><span class="cs">発生源の識別と priority</span></div>
+    <div class="an"><span class="n">STEP 4</span><span class="real">連絡先リストでその人への対応を確認して話す</span><span class="cs">IDT で ISR を見つけて実行</span></div>
+    <div class="an"><span class="n">STEP 5</span><span class="real">しおりのページを開いて続きから読む</span><span class="cs">作業を取り出して再開</span></div>
+    <div class="an"><span class="n">STEP 6</span><span class="real">「おやすみモード」を解除する</span><span class="cs">割り込みスイッチを ON</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="pit-h">
+  <div><span class="eyebrow">Exam tips</span><h2 id="pit-h">よくある間違い</h2></div>
+  <div class="pit">
+    <div class="pitem"><div><span class="k x">✕ よくある答え</span><p>割り込みが来た瞬間に、命令の途中でも処理が切り替わる</p></div><div><span class="k o">○ 正しくは</span><p>CPU は FDE サイクルの終わりに interrupt register を確認してから切り替える</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ よくある答え</span><p>STEP 6 で、他に割り込みがあるか確認する</p></div><div><span class="k o">○ 正しくは</span><p>STEP 1 で無効化した割り込みを再び有効にする（re-enable）</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ よくある答え</span><p>STEP 6 で、保存したプロセスを再開する</p></div><div><span class="k o">○ 正しくは</span><p>プロセスの再開は STEP 5。復元と再開はセット</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ よくある答え</span><p>ISR を実行する（IDT に触れない）</p></div><div><span class="k o">○ 正しくは</span><p>IDT を使って対応する ISR のアドレスを探し、PC に入れてジャンプする</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ よくある答え</span><p>発生源は hardware か software の2種類</p></div><div><span class="k o">○ 正しくは</span><p>hardware / exception / trap（software interrupt）の3種類</p></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="qz-h">
+  <div><span class="eyebrow">Quick check</span><h2 id="qz-h">確認クイズ</h2></div>
+  <div id="quiz" style="display:flex;flex-direction:column;gap:12px"></div>
+  <p class="score" id="score">0 / 5</p>
+</section>
+</div>
+
+</div>
+<div class="v-zh" id="vzh" lang="zh-Hans" hidden>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Cambridge 9618 · Topic 16 · Figure 16.9</span>
+  <h1>中断发生时，<em>“做到一半的工作”</em>去哪里了？</h1>
+  <p class="lead">程序正在运行，突然来了一个中断。CPU 会把做到一半的工作放进内核栈，用 IDT 找到对应的 ISR，处理完后再把工作取回来。选择不同的中断，看看 IDT 中哪一行被使用。</p>
+</header>
+
+<section aria-labelledby="sim-h" id="sim">
+  <div><span class="eyebrow">Simulator</span><h2 id="sim-h">CPU 与栈的模拟器</h2></div>
+  <div class="switches">
+    <div class="seg" role="group" aria-label="场景"><span class="cap">场景</span>
+      <button id="scBasic" aria-pressed="true">基础：一次中断</button>
+      <button id="scNest" aria-pressed="false">进阶：中断中的中断</button>
+    </div>
+    <div class="seg" role="group" aria-label="显示"><span class="cap">显示</span>
+      <button id="mWord" aria-pressed="true">文字</button>
+      <button id="mNum" aria-pressed="false">数字（寄存器值）</button>
+    </div>
+  </div>
+  <div class="srcwrap" id="srcwrap">
+    <span class="cap">选择中断类型 <span>（可以在任何步骤切换，内容会跟着改变）</span></span>
+    <div class="srcs" id="srcs"></div>
+  </div>
+  <div class="track" id="track"></div>
+
+  <div class="bench" id="bench">
+    <div class="now-card" aria-live="polite">
+      <span class="figtag" id="fig">—</span>
+      <div>
+        <h3 id="capT"></h3>
+        <p class="en" id="capE"></p>
+        <p class="desc" id="capB"></p>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="cpu o-P" id="cpu">
+        <div class="cpu-head"><span class="t">CPU</span><span class="running" id="running">运行中：原程序</span></div>
+        <div class="flow" id="flow" hidden></div>
+        <div class="regs" id="regs"></div>
+        <div class="box" id="irbox">
+          <span class="lab-label">中断信号（<b>Interrupt register</b>）</span>
+          <div class="bits" id="bits"></div>
+          <div class="bitnote"><span>← 外部设备（hardware）越左优先级越高</span><span>来自 CPU 内部（exception / trap）→</span></div>
+        </div>
+        <div class="box" id="cu">
+          <span class="lab-label">中断开关（<b>Control Unit</b>）</span>
+          <div class="sw"><span class="toggle on" id="tg"></span><div><div class="st" id="flagT">ON：接受</div><div class="sub" id="flagS">接受所有中断</div></div></div>
+        </div>
+      </div>
+
+      <div class="side ram"><div class="ramhead"><span class="rt">内存（RAM）</span><span class="rs">在 CPU 外面。内核栈、IDT 和 ISR 都存放在这里。</span></div>
+        <div>
+          <div class="stack-title"><span class="t">内核栈 <span>kernel stack · 保存的工作，后进先出</span></span><span class="small" id="stackN">空</span></div>
+          <div class="stackwrap"><div class="frames" id="frames"></div></div>
+        </div>
+        <div class="box" id="idtbox">
+          <span class="lab-label"><b>IDT</b>（中断描述符表）：哪个中断去哪个 ISR</span>
+          <table class="idt"><tbody id="idtb"></tbody></table>
+        </div>
+        <div class="box" id="isrbox"><span class="lab-label"><b>ISR</b>（内存中的程序：地址 · 名称）</span><div class="isrs" id="isrs"></div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="o-P"><i class="dot"></i>原程序（被暂停的工作）</span>
+      <span class="o-A"><i class="dot"></i>ISR：处理所选的中断</span>
+      <span class="o-B"><i class="dot"></i>ISR B：第二个中断（进阶）</span>
+      <span><i class="sigk"></i>红框：信号来源</span>
+      <span><i class="flowk"></i>虚线带：读取 IDT／从栈中恢复</span>
+      <span><i class="newk">NEW</i>值已改变</span>
+      <span><i class="ring"></i>注意这里</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="prev">← 上一步</button>
+      <button class="btn primary" id="play">▶ 播放</button>
+      <button class="btn" id="next">下一步 →</button>
+      <button class="btn" id="reset">重新开始</button>
+      <label class="speed" for="spd">速度
+        <select id="spd"><option value="5000">慢</option><option value="3300" selected>正常</option><option value="2200">快</option></select>
+      </label>
+    </div>
+    <p class="hint">颜色表示“这是谁的工作”。红色只用于中断信号。也可以用键盘的 ← → 操作。数字模式中的寄存器值和地址都是示例。</p>
+  </div>
+</section>
+
+<section aria-labelledby="cmp-h">
+  <div><span class="eyebrow">Patterns</span><h2 id="cmp-h">六种中断与 IDT</h2></div>
+  <p class="lead">每种中断的六个步骤都一样。不同的是信号来自哪里，以及 IDT 选择哪个 ISR。按“查看”可以跳到该中断的 STEP 4。</p>
+  <div class="tablewrap">
+    <table class="cmp"><thead><tr><th>中断</th><th>类型</th><th>被暂停的工作</th><th>信号来源</th><th>发生了什么</th><th>IDT 选择的 ISR</th><th>ISR 的工作</th><th></th></tr></thead><tbody id="cmpb"></tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="pair-h">
+  <div><span class="eyebrow">Structure</span><h2 id="pair-h">六个步骤由两组“配对”组成</h2></div>
+  <p class="lead">不要只背顺序，要记住哪些步骤是一对。“restore”这个词出现了两次，要分清每次恢复的是什么。</p>
+  <div class="pairs">
+    <div class="pair">
+      <h3>中断开关：关和开</h3>
+      <div class="row"><span class="pill solid">STEP 1 disable</span><span class="arrow">⇄</span><span class="pill">STEP 6 re-enable</span></div>
+      <p class="small">STEP 6 恢复的是“接受中断的能力”，不是程序的工作。</p>
+    </div>
+    <div class="pair">
+      <h3>做到一半的工作：保存和恢复</h3>
+      <div class="row"><span class="pill solid">STEP 2 push</span><span class="arrow">⇄</span><span class="pill">STEP 5 pop</span></div>
+      <p class="small">STEP 5 恢复寄存器，程序也同时继续运行。两件事都在 STEP 5 完成。</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="an-h">
+  <div><span class="eyebrow">Analogy</span><h2 id="an-h">读书时手机响了</h2></div>
+  <div class="analogy">
+    <div class="an"><span class="n">STEP 1</span><span class="real">手机响了。你打开“勿扰模式”。</span><span class="cs">中断开关 OFF</span></div>
+    <div class="an"><span class="n">STEP 2</span><span class="real">你在书里夹上书签。</span><span class="cs">把工作保存到内核栈</span></div>
+    <div class="an"><span class="n">STEP 3</span><span class="real">你看看是谁打来的，急不急。</span><span class="cs">识别来源和优先级</span></div>
+    <div class="an"><span class="n">STEP 4</span><span class="real">你查看通讯录，然后接电话。</span><span class="cs">用 IDT 找到并运行 ISR</span></div>
+    <div class="an"><span class="n">STEP 5</span><span class="real">你翻到书签那一页，继续读。</span><span class="cs">恢复工作并继续</span></div>
+    <div class="an"><span class="n">STEP 6</span><span class="real">你关闭“勿扰模式”。</span><span class="cs">中断开关 ON</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="pit-h">
+  <div><span class="eyebrow">Exam tips</span><h2 id="pit-h">常见错误</h2></div>
+  <div class="pit">
+    <div class="pitem"><div><span class="k x">✕ 常见答案</span><p>CPU 会立刻切换到中断，即使指令执行到一半。</p></div><div><span class="k o">○ 正确</span><p>CPU 在每个 FDE 周期结束时检查中断寄存器，然后才切换。</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ 常见答案</span><p>在 STEP 6，CPU 检查是否还有其他中断。</p></div><div><span class="k o">○ 正确</span><p>在 STEP 6，重新启用在 STEP 1 中被禁用的中断。</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ 常见答案</span><p>在 STEP 6，被保存的进程继续运行。</p></div><div><span class="k o">○ 正确</span><p>进程在 STEP 5 继续运行。恢复和继续是一起发生的。</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ 常见答案</span><p>运行 ISR（没有提到 IDT）。</p></div><div><span class="k o">○ 正确</span><p>用 IDT 找到 ISR 的地址，并把它放进 PC。</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ 常见答案</span><p>来源只有两种：硬件和软件。</p></div><div><span class="k o">○ 正确</span><p>有三种：hardware、exception 和 trap（软件中断）。</p></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="qz-h">
+  <div><span class="eyebrow">Quick check</span><h2 id="qz-h">检查你的理解</h2></div>
+  <div id="quiz" style="display:flex;flex-direction:column;gap:12px"></div>
+  <p class="score" id="score">0 / 5</p>
+</section>
+</div>
+</div>
+<div class="v-th" id="vth" lang="th" hidden>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Cambridge 9618 · Topic 16 · Figure 16.9</span>
+  <h1>เมื่อเกิดอินเทอร์รัปต์ <em>งานที่ทำค้างไว้</em> ไปอยู่ที่ไหน?</h1>
+  <p class="lead">โปรแกรมกำลังทำงานอยู่ แล้วจู่ๆ ก็มีอินเทอร์รัปต์เข้ามา CPU จะเก็บงานที่ทำค้างไว้ลงใน kernel stack ใช้ IDT เพื่อเลือก ISR ที่ถูกต้อง แล้วจึงนำงานกลับมาทำต่อ ลองเลือกอินเทอร์รัปต์แบบต่างๆ แล้วดูว่า IDT ใช้แถวไหน</p>
+</header>
+
+<section aria-labelledby="sim-h" id="sim">
+  <div><span class="eyebrow">Simulator</span><h2 id="sim-h">เครื่องจำลอง CPU และสแต็ก</h2></div>
+  <div class="switches">
+    <div class="seg" role="group" aria-label="สถานการณ์"><span class="cap">สถานการณ์</span>
+      <button id="scBasic" aria-pressed="true">พื้นฐาน: อินเทอร์รัปต์ 1 ครั้ง</button>
+      <button id="scNest" aria-pressed="false">ขั้นสูง: อินเทอร์รัปต์ซ้อนอินเทอร์รัปต์</button>
+    </div>
+    <div class="seg" role="group" aria-label="มุมมอง"><span class="cap">มุมมอง</span>
+      <button id="mWord" aria-pressed="true">คำอธิบาย</button>
+      <button id="mNum" aria-pressed="false">ตัวเลข (ค่าในรีจิสเตอร์)</button>
+    </div>
+  </div>
+  <div class="srcwrap" id="srcwrap">
+    <span class="cap">เลือกประเภทอินเทอร์รัปต์ <span>(เปลี่ยนได้ทุกขั้นตอน เนื้อหาจะเปลี่ยนตาม)</span></span>
+    <div class="srcs" id="srcs"></div>
+  </div>
+  <div class="track" id="track"></div>
+
+  <div class="bench" id="bench">
+    <div class="now-card" aria-live="polite">
+      <span class="figtag" id="fig">—</span>
+      <div>
+        <h3 id="capT"></h3>
+        <p class="en" id="capE"></p>
+        <p class="desc" id="capB"></p>
+      </div>
+    </div>
+
+    <div class="lab">
+      <div class="cpu o-P" id="cpu">
+        <div class="cpu-head"><span class="t">CPU</span><span class="running" id="running">กำลังทำงาน: โปรแกรมเดิม</span></div>
+        <div class="flow" id="flow" hidden></div>
+        <div class="regs" id="regs"></div>
+        <div class="box" id="irbox">
+          <span class="lab-label">สัญญาณอินเทอร์รัปต์ (<b>Interrupt register</b>)</span>
+          <div class="bits" id="bits"></div>
+          <div class="bitnote"><span>← อุปกรณ์ภายนอก (hardware) ยิ่งซ้ายยิ่งสำคัญ</span><span>มาจากภายใน CPU (exception / trap) →</span></div>
+        </div>
+        <div class="box" id="cu">
+          <span class="lab-label">สวิตช์อินเทอร์รัปต์ (<b>Control Unit</b>)</span>
+          <div class="sw"><span class="toggle on" id="tg"></span><div><div class="st" id="flagT">ON: รับ</div><div class="sub" id="flagS">รับอินเทอร์รัปต์ทั้งหมด</div></div></div>
+        </div>
+      </div>
+
+      <div class="side ram"><div class="ramhead"><span class="rt">หน่วยความจำ (RAM)</span><span class="rs">อยู่นอก CPU · kernel stack, IDT และ ISR ถูกเก็บไว้ที่นี่</span></div>
+        <div>
+          <div class="stack-title"><span class="t">Kernel stack <span>งานที่เก็บไว้ เข้าทีหลังออกก่อน</span></span><span class="small" id="stackN">ว่าง</span></div>
+          <div class="stackwrap"><div class="frames" id="frames"></div></div>
+        </div>
+        <div class="box" id="idtbox">
+          <span class="lab-label"><b>IDT</b> (Interrupt Descriptor Table): อินเทอร์รัปต์ไหนไปที่ ISR ไหน</span>
+          <table class="idt"><tbody id="idtb"></tbody></table>
+        </div>
+        <div class="box" id="isrbox"><span class="lab-label"><b>ISR</b> (โปรแกรมในหน่วยความจำ: ที่อยู่ · ชื่อ)</span><div class="isrs" id="isrs"></div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="o-P"><i class="dot"></i>โปรแกรมเดิม (งานที่ถูกหยุด)</span>
+      <span class="o-A"><i class="dot"></i>ISR: จัดการอินเทอร์รัปต์ที่เลือก</span>
+      <span class="o-B"><i class="dot"></i>ISR B: อินเทอร์รัปต์ตัวที่สอง (ขั้นสูง)</span>
+      <span><i class="sigk"></i>กรอบแดง: แหล่งที่มาของสัญญาณ</span>
+      <span><i class="flowk"></i>แถบเส้นประ: อ่าน IDT / นำงานกลับจากสแต็ก</span>
+      <span><i class="newk">NEW</i>ค่าเปลี่ยน</span>
+      <span><i class="ring"></i>ดูตรงนี้</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="prev">← ย้อนกลับ</button>
+      <button class="btn primary" id="play">▶ เล่น</button>
+      <button class="btn" id="next">ถัดไป →</button>
+      <button class="btn" id="reset">เริ่มใหม่</button>
+      <label class="speed" for="spd">ความเร็ว
+        <select id="spd"><option value="5000">ช้า</option><option value="3300" selected>ปกติ</option><option value="2200">เร็ว</option></select>
+      </label>
+    </div>
+    <p class="hint">สีบอกว่าเป็นงานของใคร สีแดงใช้กับสัญญาณอินเทอร์รัปต์เท่านั้น ใช้ปุ่ม ← → บนแป้นพิมพ์ได้ด้วย ค่ารีจิสเตอร์และที่อยู่ในมุมมองตัวเลขเป็นเพียงตัวอย่าง</p>
+  </div>
+</section>
+
+<section aria-labelledby="cmp-h">
+  <div><span class="eyebrow">Patterns</span><h2 id="cmp-h">อินเทอร์รัปต์ 6 แบบกับ IDT</h2></div>
+  <p class="lead">ทุกอินเทอร์รัปต์มี 6 ขั้นตอนเหมือนกัน สิ่งที่ต่างกันคือสัญญาณมาจากไหน และ IDT เลือก ISR ตัวไหน กด "ดู" เพื่อไปที่ STEP 4 ของอินเทอร์รัปต์นั้น</p>
+  <div class="tablewrap">
+    <table class="cmp"><thead><tr><th>อินเทอร์รัปต์</th><th>ประเภท</th><th>งานที่ถูกหยุด</th><th>สัญญาณมาจาก</th><th>เกิดอะไรขึ้น</th><th>ISR ที่ IDT เลือก</th><th>หน้าที่ของ ISR</th><th></th></tr></thead><tbody id="cmpb"></tbody></table>
+  </div>
+</section>
+
+<section aria-labelledby="pair-h">
+  <div><span class="eyebrow">Structure</span><h2 id="pair-h">6 ขั้นตอนประกอบด้วย 2 คู่</h2></div>
+  <p class="lead">อย่าท่องจำแค่ลำดับ ให้จำว่าขั้นตอนไหนเป็นคู่กัน คำว่า "restore" ปรากฏ 2 ครั้ง จึงต้องแยกให้ออกว่าแต่ละครั้งคืนค่าอะไร</p>
+  <div class="pairs">
+    <div class="pair">
+      <h3>สวิตช์อินเทอร์รัปต์: ปิดและเปิด</h3>
+      <div class="row"><span class="pill solid">STEP 1 disable</span><span class="arrow">⇄</span><span class="pill">STEP 6 re-enable</span></div>
+      <p class="small">ใน STEP 6 สิ่งที่คืนค่าคือความสามารถในการรับอินเทอร์รัปต์ ไม่ใช่งานของโปรแกรม</p>
+    </div>
+    <div class="pair">
+      <h3>งานที่ทำค้างไว้: เก็บและนำกลับ</h3>
+      <div class="row"><span class="pill solid">STEP 2 push</span><span class="arrow">⇄</span><span class="pill">STEP 5 pop</span></div>
+      <p class="small">STEP 5 คืนค่ารีจิสเตอร์ และโปรแกรมทำงานต่อ ทั้งสองอย่างเกิดใน STEP 5</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="an-h">
+  <div><span class="eyebrow">Analogy</span><h2 id="an-h">โทรศัพท์ดังขณะที่คุณกำลังอ่านหนังสือ</h2></div>
+  <div class="analogy">
+    <div class="an"><span class="n">STEP 1</span><span class="real">โทรศัพท์ดัง คุณเปิดโหมด "ห้ามรบกวน"</span><span class="cs">ปิดสวิตช์อินเทอร์รัปต์</span></div>
+    <div class="an"><span class="n">STEP 2</span><span class="real">คุณคั่นหน้าหนังสือไว้</span><span class="cs">เก็บงานลงใน kernel stack</span></div>
+    <div class="an"><span class="n">STEP 3</span><span class="real">คุณดูว่าใครโทรมา และเป็นเรื่องด่วนไหม</span><span class="cs">ระบุแหล่งที่มาและลำดับความสำคัญ</span></div>
+    <div class="an"><span class="n">STEP 4</span><span class="real">คุณดูรายชื่อผู้ติดต่อ แล้วรับสาย</span><span class="cs">ใช้ IDT หา ISR แล้วรัน</span></div>
+    <div class="an"><span class="n">STEP 5</span><span class="real">คุณเปิดหนังสือตรงที่คั่นไว้ แล้วอ่านต่อ</span><span class="cs">นำงานกลับมาและทำต่อ</span></div>
+    <div class="an"><span class="n">STEP 6</span><span class="real">คุณปิดโหมด "ห้ามรบกวน"</span><span class="cs">เปิดสวิตช์อินเทอร์รัปต์</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="pit-h">
+  <div><span class="eyebrow">Exam tips</span><h2 id="pit-h">ข้อผิดพลาดที่พบบ่อย</h2></div>
+  <div class="pit">
+    <div class="pitem"><div><span class="k x">✕ คำตอบที่พบบ่อย</span><p>CPU เปลี่ยนไปทำอินเทอร์รัปต์ทันที แม้จะอยู่กลางคำสั่ง</p></div><div><span class="k o">○ ที่ถูกต้อง</span><p>CPU ตรวจ interrupt register ตอนจบแต่ละรอบ FDE แล้วจึงเปลี่ยน</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ คำตอบที่พบบ่อย</span><p>ใน STEP 6 CPU ตรวจว่ามีอินเทอร์รัปต์อื่นอีกไหม</p></div><div><span class="k o">○ ที่ถูกต้อง</span><p>ใน STEP 6 อินเทอร์รัปต์ที่ปิดไว้ใน STEP 1 จะถูกเปิดอีกครั้ง</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ คำตอบที่พบบ่อย</span><p>ใน STEP 6 โปรเซสที่เก็บไว้ทำงานต่อ</p></div><div><span class="k o">○ ที่ถูกต้อง</span><p>โปรเซสทำงานต่อใน STEP 5 การคืนค่าและการทำงานต่อเกิดพร้อมกัน</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ คำตอบที่พบบ่อย</span><p>รัน ISR (ไม่พูดถึง IDT)</p></div><div><span class="k o">○ ที่ถูกต้อง</span><p>ใช้ IDT หาที่อยู่ของ ISR แล้วใส่ลงใน PC</p></div></div>
+    <div class="pitem"><div><span class="k x">✕ คำตอบที่พบบ่อย</span><p>แหล่งที่มามี 2 แบบ: ฮาร์ดแวร์และซอฟต์แวร์</p></div><div><span class="k o">○ ที่ถูกต้อง</span><p>มี 3 แบบ: hardware, exception และ trap (software interrupt)</p></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="qz-h">
+  <div><span class="eyebrow">Quick check</span><h2 id="qz-h">ทดสอบความเข้าใจ</h2></div>
+  <div id="quiz" style="display:flex;flex-direction:column;gap:12px"></div>
+  <p class="score" id="score">0 / 5</p>
+</section>
+</div>
+</div>
+</div>
+<div id="schedwrap" hidden><p class="schednote">Scheduling page: English only for now. Language buttons apply to the Interrupts tab.</p><iframe id="schedframe" title="Preemptive vs Non-preemptive scheduling" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;title&gt;Preemptive vs Non-preemptive&lt;/title&gt;
+&lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap&quot;&gt;
+&lt;style&gt;
+/* Layout concept: a calm lab-notebook page. Narrow reading column, one wide animator panel, CPU timeline as the visual signature. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --surface-2:#E8EDF2; --ink:#13202C; --ink-2:#4A5B6B; --line:#D3DCE4;
+  --accent:#1B5FC1; --accent-bg:#DCE9FA; --ok:#0B7A3E;
+  --p1:#D9480F; --p2:#0B7A6A; --p3:#6741D9;
+  --font-display:&quot;Bricolage Grotesque&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
+  --font-body:&quot;IBM Plex Sans&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
+  --font-mono:&quot;IBM Plex Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme=&quot;light&quot;]){
+    --bg:#0E151C; --surface:#16202A; --surface-2:#1E2A36; --ink:#E7EDF2; --ink-2:#9DAEBD; --line:#2B3A48;
+    --accent:#7DB0F5; --accent-bg:#1B3350; --ok:#5FD08F; color-scheme:dark;
+  }
+}
+:root[data-theme=&quot;dark&quot;]{
+  --bg:#0E151C; --surface:#16202A; --surface-2:#1E2A36; --ink:#E7EDF2; --ink-2:#9DAEBD; --line:#2B3A48;
+  --accent:#7DB0F5; --accent-bg:#1B3350; --ok:#5FD08F; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.65;
+  padding-block:0 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:960px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:700;letter-spacing:-0.02em}
+h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:700;letter-spacing:-0.01em}
+h3{font-size:1.1rem;font-weight:500}
+p{margin:0}
+.lede{color:var(--ink-2);font-size:1.12rem;max-width:60ch}
+.eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header.hero{padding-block:48px 28px;display:grid;gap:16px}
+section{padding-block:36px 8px;display:grid;gap:16px}
+.read{max-width:64ch;display:grid;gap:12px}
+code,.mono{font-family:var(--font-mono);font-size:.92em}
+.term{font-family:var(--font-mono);font-size:.92em;background:var(--surface-2);padding:1px 6px;border-radius:4px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.lab{font-size:.82rem;color:var(--ink-2)}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:34px;padding:0 8px;border-radius:6px;color:#fff;font-family:var(--font-mono);font-weight:500;font-size:.92rem}
+.p1{background:var(--p1)} .p2{background:var(--p2)} .p3{background:var(--p3)}
+
+.burst-demo{display:grid;gap:10px}
+.burst-row{display:grid;grid-template-columns:2.4rem 1fr;gap:12px;align-items:center}
+.burst-bar{height:26px;border-radius:5px;display:flex;align-items:center;padding-left:10px;color:#fff;font-family:var(--font-mono);font-size:.82rem}
+.life{display:flex;flex-wrap:wrap;gap:4px;align-items:stretch}
+.life span{padding:6px 10px;border-radius:5px;font-family:var(--font-mono);font-size:.8rem}
+.life .cpu{background:var(--accent);color:#fff}
+.life .io{background:var(--surface-2);color:var(--ink-2);border:1px dashed var(--line)}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px}
+button:hover,select:hover{border-color:var(--ink-2)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[aria-pressed=&quot;true&quot;]{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+button.go{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]) button.go{color:#0E151C}}
+:root[data-theme=&quot;dark&quot;] button.go{color:#0E151C}
+.spacer{flex:1}
+.clock{font-family:var(--font-mono);font-size:.95rem;color:var(--ink-2)}
+.clock b{font-size:1.5rem;color:var(--ink);font-weight:500}
+
+.procs{display:grid;gap:10px}
+.proc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.proc .name{width:2.2rem;font-family:var(--font-mono);font-weight:500}
+.proc .track{flex:1 1 140px;min-width:0}
+.proc .outer{height:20px;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--surface-2)}
+.proc .inner{height:100%;transition:width .25s}
+.proc .info{font-size:.84rem;color:var(--ink-2);min-width:9.5rem}
+.proc .state{font-size:.84rem;font-weight:500;width:5rem}
+.state.run{color:var(--ok)} .state.done{color:var(--ink-2)} .state.wait{color:var(--ink-2)}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:12px}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
+.cpu-box{height:72px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.5rem;font-weight:500;margin-block:8px;color:#fff;transition:background .2s}
+.cpu-box.idle{background:transparent;border:1px dashed var(--ink-2);color:var(--ink-2);font-size:1rem}
+.qmeter{display:flex;gap:3px;min-height:12px}
+.qmeter i{flex:1;height:10px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
+.qmeter i.on{background:var(--ink-2);border-color:var(--ink-2)}
+.queue{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:46px;margin-block:8px}
+.msg{min-height:3.2em;font-size:.95rem}
+
+.gantt{display:flex}
+.cell{flex:1;height:38px;border:1px solid var(--line);margin-left:-1px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.82rem;color:#fff}
+.cell:first-child{margin-left:0}
+.cell.sw{box-shadow:inset 3px 0 0 var(--ink)}
+.axis{display:flex;margin-top:3px}
+.axis span{flex:1;font-family:var(--font-mono);font-size:.72rem;color:var(--ink-2);position:relative}
+.axis span:last-child em{position:absolute;right:0;font-style:normal}
+.result{margin-top:12px;font-size:.95rem;min-height:1.6em}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:4px}
+.glance div{background:var(--surface-2);border-radius:8px;padding:12px 14px}
+.glance b{display:block;font-family:var(--font-mono);font-size:1.4rem;font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;height:10px;box-shadow:inset 3px 0 0 var(--ink);border:1px solid var(--line);margin-right:6px;vertical-align:baseline}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;padding:12px 16px;vertical-align:top;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--font-display);font-weight:500;background:var(--surface-2)}
+td:first-child{font-weight:500;width:22%}
+
+.mix{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mix .panel{display:grid;gap:8px;align-content:start}
+.say{border-left:3px solid var(--accent);padding:4px 0 4px 16px;max-width:64ch}
+.note{font-size:.88rem;color:var(--ink-2);max-width:64ch}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){.proc .inner,.cpu-box{transition:none}}
+&lt;/style&gt;
+
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;header class=&quot;hero&quot;&gt;
+  &lt;p class=&quot;eyebrow&quot;&gt;CPU scheduling · Operating systems&lt;/p&gt;
+  &lt;h1&gt;Who gets the CPU next?&lt;/h1&gt;
+  &lt;p class=&quot;lede&quot;&gt;One CPU, three processes, and one question: can the OS take the CPU back from a process that is still running? Step through both answers below, one millisecond at a time.&lt;/p&gt;
+&lt;/header&gt;
+
+&lt;section id=&quot;burst&quot;&gt;
+  &lt;h2&gt;Burst time in one picture&lt;/h2&gt;
+  &lt;div class=&quot;read&quot;&gt;
+    &lt;p&gt;&lt;span class=&quot;term&quot;&gt;Burst time&lt;/span&gt; is how long a process needs the CPU in one continuous stretch. A process with a burst time of 8 ms needs 8 ms of CPU time to finish that stretch. Waiting in the ready queue does not count, and neither does waiting for the disk.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;panel burst-demo&quot; aria-label=&quot;Burst times of the three example processes&quot;&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p1&quot;&gt;P1&lt;/span&gt;&lt;div class=&quot;burst-bar p1&quot; style=&quot;width:100%&quot;&gt;burst time 8 ms&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p2&quot;&gt;P2&lt;/span&gt;&lt;div class=&quot;burst-bar p2&quot; style=&quot;width:25%;min-width:110px&quot;&gt;2 ms&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p3&quot;&gt;P3&lt;/span&gt;&lt;div class=&quot;burst-bar p3&quot; style=&quot;width:12.5%;min-width:64px&quot;&gt;1 ms&lt;/div&gt;&lt;/div&gt;
+    &lt;p class=&quot;lab&quot;&gt;Bar length is proportional to burst time. These three processes are used in every animation on this page. All three arrive at t = 0, queued in the order P1, P2, P3.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;read&quot;&gt;
+    &lt;p&gt;Real processes alternate between using the CPU and waiting for input or output:&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;life&quot; aria-label=&quot;CPU burst, I/O wait, CPU burst, I/O wait, CPU burst, finish&quot;&gt;
+    &lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;I/O wait&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;I/O wait&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;done&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;animator&quot;&gt;
+  &lt;h2&gt;Run the scheduler&lt;/h2&gt;
+  &lt;div class=&quot;panel&quot;&gt;
+    &lt;div class=&quot;controls&quot; style=&quot;margin-bottom:14px&quot;&gt;
+      &lt;button id=&quot;m0&quot; aria-pressed=&quot;true&quot;&gt;Non-preemptive (FCFS)&lt;/button&gt;
+      &lt;button id=&quot;m1&quot; aria-pressed=&quot;false&quot;&gt;Preemptive (Round Robin)&lt;/button&gt;
+      &lt;label id=&quot;qwrap&quot; class=&quot;lab&quot; hidden&gt;Time quantum
+        &lt;select id=&quot;qsel&quot; aria-label=&quot;Time quantum in milliseconds&quot;&gt;
+          &lt;option value=&quot;1&quot;&gt;1 ms&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;2 ms&lt;/option&gt;&lt;option value=&quot;3&quot; selected&gt;3 ms&lt;/option&gt;&lt;option value=&quot;4&quot;&gt;4 ms&lt;/option&gt;&lt;option value=&quot;8&quot;&gt;8 ms&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/label&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;controls&quot; style=&quot;margin-bottom:16px&quot;&gt;
+      &lt;button id=&quot;play&quot; class=&quot;go&quot;&gt;Play&lt;/button&gt;
+      &lt;button id=&quot;step&quot;&gt;Step 1 ms&lt;/button&gt;
+      &lt;button id=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+      &lt;label class=&quot;lab&quot;&gt;Speed
+        &lt;select id=&quot;speed&quot; aria-label=&quot;Animation speed&quot;&gt;
+          &lt;option value=&quot;1300&quot;&gt;Slow&lt;/option&gt;&lt;option value=&quot;850&quot; selected&gt;Normal&lt;/option&gt;&lt;option value=&quot;400&quot;&gt;Fast&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/label&gt;
+      &lt;span class=&quot;spacer&quot;&gt;&lt;/span&gt;
+      &lt;span class=&quot;clock&quot;&gt;time &lt;b id=&quot;clock&quot;&gt;0&lt;/b&gt; ms&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;procs&quot; id=&quot;procs&quot; style=&quot;margin-bottom:16px&quot;&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;two&quot; style=&quot;margin-bottom:16px&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;lab&quot;&gt;CPU&lt;/div&gt;
+        &lt;div id=&quot;cpu&quot; class=&quot;cpu-box idle&quot;&gt;idle&lt;/div&gt;
+        &lt;div id=&quot;qmeter&quot; class=&quot;qmeter&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;lab&quot; id=&quot;qinfo&quot; style=&quot;min-height:1.6em;margin-top:4px&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;lab&quot;&gt;Ready queue (waiting for the CPU)&lt;/div&gt;
+        &lt;div id=&quot;queue&quot; class=&quot;queue&quot;&gt;&lt;/div&gt;
+        &lt;p id=&quot;msg&quot; class=&quot;msg&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;lab&quot; style=&quot;margin-bottom:6px&quot;&gt;CPU timeline&lt;/div&gt;
+    &lt;div id=&quot;gantt&quot; class=&quot;gantt&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;axis&quot; class=&quot;axis&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;legend&quot; style=&quot;margin-top:10px&quot;&gt;&lt;span&gt;&lt;i&gt;&lt;/i&gt;thick edge = context switch (CPU handed to a different process)&lt;/span&gt;&lt;/div&gt;
+    &lt;p id=&quot;result&quot; class=&quot;result&quot;&gt;&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;read&quot;&gt;
+    &lt;h3&gt;Both modes at a glance&lt;/h3&gt;
+    &lt;p class=&quot;note&quot;&gt;Waiting time = finish time minus burst time. Context-switch cost is set to zero here, so the preemptive numbers look better than they would on a real machine.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;glance&quot; class=&quot;glance&quot;&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;compare&quot;&gt;
+  &lt;h2&gt;The difference, side by side&lt;/h2&gt;
+  &lt;div class=&quot;tablewrap&quot;&gt;
+    &lt;table&gt;
+      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;Preemptive&lt;/th&gt;&lt;th&gt;Non-preemptive&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;&lt;td&gt;CPU allocation&lt;/td&gt;&lt;td&gt;A process gets the CPU for a limited time.&lt;/td&gt;&lt;td&gt;A process keeps the CPU until its burst time is used up or it moves to a waiting state.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Interruption&lt;/td&gt;&lt;td&gt;The OS can interrupt a running process.&lt;/td&gt;&lt;td&gt;A running process cannot be interrupted. It must finish or start waiting first.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Who can starve&lt;/td&gt;&lt;td&gt;Low-priority processes, if high-priority ones keep arriving.&lt;/td&gt;&lt;td&gt;Short-burst processes, if a long-burst process holds the CPU.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Flexibility&lt;/td&gt;&lt;td&gt;More flexible.&lt;/td&gt;&lt;td&gt;More rigid.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td&gt;Overhead&lt;/td&gt;&lt;td&gt;More context switches.&lt;/td&gt;&lt;td&gt;Fewer context switches.&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;The first four rows follow the usual textbook comparison, reworded. The overhead row is added from general operating-systems knowledge.&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;mixups&quot;&gt;
+  &lt;h2&gt;Three common mix-ups&lt;/h2&gt;
+  &lt;div class=&quot;mix&quot;&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Order is a separate rule&lt;/h3&gt;
+      &lt;p&gt;FCFS orders processes by arrival. SJF orders them by shortest burst time. &quot;Non-preemptive&quot; only says that a process that has the CPU cannot lose it by force. Any ordering rule can be paired with either answer.&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Quantum is an upper limit&lt;/h3&gt;
+      &lt;p&gt;A time quantum is the longest a process may use the CPU in one turn. P2 and P3 finish well inside a 3 ms quantum, so they give the CPU back early.&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h3&gt;Quantum is not the only trigger&lt;/h3&gt;
+      &lt;p&gt;Round Robin pre-empts when the quantum runs out. A priority scheduler can also pre-empt when a higher-priority process arrives. Both are preemptive.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;exam&quot;&gt;
+  &lt;h2&gt;How to say it in an exam&lt;/h2&gt;
+  &lt;div class=&quot;say&quot;&gt;&lt;p&gt;&lt;b&gt;Non-preemptive:&lt;/b&gt; once a process is given the CPU, it keeps it until it finishes its burst time or moves to a waiting state. Other processes wait in the ready queue.&lt;/p&gt;&lt;/div&gt;
+  &lt;div class=&quot;say&quot;&gt;&lt;p&gt;&lt;b&gt;Preemptive:&lt;/b&gt; each process may use the CPU for a limited time, such as one time quantum. If it has not finished, the OS interrupts it, saves its state, and gives the CPU to the next process.&lt;/p&gt;&lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;These are study wordings, not an official mark scheme. Check your syllabus and textbook for the exact terms your exam expects.&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id=&quot;bridge&quot;&gt;&lt;h2&gt;Where interrupts come in&lt;/h2&gt;
+&lt;div class=&quot;read&quot;&gt;&lt;p&gt;Round Robin needs a way to take the CPU back when the quantum ends. The OS sets a hardware timer. When the timer fires, it raises a &lt;span class=&quot;term&quot;&gt;timer interrupt&lt;/span&gt;. The CPU saves the running process on the kernel stack, the IDT points to the scheduler&#x27;s ISR, and the scheduler picks the next process. That is what &quot;pre-empted&quot; means in practice.&lt;/p&gt;&lt;/div&gt;
+&lt;div class=&quot;controls&quot;&gt;&lt;button class=&quot;go&quot; id=&quot;gointr&quot;&gt;Open the Interrupts tab and choose Timer&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;footer&gt;
+  &lt;p class=&quot;note&quot;&gt;Example data: P1 = 8 ms, P2 = 2 ms, P3 = 1 ms, all arriving at t = 0. Non-preemptive uses first come, first served. Preemptive uses Round Robin with the quantum you choose.&lt;/p&gt;
+&lt;/footer&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+(function(){
+  var B=[8,2,1],N=[&#x27;P1&#x27;,&#x27;P2&#x27;,&#x27;P3&#x27;];
+  var mode=0,q=3,c=0,timer=null,speed=850,ticks=[];
+  function $(id){return document.getElementById(id);}
+  function build(qq){
+    var rem=B.slice(),queue=[0,1,2],t=[],first=true;
+    while(queue.length){
+      var p=queue.shift(),run=Math.min(qq,rem[p]);
+      for(var i=0;i&lt;run;i++){
+        rem[p]--;
+        t.push({p:p,q:queue.slice(),sw:(i===0&amp;&amp;!first),qu:i+1,end:(i===run-1),done:rem[p]===0});
+      }
+      first=false;
+      if(rem[p]&gt;0)queue.push(p);
+    }
+    return t;
+  }
+  function finish(t){
+    var f=[0,0,0];
+    for(var i=0;i&lt;t.length;i++){if(t[i].done)f[t[i].p]=i+1;}
+    return f;
+  }
+  function waits(t){var f=finish(t);return f.map(function(x,p){return x-B[p];});}
+  function avg(w){return Math.round((w[0]+w[1]+w[2])/3*100)/100;}
+  function chip(p){return &#x27;&lt;span class=&quot;chip p&#x27;+(p+1)+&#x27;&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;;}
+  function stop(){
+    if(timer){clearInterval(timer);timer=null;}
+    $(&#x27;play&#x27;).textContent=&#x27;Play&#x27;;
+  }
+  function setup(){
+    stop();
+    ticks=build(mode===0?99:q);
+    c=0;
+    $(&#x27;qwrap&#x27;).hidden=(mode===0);
+    $(&#x27;m0&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===0?&#x27;true&#x27;:&#x27;false&#x27;);
+    $(&#x27;m1&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===1?&#x27;true&#x27;:&#x27;false&#x27;);
+    draw();
+  }
+  function glance(){
+    var a=waits(build(99)),b=waits(build(q));
+    $(&#x27;glance&#x27;).innerHTML=
+      &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;Non-preemptive (FCFS)&lt;/span&gt;&lt;b&gt;&#x27;+avg(a)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;average wait (P1 &#x27;+a[0]+&#x27;, P2 &#x27;+a[1]+&#x27;, P3 &#x27;+a[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;Preemptive (Round Robin, quantum &#x27;+q+&#x27; ms)&lt;/span&gt;&lt;b&gt;&#x27;+avg(b)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;average wait (P1 &#x27;+b[0]+&#x27;, P2 &#x27;+b[1]+&#x27;, P3 &#x27;+b[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;;
+  }
+  function draw(){
+    var rem=B.slice(),fin=[null,null,null],i,p;
+    for(i=0;i&lt;c;i++){rem[ticks[i].p]--;if(ticks[i].done)fin[ticks[i].p]=i+1;}
+    var finished=c&gt;=ticks.length;
+    var cur=c&gt;0?ticks[c-1]:null;
+    $(&#x27;clock&#x27;).textContent=c;
+
+    var h=&#x27;&#x27;;
+    for(p=0;p&lt;3;p++){
+      var st=&#x27;waiting&#x27;,cl=&#x27;wait&#x27;;
+      if(fin[p]!==null){st=&#x27;done&#x27;;cl=&#x27;done&#x27;;}
+      else if(cur&amp;&amp;cur.p===p&amp;&amp;!finished){st=&#x27;running&#x27;;cl=&#x27;run&#x27;;}
+      h+=&#x27;&lt;div class=&quot;proc&quot;&gt;&lt;span class=&quot;name&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;+
+        &#x27;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;outer&quot; style=&quot;width:&#x27;+(B[p]/8*100)+&#x27;%&quot;&gt;&lt;div class=&quot;inner p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(rem[p]/B[p]*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
+        &#x27;&lt;span class=&quot;info&quot;&gt;burst &#x27;+B[p]+&#x27; ms · &#x27;+rem[p]+&#x27; left&lt;/span&gt;&#x27;+
+        &#x27;&lt;span class=&quot;state &#x27;+cl+&#x27;&quot;&gt;&#x27;+st+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;
+    }
+    $(&#x27;procs&#x27;).innerHTML=h;
+
+    var cpu=$(&#x27;cpu&#x27;);
+    if(cur&amp;&amp;!finished){cpu.className=&#x27;cpu-box p&#x27;+(cur.p+1);cpu.textContent=N[cur.p];}
+    else{cpu.className=&#x27;cpu-box idle&#x27;;cpu.textContent=finished?&#x27;all done&#x27;:&#x27;idle&#x27;;}
+
+    var qm=&#x27;&#x27;;
+    if(mode===1&amp;&amp;cur&amp;&amp;!finished){
+      for(i=1;i&lt;=q;i++){qm+=&#x27;&lt;i class=&quot;&#x27;+(i&lt;=cur.qu?&#x27;on&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;;}
+      $(&#x27;qinfo&#x27;).textContent=&#x27;quantum used: &#x27;+cur.qu+&#x27; of &#x27;+q+&#x27; ms&#x27;;
+    }else if(mode===0&amp;&amp;cur&amp;&amp;!finished){
+      $(&#x27;qinfo&#x27;).textContent=&#x27;keeps the CPU until its burst ends&#x27;;
+    }else{$(&#x27;qinfo&#x27;).textContent=&#x27;&#x27;;}
+    $(&#x27;qmeter&#x27;).innerHTML=qm;
+
+    var qh=&#x27;&#x27;;
+    if(c===0){qh=chip(0)+chip(1)+chip(2);}
+    else if(!finished){
+      qh=cur.q.length?cur.q.map(chip).join(&#x27;&#x27;):&#x27;&lt;span class=&quot;lab&quot;&gt;nobody is waiting&lt;/span&gt;&#x27;;
+      if(mode===1&amp;&amp;cur.end&amp;&amp;!cur.done){qh+=&#x27;&lt;span class=&quot;lab&quot;&gt;then &#x27;+N[cur.p]+&#x27; joins at the back&lt;/span&gt;&#x27;;}
+    }else{qh=&#x27;&lt;span class=&quot;lab&quot;&gt;empty&lt;/span&gt;&#x27;;}
+    $(&#x27;queue&#x27;).innerHTML=qh;
+
+    var m=&#x27;Press Play or Step. All three processes arrive at t = 0, queued as P1, P2, P3.&#x27;;
+    if(c&gt;0){
+      if(finished)m=&#x27;All three processes are done. Compare the waiting times below the timeline.&#x27;;
+      else if(cur.done)m=N[cur.p]+&#x27; used up its burst time and finished. The CPU goes to the next process.&#x27;;
+      else if(mode===1&amp;&amp;cur.end)m=N[cur.p]+&#x27; used its full &#x27;+q+&#x27; ms quantum and still has burst time left. It is pre-empted and goes to the back of the queue.&#x27;;
+      else if(mode===1&amp;&amp;cur.sw)m=&#x27;Context switch: &#x27;+N[cur.p]+&#x27; now has the CPU.&#x27;;
+      else if(mode===0)m=N[cur.p]+&#x27; is running. Nothing can interrupt it until it finishes.&#x27;;
+      else m=N[cur.p]+&#x27; is running.&#x27;;
+    }
+    $(&#x27;msg&#x27;).textContent=m;
+
+    var g=&#x27;&#x27;,a=&#x27;&#x27;;
+    for(i=0;i&lt;ticks.length;i++){
+      var on=i&lt;c;
+      g+=&#x27;&lt;div class=&quot;cell&#x27;+(on?&#x27; p&#x27;+(ticks[i].p+1):&#x27;&#x27;)+(on&amp;&amp;ticks[i].sw?&#x27; sw&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+(on?N[ticks[i].p]:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
+      a+=&#x27;&lt;span&gt;&#x27;+i+(i===ticks.length-1?&#x27;&lt;em&gt;&#x27;+ticks.length+&#x27;&lt;/em&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/span&gt;&#x27;;
+    }
+    $(&#x27;gantt&#x27;).innerHTML=g;
+    $(&#x27;axis&#x27;).innerHTML=a;
+
+    var r=&#x27;&#x27;;
+    if(finished){
+      var w=[fin[0]-B[0],fin[1]-B[1],fin[2]-B[2]];
+      r=&#x27;Waiting time = finish time − burst time. P1: &#x27;+fin[0]+&#x27; − &#x27;+B[0]+&#x27; = &#x27;+w[0]+&#x27; ms. P2: &#x27;+fin[1]+&#x27; − &#x27;+B[1]+&#x27; = &#x27;+w[1]+&#x27; ms. P3: &#x27;+fin[2]+&#x27; − &#x27;+B[2]+&#x27; = &#x27;+w[2]+&#x27; ms. Average: &#x27;+avg(w)+&#x27; ms.&#x27;;
+    }
+    $(&#x27;result&#x27;).textContent=r;
+    glance();
+  }
+  function next(){
+    if(c&lt;ticks.length){c++;draw();}
+    if(c&gt;=ticks.length)stop();
+  }
+  $(&#x27;m0&#x27;).onclick=function(){mode=0;setup();};
+  $(&#x27;m1&#x27;).onclick=function(){mode=1;setup();};
+  $(&#x27;qsel&#x27;).onchange=function(){q=parseInt(this.value,10);setup();};
+  $(&#x27;speed&#x27;).onchange=function(){
+    speed=parseInt(this.value,10);
+    if(timer){clearInterval(timer);timer=setInterval(next,speed);}
+  };
+  $(&#x27;step&#x27;).onclick=function(){stop();next();};
+  $(&#x27;reset&#x27;).onclick=function(){stop();c=0;draw();};
+  $(&#x27;play&#x27;).onclick=function(){
+    if(timer){stop();return;}
+    if(c&gt;=ticks.length){c=0;}
+    $(&#x27;play&#x27;).textContent=&#x27;Pause&#x27;;
+    next();
+    if(c&lt;ticks.length){timer=setInterval(next,speed);}
+  };
+  setup();
+})();
+&lt;/script&gt;
+
+&lt;script&gt;document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+<script>
+(function(root){
+
+const $=id=>root.querySelector('#'+id);
+const RG=["PC","CIR","ACC","MAR","MDR"];
+const NAME={PC:"next job",CIR:"doing now",ACC:"working result",MAR:"looking at",MDR:"data in hand"};
+const NAMEN={PC:"address of next instruction",CIR:"current instruction",ACC:"result",MAR:"address to read or write",MDR:"data to read or write"};
+const ORDER=["power","timer","disk","kbd","div","trap"];
+const SRC={
+ power:{name:"Power failure",short:"Power",type:"hardware",from:"Power circuit (external device)",isr:"ISR_power",addr:"1110",
+   ex:"The voltage dropped suddenly",job:"Emergency-save the work in progress",
+   w:{PC:"Emergency-save the document",CIR:"Check the power state",ACC:"Voltage is low!",MAR:"Power control circuit",MDR:"Warning message"},
+   n:{PC:"1111",CIR:"0111",ACC:"1000",MAR:"0110",MDR:"0001"}},
+ timer:{name:"Timer",short:"Timer",type:"hardware",from:"Timer circuit (external device)",isr:"ISR_timer",addr:"0110",
+   ex:"The time slice ran out",job:"Tell the OS that time is up and choose the next program",
+   w:{PC:"Switch to the next program",CIR:"Count the time used",ACC:"Time used = 20 ms",MAR:"Timer circuit",MDR:"\"Time's up\" signal"},
+   n:{PC:"0111",CIR:"0010",ACC:"0100",MAR:"0001",MDR:"1111"}},
+ disk:{name:"Disk",short:"Disk",type:"hardware",from:"Disk drive (external device)",isr:"ISR_disk",addr:"0111",
+   ex:"An image the photo app asked for has finished loading",job:"Pass the loaded data to the program that was waiting",
+   w:{PC:"Pass the loaded data",CIR:"Read the disk's \"done\" report",ACC:"Loaded = 4 KB",MAR:"Disk controller",MDR:"Part of an image file"},
+   n:{PC:"1000",CIR:"0110",ACC:"0101",MAR:"0010",MDR:"1010"}},
+ kbd:{name:"Keyboard",short:"Keyboard",type:"hardware",from:"Keyboard (external device)",isr:"ISR_kbd",addr:"1010",
+   ex:"A key was pressed",job:"Read the key and show it on the screen",
+   w:{PC:"Send the key to the screen",CIR:"Read a character from the keyboard",ACC:"Key pressed = K",MAR:"Keyboard input port",MDR:"\"K\""},
+   n:{PC:"1011",CIR:"1001",ACC:"0001",MAR:"1011",MDR:"1110"}},
+ div:{name:"Divide by zero",short:"Divide by 0",type:"exception",from:"The running program (inside the CPU)",isr:"ISR_div",addr:"1100",
+   ex:"The calculator tried to do 10 ÷ 0",job:"Show an error message on the screen (textbook example)",
+   w:{PC:"Show an error message",CIR:"Find the cause of the error",ACC:"Tried to divide by 0",MAR:"Error information",MDR:"\"Cannot divide by 0\""},
+   n:{PC:"1101",CIR:"0011",ACC:"0000",MAR:"1101",MDR:"0110"},
+   note:" (In a real OS, a program that divides by zero is often closed instead. In the textbook model, it continues.)"},
+ trap:{name:"System call",short:"OS call",type:"trap",from:"The running program (inside the CPU)",isr:"ISR_syscall",addr:"1101",
+   ex:"The word processor asked the OS to print",job:"The OS prepares the print job and sends it to the printer",
+   w:{PC:"Send the document to the printer",CIR:"Read the request to the OS",ACC:"Request type = print",MAR:"Print queue",MDR:"Document to print"},
+   n:{PC:"1110",CIR:"1000",ACC:"0010",MAR:"0111",MDR:"1011"}}
+};
+const PROG={
+ power:{name:"Spreadsheet",w:{PC:"Calculate the total",CIR:"Typing a number in B5",ACC:"Total = 15,200",MAR:"Sales sheet, cell B5",MDR:"\"3,500\""},n:{PC:"0010",CIR:"0001",ACC:"1111",MAR:"1010",MDR:"0101"}},
+ timer:{name:"Video export",w:{PC:"Compress the next frame",CIR:"Compressing frame 120",ACC:"Progress = 40%",MAR:"Frame 120 of the video",MDR:"Image data of the frame"},n:{PC:"0011",CIR:"0010",ACC:"1010",MAR:"1000",MDR:"0111"}},
+ disk:{name:"Photo app",w:{PC:"Show the photos on screen",CIR:"Making thumbnail no. 3",ACC:"Photos shown = 3",MAR:"Photos folder",MDR:"Part of \"beach.jpg\""},n:{PC:"1001",CIR:"1000",ACC:"0011",MAR:"0100",MDR:"1101"}},
+ kbd:{name:"Word processor",w:{PC:"Save the paragraph",CIR:"Typing the letter \"d\"",ACC:"Word count = 128",MAR:"Page 3 of the document",MDR:"\"Hello worl\""},n:{PC:"0101",CIR:"0100",ACC:"0011",MAR:"1001",MDR:"1100"}},
+ div:{name:"Calculator app",w:{PC:"Show the answer",CIR:"Calculating \"10 ÷ 0\"",ACC:"Number to divide = 10",MAR:"Formula memo",MDR:"Divisor \"0\""},n:{PC:"0111",CIR:"0110",ACC:"1010",MAR:"0011",MDR:"0000"}},
+ trap:{name:"Word processor (printing)",w:{PC:"Reset the Print button",CIR:"\"Print\" button was pressed",ACC:"Copies = 2",MAR:"Page 1 of the document",MDR:"Document to print"},n:{PC:"0100",CIR:"0011",ACC:"0010",MAR:"1001",MDR:"1011"}}
+};
+ORDER.forEach((k,i)=>{SRC[k].key=k;SRC[k].i=i;SRC[k].prog=PROG[k]});
+const TYPEX={hardware:"It comes from an external device.",exception:"It is caused by an error while a program is running.",trap:"The program itself calls the OS. This is a software interrupt."};
+const TYPEL={hardware:"hardware",exception:"exception",trap:"trap / software"};
+const FLAG={on:["on","ON: accepting","All interrupts are accepted"],off:["","OFF: not accepting","Stopped so the ISR is not interrupted"],mk:["half","Partly ON","Only interrupts more important than the keyboard can come in"],mx:["","OFF: not accepting","The most important job is running, so all are stopped"]};
+
+let mode="w",nestOn=false,srcKey="kbd";
+let ctx={A:SRC.kbd,B:null,prog:SRC.kbd.prog};
+const val=(o,k)=>o==="P"?ctx.prog[mode][k]:ctx[o][mode][k];
+const who=o=>o==="P"?"Original program ("+ctx.prog.name+")":(o==="A"?(nestOn?"ISR A":"ISR")+" ("+ctx.A.name+")":"ISR B ("+ctx.B.name+")");
+const runText=r=>r==="W"?"Switching…":"Running: "+who(r);
+
+function buildBasic(){
+  const c=ctx.A,nm=c.name,isr=c.isr,inside=c.type!=="hardware",g=ctx.prog;
+  return [
+  {fig:"Normal",s:"Run",t:`The ${g.name.toLowerCase()} is running`,e:"fetch–decode–execute cycle",b:`The ${g.name.toLowerCase()} is running. Right now it is "${g.w.CIR}". The CPU runs one instruction at a time. After each one, it checks the interrupt signals. All signals are 0, so nothing has arrived.`,r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"Signal",s:"Signal",t:`A signal arrives: ${nm}`,e:"interrupt received",b:`${c.ex}. The ${nm.toLowerCase()} signal is now 1. The red frame shows where the signal comes from. `+(inside?`This signal does not come from a device. It comes from the running ${g.name.toLowerCase()} itself.`:"The CPU finishes the current instruction first, then it notices the signal."),r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"STEP 1",s:"Switch OFF",t:"Turn the interrupt switch OFF",e:"other interrupts are disabled",b:"The switch is turned off, so the interrupt handling cannot be interrupted by another interrupt.",r:"P",on:["A"],f:"off",run:"W",fr:[],hot:["cu"]},
+  {fig:"STEP 2",s:"Save",t:"Save the unfinished work on the stack",e:"state saved on the kernel stack",b:"The values in the CPU (next job, working result, and so on) go into a blue box called a stack frame. The box is pushed onto the kernel stack. Without this, the program could not continue later.",r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:[]},
+  {fig:"STEP 3",s:"Identify",t:"Find the source and check the priority",e:"source identified · priority checked",b:`The signal came from: ${nm}. The type is ${TYPEL[c.type]}. ${TYPEX[c.type]} The priority is checked, and the CPU decides to handle it now.`,r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:["irbox"]},
+  {fig:"STEP 4",s:"Run ISR",t:`Read the IDT and run ${isr}`,e:"jump to the ISR using the IDT",b:`① Read the "${nm} → ${isr}" row in the IDT. ② Load the address of ${isr} into the PC. ③ Run ${isr}. Its job: ${c.job.charAt(0).toLowerCase()+c.job.slice(1)}. The blue work has left the CPU, but that is OK. It is safe on the stack.`,r:"A",on:[],f:"off",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+  {fig:"STEP 5",ret:1,s:"Restore",t:"Restore the work and continue",e:"state restored → process continues",b:`When ${isr} finishes, the blue box is popped from the stack and its values go back into the CPU. The ${g.name.toLowerCase()} continues from "${g.w.CIR}".`+(c.note||""),r:"P",on:[],f:"off",run:"P",fr:[],hot:[]},
+  {fig:"STEP 6",s:"Switch ON",t:"Turn the interrupt switch ON again",e:"interrupts restored (re-enabled)",b:"The switch from STEP 1 is turned on again. Now the CPU can handle the next interrupt. STEP 1 and STEP 6 are a pair.",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+  ];
+}
+const nest=[
+ {fig:"Normal",s:"Run",t:"The word processor is running",e:"fetch–decode–execute cycle",b:"Same start as the basic scenario. This time, a more important interrupt arrives while the keyboard ISR is running.",r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"Signal",s:"Signal",t:"A signal arrives: Keyboard",e:"interrupt received",b:"The keyboard signal is now 1. The red frame shows the device that sent the signal (the keyboard).",r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"STEP 1",x:1,s:"Partly OFF",t:"Stop only the less important interrupts",e:"lower-priority interrupts disabled",b:"The textbook turns all interrupts off. Real CPUs often let more important interrupts through. This is beyond the textbook.",r:"P",on:["A"],f:"mk",run:"W",fr:[],hot:["cu"]},
+ {fig:"STEP 2",s:"Save ①",t:"Save the word processor's work",e:"state saved on the kernel stack",b:"The blue box (the original program's work) is pushed onto the stack.",r:"P",on:["A"],f:"mk",run:"W",fr:["P"],hot:[]},
+ {fig:"STEP 3–4",s:"ISR A",t:"Run the keyboard ISR (ISR A)",e:"jump to ISR A using the IDT",b:"It is the keyboard, so the CPU reads the ISR_kbd row in the IDT and runs it. The CPU now holds green work.",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+ {fig:"Signal ②",x:1,s:"Urgent signal",t:"Power failure during the keyboard ISR!",e:"higher-priority interrupt received",b:"The leftmost (most important) signal is now 1. The red frame has moved to Power. The switch is partly ON, so this signal can come in.",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox","cu"]},
+ {fig:"STEP 3 ②",s:"Compare",t:"Which one is more important?",e:"priority checked",b:"A power failure is more important than the keyboard. ISR A is stopped so the power failure can be handled first. A less important signal would have to wait.",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox"]},
+ {fig:"STEP 1–2 ②",s:"Save ②",t:"Save the keyboard ISR's work too",e:"ISR A state pushed on top",b:"All interrupts are turned off. The green box (ISR A's unfinished work) is pushed on top of the blue box. Now there are two boxes on the stack.",r:"A",on:["B"],f:"mx",run:"W",fr:["P","A"],hot:["cu"]},
+ {fig:"STEP 4 ②",s:"ISR B",t:"Run the power failure ISR (ISR B)",e:"jump to ISR B using the IDT",b:"The CPU reads the ISR_power row in the IDT and runs it. The CPU now holds purple work, and it emergency-saves the document.",r:"B",on:[],f:"mx",run:"B",fr:["P","A"],hot:["idtbox"],idt:"B"},
+ {fig:"STEP 5 ②",ret:1,s:"Green back",t:"Pop the green box on top",e:"pop: ISR A continues",b:"When ISR B finishes, only the green box on top is popped. The keyboard ISR continues. The last box in is the first box out (LIFO), so the order stays correct.",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:[]},
+ {fig:"STEP 5",ret:1,s:"Blue back",t:"Pop the blue box",e:"pop: original program continues",b:"The keyboard ISR has finished too. The blue box is popped and the word processor continues from \"Typing the letter d\".",r:"P",on:[],f:"mk",run:"P",fr:[],hot:[]},
+ {fig:"STEP 6",s:"Switch ON",t:"Turn all interrupts ON again",e:"interrupts restored (re-enabled)",b:"All interrupts are accepted again. The stack is empty. Everything is back to the start.",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+];
+let seq=buildBasic(),s=0,timer=null,prev=null,popTok=0;
+
+function ownerOf(i){return ctx.A&&ctx.A.i===i?"A":(ctx.B&&ctx.B.i===i?"B":"W")}
+function buildStatic(){
+  $('srcs').innerHTML=ORDER.map(k=>{const c=SRC[k];return `<button class="src" data-k="${k}" aria-pressed="${k===srcKey}"><span class="nm">${c.name}</span><span class="ty">${TYPEL[c.type]}</span><span class="ex">${c.ex}</span><span class="pg">Stops: ${c.prog.name}</span></button>`}).join('');
+  $('srcs').querySelectorAll('.src').forEach(b=>b.onclick=()=>setSource(b.dataset.k));
+  $('bits').innerHTML=ORDER.map((k,i)=>{const c=SRC[k];const kind=c.type==="hardware"?"HW":(c.type==="exception"?"exception":"trap");
+    return (i===4?'<span class="div" aria-hidden="true"></span>':'')+`<div class="bit" id="b${i}"><span class="tagsig">⚡ signal</span><span class="d">0</span><span class="l">${c.short}</span><span class="k">${kind}</span></div>`}).join('');
+  $('idtb').innerHTML=ORDER.map((k,i)=>`<tr id="i${i}"><td>${SRC[k].name}</td><td class="ty">${SRC[k].type}</td><td id="i${i}v"></td></tr>`).join('');
+  $('cmpb').innerHTML=ORDER.map(k=>{const c=SRC[k];const cls=c.type==="hardware"?"hw":(c.type==="trap"?"tr":"");
+    return `<tr><td><b>${c.name}</b></td><td><span class="tyb ${cls}">${TYPEL[c.type]}</span></td><td>${c.prog.name}<br><span class="small">${c.prog.w.CIR}</span></td><td>${c.from}</td><td>${c.ex}</td><td class="m">${c.isr}<br>address ${c.addr}</td><td>${c.job}</td><td><button class="btn sm" data-k="${k}">Show</button></td></tr>`}).join('');
+  $('cmpb').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(nestOn)setScenario(false);setSource(b.dataset.k);go(5,true);$('sim').scrollIntoView({behavior:'smooth',block:'start'})});
+}
+function buildRegs(){
+  $('regs').innerHTML=RG.map(k=>`<div class="reg" id="r${k}"><span class="n"><b>${k}</b>${mode==="w"?NAME[k]:NAMEN[k]}</span><span class="v" id="v${k}"></span><span class="new">NEW</span></div>`).join('');
+  $('bench').classList.toggle('mode-num',mode==="n");
+}
+function frameHTML(o,top){
+  return `<div class="frame o-${o}"><div class="h"><span class="who">${who(o)}</span>${top?'<span class="sp">top</span>':''}</div><ul>${RG.map(k=>`<li><i>${k}</i><span>${val(o,k)}</span></li>`).join('')}</ul></div>`;
+}
+function renderFrames(cur,old,animate,onArrive){
+  const el=$('frames');const tok=++popTok;
+  document.querySelectorAll('.flyer').forEach(x=>x.remove());
+  const draw=arr=>{el.innerHTML=arr.length?arr.map((o,i)=>frameHTML(o,i===arr.length-1)).join(''):'<div class="empty">Empty (nothing saved)</div>'};
+  const still=()=>el.querySelectorAll('.frame').forEach(x=>x.style.animation='none');
+  const label=()=>{$('stackN').textContent=cur.length?`${cur.length} box${cur.length>1?'es':''}`:'Empty'};
+  if(animate&&old&&old.length>cur.length){
+    draw(old);still();
+    const top=el.lastElementChild,a=top.getBoundingClientRect(),b=$('regs').getBoundingClientRect();
+    const fly=top.cloneNode(true);fly.classList.add('flyer');
+    fly.style.cssText=`position:absolute;left:${a.left+scrollX}px;top:${a.top+scrollY}px;width:${a.width}px;margin:0;z-index:50;animation:none;pointer-events:none`;
+    document.body.appendChild(fly);top.style.visibility='hidden';
+    const dx=(b.left+b.width/2)-(a.left+a.width/2),dy=(b.top+b.height/2)-(a.top+a.height/2);
+    const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const an=fly.animate([{transform:'none',opacity:1},{transform:`translate(${dx*.45}px,${dy*.45-50}px) rotate(-3deg) scale(1.06)`,opacity:1,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.85)`,opacity:.1}],{duration:rm?1:1100,easing:'cubic-bezier(.45,0,.25,1)',fill:'forwards'});
+    $('stackN').textContent='Popping…';
+    an.onfinish=()=>{fly.remove();if(tok!==popTok)return;draw(cur);still();label();onArrive&&onArrive()};
+    return;
+  }
+  draw(cur);
+  const n=animate&&old?old.length:cur.length;
+  el.querySelectorAll('.frame').forEach((x,i)=>{if(i<n)x.style.animation='none'});
+  label();
+}
+function buildTrack(){
+  $('track').innerHTML=seq.map((d,i)=>`<button class="tstep" data-i="${i}"><b>${i}</b>${d.s}</button>`).join('');
+  $('track').querySelectorAll('.tstep').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+}
+function applyCPU(d,flash,land){
+  const cpu=$('cpu');cpu.className='cpu o-'+d.r;
+  if(land){void cpu.offsetWidth;cpu.classList.add('land')}
+  RG.forEach(k=>{$('v'+k).textContent=val(d.r,k);const r=$('r'+k);r.classList.remove('chg');if(flash){void r.offsetWidth;r.classList.add('chg')}});
+  $('running').textContent=runText(d.run);
+}
+function render(animate=true){
+  const d=seq[s];
+  $('fig').textContent=d.fig;$('fig').className='figtag'+(d.x?' extra':'');
+  $('capT').textContent=d.t;$('capE').textContent=d.e;$('capB').textContent=d.b;
+  root.querySelectorAll('.tstep').forEach(b=>{const n=+b.dataset.i;b.className='tstep'+(n===s?' now':n<s?' done':'')});
+  const p=prev,popping=!!(animate&&p&&p.fr.length>d.fr.length);
+  if(!popping)applyCPU(d,!!(animate&&p&&p.r!==d.r),false);
+  else $('running').textContent='Restoring work from the stack…';
+  const hitRow=d.idt?ctx[d.idt].i:-1;
+  ORDER.forEach((k,i)=>{
+    const o=ownerOf(i),on=d.on.some(x=>ctx[x]&&ctx[x].i===i);
+    const b=$('b'+i);b.className='bit o-'+o+(o!=="W"?' own':'')+(on?' one':'');b.querySelector('.d').textContent=on?'1':'0';
+    const r=$('i'+i);r.className='o-'+o+(o!=="W"?' own':'')+(i===hitRow?' hit':'');
+    $('i'+i+'v').textContent='→ '+(mode==="w"?SRC[k].isr:SRC[k].addr);
+  });
+  const f=FLAG[d.f];$('tg').className='toggle '+f[0];$('flagT').textContent=f[1];$('flagS').textContent=f[2];
+  ['cu','irbox'].forEach(id=>$(id).classList.toggle('hot',d.hot.includes(id)));
+  $('idtbox').className='box'+(d.hot.includes('idtbox')?' hot':'')+(d.idt?' own o-'+d.r:'');
+  const fl=$('flow');
+  if(d.idt){
+    const c=ctx[d.idt];
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① Read the IDT<b>${c.name} → ${c.isr}</b></span><span class="fa">→</span><span class="fs">② Load into the PC<b>${mode==="w"?"First instruction of "+c.isr:"PC = "+c.addr}</b></span><span class="fa">→</span><span class="fs">③ Run<b>${c.isr} uses the CPU</b></span>`;
+    fl.hidden=false;
+  }else if(d.ret){
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① Pop from the stack<b>Top box: ${who(d.r)}</b></span><span class="fa">→</span><span class="fs">② Write back to the CPU<b>${mode==="w"?"Next job = "+val(d.r,"PC"):"PC = "+val(d.r,"PC")}</b></span><span class="fa">→</span><span class="fs">③ Continue<b>${mode==="w"?"From: "+val(d.r,"CIR"):"From the instruction at "+val(d.r,"PC")}</b></span>`;
+    fl.hidden=false;
+  }else fl.hidden=true;
+  $('isrs').innerHTML=ORDER.map((k,i)=>{const o=ownerOf(i);const act=(d.run==="A"&&ctx.A.i===i)||(d.run==="B"&&ctx.B&&ctx.B.i===i);return `<span class="isr o-${o}${o!=="W"?' own':''}${act?' act':''}"><b>${SRC[k].addr}</b>${SRC[k].isr}</span>`}).join('');
+  renderFrames(d.fr,p?p.fr:null,animate,()=>applyCPU(d,true,true));
+  prev=d;
+}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='▶ Play'}
+function go(n,noAnim){stop();n=Math.max(0,Math.min(seq.length-1,n));const adj=!noAnim&&Math.abs(n-s)===1;if(!adj)prev=null;s=n;render(adj)}
+function setSource(k){stop();srcKey=k;ctx={A:SRC[k],B:null,prog:SRC[k].prog};seq=buildBasic();prev=null;
+  $('srcs').querySelectorAll('.src').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));render(false)}
+function setScenario(isNest){stop();nestOn=isNest;ctx=isNest?{A:SRC.kbd,B:SRC.power,prog:SRC.kbd.prog}:{A:SRC[srcKey],B:null,prog:SRC[srcKey].prog};seq=isNest?nest:buildBasic();s=0;prev=null;
+  $('scBasic').setAttribute('aria-pressed',!isNest);$('scNest').setAttribute('aria-pressed',isNest);$('srcwrap').hidden=isNest;buildTrack();render(false)}
+function setMode(m){mode=m;$('mWord').setAttribute('aria-pressed',m==="w");$('mNum').setAttribute('aria-pressed',m==="n");buildRegs();prev=null;render(false)}
+$('scBasic').onclick=()=>setScenario(false);$('scNest').onclick=()=>setScenario(true);
+$('mWord').onclick=()=>setMode("w");$('mNum').onclick=()=>setMode("n");
+$('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=()=>go(0,true);
+$('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ Pause';
+  timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
+$('spd').onchange=()=>{if(timer){stop();$('play').click()}};
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+buildStatic();buildRegs();buildTrack();render(false);
+
+const qs=[
+ {q:"In STEP 6, what is restored?",o:["The register values of the stopped process","The PC value saved on the kernel stack","The ability to accept interrupts (re-enable)","The working data that the ISR was using"],a:2,ex:"STEP 6 turns the interrupts from STEP 1 back on. Registers and the PC are restored in STEP 5."},
+ {q:"When an ISR starts, which register gets the address from the IDT?",o:["PC (Program Counter)","ACC (Accumulator)","MDR (Memory Data Register)","CIR (Current Instruction Register)"],a:0,ex:"The ISR's address goes into the PC, so the next instruction to run is the first instruction of the ISR."},
+ {q:"With an interrupt inside an interrupt, why can the stack go back in the correct order?",o:["The first frame saved is the first one taken out","Each frame has its own priority number on it","The IDT remembers every address to return to","The last frame saved is the first one taken out"],a:3,ex:"A stack is LIFO. ISR A's box was saved last, so it comes out first. The order never gets mixed up."},
+ {q:"When does the CPU check the interrupt register?",o:["At the exact moment every signal arrives","At the end of every FDE cycle","Only when data is written to memory","Only once, when the OS starts up"],a:1,ex:"It checks at the end of each FDE cycle, not in the middle of an instruction. So every instruction always finishes."},
+ {q:"A program asks the OS to save a file. Which interrupt is this?",o:["A hardware interrupt from the disk drive","An exception caused by a runtime error","A trap (software) where the program calls the OS","A timer interrupt from the clock circuit"],a:2,ex:"When a program calls an OS service itself, it is a trap (software interrupt). When saving finishes, the disk sends a hardware interrupt."}
+];
+let score=0;
+qs.forEach((x,i)=>{
+  const box=document.createElement('div');box.className='q';
+  box.innerHTML=`<h3>Q${i+1}. ${x.q}</h3><div class="opts">${x.o.map((t,j)=>`<button class="opt" id="q${i}o${j}" data-j="${j}">${"ABCD"[j]}. ${t}</button>`).join('')}</div><p class="fb" id="fb${i}"></p>`;
+  $('quiz').appendChild(box);
+  let done=false;
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(done)return;done=true;const j=+b.dataset.j;
+    box.querySelectorAll('.opt')[x.a].classList.add('right');
+    if(j!==x.a)b.classList.add('wrong');else score++;
+    $('fb'+i).textContent=(j===x.a?'Correct. ':'Not quite. The answer is '+"ABCD"[x.a]+'. ')+x.ex;
+    $('score').textContent=score+' / '+qs.length;
+  });
+});
+
+root.addEventListener('langhide',()=>stop());
+
+})(document.getElementById('ven'));
+(function(root){
+
+const $=id=>root.querySelector('#'+id);
+const RG=["PC","CIR","ACC","MAR","MDR"];
+const NAME={PC:"次にやること",CIR:"今やっていること",ACC:"計算の途中結果",MAR:"見ている場所",MDR:"扱っているデータ"};
+const NAMEN={PC:"次の命令のアドレス",CIR:"実行中の命令",ACC:"途中結果",MAR:"読み書きするアドレス",MDR:"読み書きするデータ"};
+const PW={PC:"段落を保存する",CIR:"「は」の文字を入力中",ACC:"文字数 = 128",MAR:"文書の3ページ目",MDR:"「こんにち」"};
+const PN={PC:"0101",CIR:"0100",ACC:"0011",MAR:"1001",MDR:"1100"};
+const ORDER=["power","timer","disk","kbd","div","trap"];
+const SRC={
+ power:{name:"電源・エラー",short:"電源",type:"hardware",from:"電源回路（外の装置）",isr:"ISR_power",addr:"1110",
+   ex:"電圧が急に下がった",job:"作業中のデータを緊急保存する",
+   w:{PC:"作業中の文書を緊急保存する",CIR:"電源の状態を確認する",ACC:"電圧が低い！",MAR:"電源の管理回路",MDR:"警告メッセージ"},
+   n:{PC:"1111",CIR:"0111",ACC:"1000",MAR:"0110",MDR:"0001"}},
+ timer:{name:"タイマー",short:"タイマー",type:"hardware",from:"タイマー回路（外の装置）",isr:"ISR_timer",addr:"0110",
+   ex:"持ち時間（タイムスライス）が終わった",job:"時間切れを OS に伝え、次に動かすプログラムを決める",
+   w:{PC:"次のプログラムに交代する",CIR:"使った時間を数える",ACC:"経過時間 = 20ms",MAR:"タイマー回路",MDR:"「時間切れ」の合図"},
+   n:{PC:"0111",CIR:"0010",ACC:"0100",MAR:"0001",MDR:"1111"}},
+ disk:{name:"ディスク",short:"ディスク",type:"hardware",from:"ディスク装置（外の装置）",isr:"ISR_disk",addr:"0111",
+   ex:"写真アプリが頼んでいた画像の読み込みが終わった",job:"読み込んだデータを、待っていたプログラムに渡す",
+   w:{PC:"読み込んだデータを渡す",CIR:"ディスクの完了報告を読む",ACC:"読み込み量 = 4KB",MAR:"ディスクの制御回路",MDR:"画像ファイルの一部"},
+   n:{PC:"1000",CIR:"0110",ACC:"0101",MAR:"0010",MDR:"1010"}},
+ kbd:{name:"キーボード",short:"キーボード",type:"hardware",from:"キーボード（外の装置）",isr:"ISR_kbd",addr:"1010",
+   ex:"キーが押された",job:"押されたキーを読み取り、画面に表示する",
+   w:{PC:"押されたキーを画面へ送る",CIR:"キーボードから文字を読む",ACC:"押されたキー = K",MAR:"キーボードの入力口",MDR:"「K」"},
+   n:{PC:"1011",CIR:"1001",ACC:"0001",MAR:"1011",MDR:"1110"}},
+ div:{name:"ゼロ除算",short:"ゼロ除算",type:"exception",from:"実行中のプログラム（CPU 内部）",isr:"ISR_div",addr:"1100",
+   ex:"電卓アプリが 10 ÷ 0 を計算しようとした",job:"エラーメッセージを画面に表示する（教科書の例）",
+   w:{PC:"エラーメッセージを表示する",CIR:"エラーの原因を調べる",ACC:"0 で割ろうとした",MAR:"エラー情報の場所",MDR:"「0 では割れません」"},
+   n:{PC:"1101",CIR:"0011",ACC:"0000",MAR:"1101",MDR:"0110"},
+   note:"（実際の OS では、ゼロ除算を起こしたプログラムを強制終了することもよくあります。教科書のモデルでは続きから再開します。）"},
+ trap:{name:"システムコール",short:"OS 呼び出し",type:"trap",from:"実行中のプログラム（CPU 内部）",isr:"ISR_syscall",addr:"1101",
+   ex:"ワープロが OS に「印刷して」と頼んだ",job:"OS が印刷の準備をして、プリンタに文書を送る",
+   w:{PC:"プリンタに文書を送る",CIR:"OS への依頼内容を読む",ACC:"依頼の種類 = 印刷",MAR:"印刷待ちの列",MDR:"印刷する文書"},
+   n:{PC:"1110",CIR:"1000",ACC:"0010",MAR:"0111",MDR:"1011"}}
+};
+const PROG={
+ power:{name:"表計算",w:{PC:"合計を計算する",CIR:"B5 に数字を入力中",ACC:"合計 = 15,200",MAR:"売上シートの B5",MDR:"「3,500」"},n:{PC:"0010",CIR:"0001",ACC:"1111",MAR:"1010",MDR:"0101"}},
+ timer:{name:"動画の書き出し",w:{PC:"次のコマを圧縮する",CIR:"120コマ目を圧縮中",ACC:"進み具合 = 40%",MAR:"動画の120コマ目",MDR:"コマの画像データ"},n:{PC:"0011",CIR:"0010",ACC:"1010",MAR:"1000",MDR:"0111"}},
+ disk:{name:"写真アプリ",w:{PC:"写真を画面に並べる",CIR:"3枚目のサムネイルを作成中",ACC:"表示した枚数 = 3",MAR:"写真フォルダ",MDR:"「beach.jpg」の一部"},n:{PC:"1001",CIR:"1000",ACC:"0011",MAR:"0100",MDR:"1101"}},
+ kbd:{name:"ワープロ",w:{PC:"段落を保存する",CIR:"「は」の文字を入力中",ACC:"文字数 = 128",MAR:"文書の3ページ目",MDR:"「こんにち」"},n:{PC:"0101",CIR:"0100",ACC:"0011",MAR:"1001",MDR:"1100"}},
+ div:{name:"電卓アプリ",w:{PC:"答えを画面に表示する",CIR:"「10 ÷ 0」を計算中",ACC:"割られる数 = 10",MAR:"計算式のメモ",MDR:"割る数「0」"},n:{PC:"0111",CIR:"0110",ACC:"1010",MAR:"0011",MDR:"0000"}},
+ trap:{name:"ワープロ（印刷）",w:{PC:"印刷ボタンを元に戻す",CIR:"「印刷」ボタンが押された",ACC:"印刷部数 = 2",MAR:"文書の1ページ目",MDR:"印刷する文書"},n:{PC:"0100",CIR:"0011",ACC:"0010",MAR:"1001",MDR:"1011"}}
+};
+ORDER.forEach((k,i)=>{SRC[k].key=k;SRC[k].i=i;SRC[k].prog=PROG[k]});
+const TYPEX={hardware:"外の装置から届く割り込みです。",exception:"プログラムの実行中に起きたエラーによる割り込みです。",trap:"プログラムが自分から OS を呼び出す、ソフトウェア割り込みです。"};
+const TYPEL={hardware:"hardware",exception:"exception",trap:"trap / software"};
+const FLAG={on:["on","ON：受け付ける","どの割り込みも受け付ける"],off:["","OFF：受け付けない","処理中に邪魔されないよう止めている"],mk:["half","一部 ON","キーボードより重要な割り込みだけ通す"],mx:["","OFF：受け付けない","いちばん重要な処理中なので全部止める"]};
+
+let mode="w",nestOn=false,srcKey="kbd";
+let ctx={A:SRC.kbd,B:null,prog:SRC.kbd.prog};
+const val=(o,k)=>o==="P"?ctx.prog[mode][k]:ctx[o][mode][k];
+const who=o=>o==="P"?"元のプログラム（"+ctx.prog.name+"）":(o==="A"?(nestOn?"ISR A":"ISR")+"（"+ctx.A.name+"）":"ISR B（"+ctx.B.name+"）");
+const runText=r=>r==="W"?"切り替え作業中":"実行中："+who(r);
+
+function buildBasic(){
+  const c=ctx.A,nm=c.name,isr=c.isr,inside=c.type!=="hardware",g=ctx.prog;
+  return [
+  {fig:"通常",s:"実行",t:`${g.name}を実行中`,e:"fetch–decode–execute cycle",b:`${g.name}が動いています。今やっていることは「${g.w.CIR}」。CPU は命令を1つずつ実行し、1つ終わるたびに「割り込みの知らせ」をチェックします。今は全部 0 なので、何も来ていません。`,r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"受信",s:"受信",t:`${nm}から知らせが届く`,e:"interrupt received",b:`${c.ex}。${nm}のランプが 1 になりました。赤枠が、割り込み信号の出どころです。`+(inside?"この信号は外の装置ではなく、実行中の${g.name}自身から出ています。":"CPU は今の命令を最後までやり終えてから、この知らせに気づきます。"),r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"STEP 1",s:"スイッチOFF",t:"割り込みスイッチを OFF にする",e:"other interrupts are disabled",b:"これから行う割り込み処理が、別の割り込みでさらに中断されないように、スイッチを切ります。",r:"P",on:["A"],f:"off",run:"W",fr:[],hot:["cu"]},
+  {fig:"STEP 2",s:"しまう",t:"やりかけの作業を保存棚にしまう",e:"state saved on the kernel stack",b:"CPU の中にある「次にやること」「今の計算結果」などを、青い箱（スタックフレーム）にまとめて保存棚に入れます。これがないと、あとで続きができません。",r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:[]},
+  {fig:"STEP 3",s:"調べる",t:"何の知らせか、急ぎかを調べる",e:"source identified · priority checked",b:`知らせを出したのは${nm}。種類は ${TYPEL[c.type]} です。${TYPEX[c.type]}重要度を確認して、今すぐ処理すると決めます。`,r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:["irbox"]},
+  {fig:"STEP 4",s:"処理する",t:`IDT を読んで ${isr} を実行`,e:"jump to the ISR using the IDT",b:`① IDT で「${nm} → ${isr}」の行を読み、② ${isr} の場所を PC にセットし、③ ${isr} を実行します。仕事の内容：${c.job}。青い作業が消えても大丈夫なのは、保存棚にしまってあるからです。`,r:"A",on:[],f:"off",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+  {fig:"STEP 5",ret:1,s:"取り出す",t:"作業を取り出して、続きから再開",e:"state restored → process continues",b:`${isr} が終わったら、保存棚から青い箱を取り出して CPU に戻します。${g.name}は「${g.w.CIR}」から、ちょうど続きを再開できます。`+(c.note||""),r:"P",on:[],f:"off",run:"P",fr:[],hot:[]},
+  {fig:"STEP 6",s:"スイッチON",t:"割り込みスイッチを ON に戻す",e:"interrupts restored (re-enabled)",b:"STEP 1 で切ったスイッチを入れ直します。これで次の割り込みにも対応できます。STEP 1 と対になっています。",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+  ];
+}
+const nest=[
+ {fig:"通常",s:"実行",t:"ワープロで文章を入力中",e:"fetch–decode–execute cycle",b:"基本と同じスタートです。今回は、キーボード処理の途中で、もっと重要な割り込みが来たらどうなるかを見ます。",r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"受信",s:"受信",t:"キーボードの知らせが届く",e:"interrupt received",b:"キーボードのランプが 1 になりました。赤枠が、信号を出している装置（キーボード）を示しています。",r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"STEP 1",x:1,s:"一部OFF",t:"重要でない割り込みだけ止める",e:"lower-priority interrupts disabled",b:"教科書の図はスイッチを全部切るモデルです。実際の CPU では、今より重要な割り込みだけ通す設定もよく使われます（教科書の範囲外）。",r:"P",on:["A"],f:"mk",run:"W",fr:[],hot:["cu"]},
+ {fig:"STEP 2",s:"しまう①",t:"ワープロの作業をしまう",e:"state saved on the kernel stack",b:"青い箱（元のプログラムの作業）を保存棚に入れます。",r:"P",on:["A"],f:"mk",run:"W",fr:["P"],hot:[]},
+ {fig:"STEP 3–4",s:"ISR A",t:"キーボード処理（ISR A）を実行",e:"jump to ISR A using the IDT",b:"キーボードと分かったので、IDT で ISR_kbd の行を読み、実行します。CPU の中は緑の作業になりました。",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+ {fig:"受信 ②",x:1,s:"緊急の知らせ",t:"キーボード処理の途中で、電源の異常！",e:"higher-priority interrupt received",b:"いちばん左（いちばん重要）のランプが 1 になりました。赤枠が電源・エラーに移りました。スイッチは「一部 ON」なので、この知らせは通ってきます。",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox","cu"]},
+ {fig:"STEP 3 ②",s:"比べる",t:"どちらが重要かを比べる",e:"priority checked",b:"電源の異常はキーボードより重要です。ISR A を途中で止めてでも、先に処理すると決めます。キーボードより重要でない知らせなら、待たされます。",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox"]},
+ {fig:"STEP 1–2 ②",s:"しまう②",t:"キーボード処理の作業もしまう",e:"ISR A state pushed on top",b:"スイッチを全部切り、緑の箱（ISR A のやりかけの作業）を、青い箱の上に積みます。保存棚に箱が2つ重なりました。",r:"A",on:["B"],f:"mx",run:"W",fr:["P","A"],hot:["cu"]},
+ {fig:"STEP 4 ②",s:"ISR B",t:"電源・エラー処理（ISR B）を実行",e:"jump to ISR B using the IDT",b:"IDT で ISR_power の行を読み、実行します。CPU の中は紫の作業になり、文書を緊急保存します。",r:"B",on:[],f:"mx",run:"B",fr:["P","A"],hot:["idtbox"],idt:"B"},
+ {fig:"STEP 5 ②",ret:1,s:"緑を戻す",t:"いちばん上の緑の箱を取り出す",e:"pop: ISR A continues",b:"ISR B が終わったら、いちばん上にある緑の箱だけを取り出して、キーボード処理の続きに戻ります。最後に入れた箱から先に出す（LIFO）ので、順番が崩れません。",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:[]},
+ {fig:"STEP 5",ret:1,s:"青を戻す",t:"残った青の箱を取り出す",e:"pop: original program continues",b:"キーボード処理も終わったので、青い箱を取り出してワープロの作業に戻ります。「「は」の文字を入力中」から再開です。",r:"P",on:[],f:"mk",run:"P",fr:[],hot:[]},
+ {fig:"STEP 6",s:"スイッチON",t:"割り込みスイッチを全部 ON に戻す",e:"interrupts restored (re-enabled)",b:"止めていた受付をすべて元に戻します。保存棚は空になり、最初と同じ状態です。",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+];
+let seq=buildBasic(),s=0,timer=null,prev=null,popTok=0;
+
+function ownerOf(i){return ctx.A&&ctx.A.i===i?"A":(ctx.B&&ctx.B.i===i?"B":"W")}
+function buildStatic(){
+  $('srcs').innerHTML=ORDER.map(k=>{const c=SRC[k];return `<button class="src" data-k="${k}" aria-pressed="${k===srcKey}"><span class="nm">${c.name}</span><span class="ty">${TYPEL[c.type]}</span><span class="ex">${c.ex}</span><span class="pg">中断：${c.prog.name}</span></button>`}).join('');
+  $('srcs').querySelectorAll('.src').forEach(b=>b.onclick=()=>setSource(b.dataset.k));
+  $('bits').innerHTML=ORDER.map((k,i)=>{const c=SRC[k];const kind=c.type==="hardware"?"HW":(c.type==="exception"?"例外":"trap");
+    return (i===4?'<span class="div" aria-hidden="true"></span>':'')+`<div class="bit" id="b${i}"><span class="tagsig">⚡ 信号</span><span class="d">0</span><span class="l">${c.short}</span><span class="k">${kind}</span></div>`}).join('');
+  $('idtb').innerHTML=ORDER.map((k,i)=>`<tr id="i${i}"><td>${SRC[k].name}</td><td class="ty">${SRC[k].type==="trap"?"trap":SRC[k].type}</td><td id="i${i}v"></td></tr>`).join('');
+  $('cmpb').innerHTML=ORDER.map(k=>{const c=SRC[k];const cls=c.type==="hardware"?"hw":(c.type==="trap"?"tr":"");
+    return `<tr><td><b>${c.name}</b></td><td><span class="tyb ${cls}">${TYPEL[c.type]}</span></td><td>${c.prog.name}<br><span class="small">${c.prog.w.CIR}</span></td><td>${c.from}</td><td>${c.ex}</td><td class="m">${c.isr}<br>アドレス ${c.addr}</td><td>${c.job}</td><td><button class="btn sm" data-k="${k}">見る</button></td></tr>`}).join('');
+  $('cmpb').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(nestOn)setScenario(false);setSource(b.dataset.k);go(5,true);$('sim').scrollIntoView({behavior:'smooth',block:'start'})});
+}
+function buildRegs(){
+  $('regs').innerHTML=RG.map(k=>`<div class="reg" id="r${k}"><span class="n"><b>${k}</b>${mode==="w"?NAME[k]:NAMEN[k]}</span><span class="v" id="v${k}"></span><span class="new">NEW</span></div>`).join('');
+  $('bench').classList.toggle('mode-num',mode==="n");
+}
+function frameHTML(o,top){
+  return `<div class="frame o-${o}"><div class="h"><span class="who">${who(o)}</span>${top?'<span class="sp">一番上</span>':''}</div><ul>${RG.map(k=>`<li><i>${k}</i><span>${val(o,k)}</span></li>`).join('')}</ul></div>`;
+}
+function renderFrames(cur,old,animate,onArrive){
+  const el=$('frames');const tok=++popTok;
+  document.querySelectorAll('.flyer').forEach(x=>x.remove());
+  const draw=arr=>{el.innerHTML=arr.length?arr.map((o,i)=>frameHTML(o,i===arr.length-1)).join(''):'<div class="empty">空（何もしまっていない）</div>'};
+  const still=()=>el.querySelectorAll('.frame').forEach(x=>x.style.animation='none');
+  const label=()=>{$('stackN').textContent=cur.length?`箱 ${cur.length} 個`:'空'};
+  if(animate&&old&&old.length>cur.length){
+    draw(old);still();
+    const top=el.lastElementChild,a=top.getBoundingClientRect(),b=$('regs').getBoundingClientRect();
+    const fly=top.cloneNode(true);fly.classList.add('flyer');
+    fly.style.cssText=`position:absolute;left:${a.left+scrollX}px;top:${a.top+scrollY}px;width:${a.width}px;margin:0;z-index:50;animation:none;pointer-events:none`;
+    document.body.appendChild(fly);top.style.visibility='hidden';
+    const dx=(b.left+b.width/2)-(a.left+a.width/2),dy=(b.top+b.height/2)-(a.top+a.height/2);
+    const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const an=fly.animate([{transform:'none',opacity:1},{transform:`translate(${dx*.45}px,${dy*.45-50}px) rotate(-3deg) scale(1.06)`,opacity:1,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.85)`,opacity:.1}],{duration:rm?1:1100,easing:'cubic-bezier(.45,0,.25,1)',fill:'forwards'});
+    $('stackN').textContent='取り出し中…';
+    an.onfinish=()=>{fly.remove();if(tok!==popTok)return;draw(cur);still();label();onArrive&&onArrive()};
+    return;
+  }
+  draw(cur);
+  const n=animate&&old?old.length:cur.length;
+  el.querySelectorAll('.frame').forEach((x,i)=>{if(i<n)x.style.animation='none'});
+  label();
+}
+function buildTrack(){
+  $('track').innerHTML=seq.map((d,i)=>`<button class="tstep" data-i="${i}"><b>${i}</b>${d.s}</button>`).join('');
+  $('track').querySelectorAll('.tstep').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+}
+function applyCPU(d,flash,land){
+  const cpu=$('cpu');cpu.className='cpu o-'+d.r;
+  if(land){void cpu.offsetWidth;cpu.classList.add('land')}
+  RG.forEach(k=>{$('v'+k).textContent=val(d.r,k);const r=$('r'+k);r.classList.remove('chg');if(flash){void r.offsetWidth;r.classList.add('chg')}});
+  $('running').textContent=runText(d.run);
+}
+function render(animate=true){
+  const d=seq[s];
+  $('fig').textContent=d.fig;$('fig').className='figtag'+(d.x?' extra':'');
+  $('capT').textContent=d.t;$('capE').textContent=d.e;$('capB').textContent=d.b;
+  root.querySelectorAll('.tstep').forEach(b=>{const n=+b.dataset.i;b.className='tstep'+(n===s?' now':n<s?' done':'')});
+  const p=prev,popping=!!(animate&&p&&p.fr.length>d.fr.length);
+  if(!popping)applyCPU(d,!!(animate&&p&&p.r!==d.r),false);
+  else $('running').textContent='保存棚から作業を戻しています…';
+  const hitRow=d.idt?ctx[d.idt].i:-1;
+  ORDER.forEach((k,i)=>{
+    const o=ownerOf(i),on=d.on.some(x=>ctx[x]&&ctx[x].i===i);
+    const b=$('b'+i);b.className='bit o-'+o+(o!=="W"?' own':'')+(on?' one':'');b.querySelector('.d').textContent=on?'1':'0';
+    const r=$('i'+i);r.className='o-'+o+(o!=="W"?' own':'')+(i===hitRow?' hit':'');
+    $('i'+i+'v').textContent='→ '+(mode==="w"?SRC[k].isr:SRC[k].addr);
+  });
+  const f=FLAG[d.f];$('tg').className='toggle '+f[0];$('flagT').textContent=f[1];$('flagS').textContent=f[2];
+  ['cu','irbox'].forEach(id=>$(id).classList.toggle('hot',d.hot.includes(id)));
+  $('idtbox').className='box'+(d.hot.includes('idtbox')?' hot':'')+(d.idt?' own o-'+d.r:'');
+  const fl=$('flow');
+  if(d.idt){
+    const c=ctx[d.idt];
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① IDT を読む<b>${c.name} → ${c.isr}</b></span><span class="fa">→</span><span class="fs">② PC にセット<b>${mode==="w"?c.isr+" の最初の命令":"PC = "+c.addr}</b></span><span class="fa">→</span><span class="fs">③ 実行<b>${c.isr} が CPU を使う</b></span>`;
+    fl.hidden=false;
+  }else if(d.ret){
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① 保存棚から取り出す<b>一番上の箱（${who(d.r)}）</b></span><span class="fa">→</span><span class="fs">② CPU に書き戻す<b>${mode==="w"?"次にやること＝"+val(d.r,"PC"):"PC = "+val(d.r,"PC")}</b></span><span class="fa">→</span><span class="fs">③ 続きから再開<b>${mode==="w"?val(d.r,"CIR")+"の続き":"PC "+val(d.r,"PC")+" の命令から"}</b></span>`;
+    fl.hidden=false;
+  }else fl.hidden=true;
+  $('isrs').innerHTML=ORDER.map((k,i)=>{const o=ownerOf(i);const act=(d.run==="A"&&ctx.A.i===i)||(d.run==="B"&&ctx.B&&ctx.B.i===i);return `<span class="isr o-${o}${o!=="W"?' own':''}${act?' act':''}"><b>${SRC[k].addr}</b>${SRC[k].isr}</span>`}).join('');
+  renderFrames(d.fr,p?p.fr:null,animate,()=>applyCPU(d,true,true));
+  prev=d;
+}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='▶ 自動再生'}
+function go(n,noAnim){stop();n=Math.max(0,Math.min(seq.length-1,n));const adj=!noAnim&&Math.abs(n-s)===1;if(!adj)prev=null;s=n;render(adj)}
+function setSource(k){stop();srcKey=k;ctx={A:SRC[k],B:null,prog:SRC[k].prog};seq=buildBasic();prev=null;
+  $('srcs').querySelectorAll('.src').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));render(false)}
+function setScenario(isNest){stop();nestOn=isNest;ctx=isNest?{A:SRC.kbd,B:SRC.power,prog:SRC.kbd.prog}:{A:SRC[srcKey],B:null,prog:SRC[srcKey].prog};seq=isNest?nest:buildBasic();s=0;prev=null;
+  $('scBasic').setAttribute('aria-pressed',!isNest);$('scNest').setAttribute('aria-pressed',isNest);$('srcwrap').hidden=isNest;buildTrack();render(false)}
+function setMode(m){mode=m;$('mWord').setAttribute('aria-pressed',m==="w");$('mNum').setAttribute('aria-pressed',m==="n");buildRegs();prev=null;render(false)}
+$('scBasic').onclick=()=>setScenario(false);$('scNest').onclick=()=>setScenario(true);
+$('mWord').onclick=()=>setMode("w");$('mNum').onclick=()=>setMode("n");
+$('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=()=>go(0,true);
+$('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ 一時停止';
+  timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
+$('spd').onchange=()=>{if(timer){stop();$('play').click()}};
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+buildStatic();buildRegs();buildTrack();render(false);
+
+const qs=[
+ {q:"STEP 6 で restore されるものはどれ？",o:["中断されたプロセスのレジスタの値","カーネルスタックに積んだ PC の値","割り込みを受け付ける機能（再有効化）","ISR が使っていた作業用のデータ"],a:2,ex:"STEP 6 は STEP 1 で止めた割り込みの受付を戻します。レジスタや PC の復元は STEP 5 です。"},
+ {q:"ISR を開始するとき、IDT から取り出したアドレスが入るレジスタはどれ？",o:["PC（Program Counter）","ACC（Accumulator）","MDR（Memory Data Register）","CIR（Current Instruction Register）"],a:0,ex:"PC に ISR のアドレスが入ることで、次に実行する命令が ISR の先頭になります。"},
+ {q:"割り込み中の割り込みで、スタックが正しく元に戻れる理由はどれ？",o:["最初に入れたフレームから順番に取り出すから","フレームごとに優先度の番号が付いているから","IDT が戻り先のアドレスをすべて覚えているから","最後に入れたフレームから先に取り出すから"],a:3,ex:"スタックは LIFO。最後に入れた ISR A の箱が先に出るので、入れ子の順番が崩れません。"},
+ {q:"CPU が interrupt register を確認するタイミングはどれ？",o:["割り込み信号が届いたその瞬間に毎回","FDE サイクルが1回終わるたびに","メモリへの書き込みが起きたときだけ","OS が起動したときに一度だけ"],a:1,ex:"命令の途中ではなく、FDE サイクルの終わりに確認します。だから命令は必ず最後まで実行されます。"},
+ {q:"プログラムが OS に「ファイルを保存して」と頼むときの割り込みはどれ？",o:["ディスク装置からの hardware 割り込み","実行時エラーによる exception（例外）","プログラムが OS を呼ぶ trap（software）","時計の回路からのタイマー割り込み"],a:2,ex:"プログラムが自分から OS の機能を呼び出すのは trap（software interrupt）です。保存が終わったあとの完了通知は、ディスクからの hardware 割り込みになります。"}
+];
+let score=0;
+qs.forEach((x,i)=>{
+  const box=document.createElement('div');box.className='q';
+  box.innerHTML=`<h3>Q${i+1}. ${x.q}</h3><div class="opts">${x.o.map((t,j)=>`<button class="opt" id="q${i}o${j}" data-j="${j}">${"ABCD"[j]}. ${t}</button>`).join('')}</div><p class="fb" id="fb${i}"></p>`;
+  $('quiz').appendChild(box);
+  let done=false;
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(done)return;done=true;const j=+b.dataset.j;
+    box.querySelectorAll('.opt')[x.a].classList.add('right');
+    if(j!==x.a)b.classList.add('wrong');else score++;
+    $('fb'+i).textContent=(j===x.a?'正解。':'惜しい。正解は '+"ABCD"[x.a]+'。')+x.ex;
+    $('score').textContent=score+' / '+qs.length;
+  });
+});
+
+root.addEventListener('langhide',()=>stop());
+
+})(document.getElementById('vja'));
+(function(root){
+
+const $=id=>root.querySelector('#'+id);
+const RG=["PC","CIR","ACC","MAR","MDR"];
+const NAME={PC:"下一件事",CIR:"正在做的事",ACC:"计算中的结果",MAR:"正在看的位置",MDR:"手上的数据"};
+const NAMEN={PC:"下一条指令的地址",CIR:"当前指令",ACC:"结果",MAR:"要读写的地址",MDR:"要读写的数据"};
+const ORDER=["power","timer","disk","kbd","div","trap"];
+const SRC={
+ power:{name:"电源故障",short:"电源",type:"hardware",from:"电源电路（外部设备）",isr:"ISR_power",addr:"1110",
+   ex:"电压突然下降",job:"紧急保存正在进行的工作",
+   w:{PC:"紧急保存文档",CIR:"检查电源状态",ACC:"电压过低！",MAR:"电源管理电路",MDR:"警告信息"},
+   n:{PC:"1111",CIR:"0111",ACC:"1000",MAR:"0110",MDR:"0001"}},
+ timer:{name:"定时器",short:"定时器",type:"hardware",from:"定时器电路（外部设备）",isr:"ISR_timer",addr:"0110",
+   ex:"时间片用完了",job:"告诉操作系统时间到了，并选择下一个要运行的程序",
+   w:{PC:"切换到下一个程序",CIR:"计算已用时间",ACC:"已用时间 = 20 ms",MAR:"定时器电路",MDR:"“时间到”信号"},
+   n:{PC:"0111",CIR:"0010",ACC:"0100",MAR:"0001",MDR:"1111"}},
+ disk:{name:"磁盘",short:"磁盘",type:"hardware",from:"磁盘驱动器（外部设备）",isr:"ISR_disk",addr:"0111",
+   ex:"照片应用请求的图片加载完成了",job:"把加载好的数据交给正在等待的程序",
+   w:{PC:"交出加载好的数据",CIR:"读取磁盘的“完成”报告",ACC:"已加载 = 4 KB",MAR:"磁盘控制器",MDR:"图片文件的一部分"},
+   n:{PC:"1000",CIR:"0110",ACC:"0101",MAR:"0010",MDR:"1010"}},
+ kbd:{name:"键盘",short:"键盘",type:"hardware",from:"键盘（外部设备）",isr:"ISR_kbd",addr:"1010",
+   ex:"按下了一个键",job:"读取按键并显示在屏幕上",
+   w:{PC:"把按键送到屏幕",CIR:"从键盘读取字符",ACC:"按下的键 = K",MAR:"键盘输入端口",MDR:"“K”"},
+   n:{PC:"1011",CIR:"1001",ACC:"0001",MAR:"1011",MDR:"1110"}},
+ div:{name:"除以零",short:"除以 0",type:"exception",from:"正在运行的程序（CPU 内部）",isr:"ISR_div",addr:"1100",
+   ex:"计算器尝试计算 10 ÷ 0",job:"在屏幕上显示错误信息（课本中的例子）",
+   w:{PC:"显示错误信息",CIR:"查找错误原因",ACC:"试图除以 0",MAR:"错误信息的位置",MDR:"“不能除以 0”"},
+   n:{PC:"1101",CIR:"0011",ACC:"0000",MAR:"1101",MDR:"0110"},
+   note:"（在真实的操作系统中，除以零的程序常常会被直接关闭。在课本的模型中，程序会继续运行。）"},
+ trap:{name:"系统调用",short:"调用 OS",type:"trap",from:"正在运行的程序（CPU 内部）",isr:"ISR_syscall",addr:"1101",
+   ex:"文字处理软件请求操作系统打印",job:"操作系统准备打印任务，并发送到打印机",
+   w:{PC:"把文档发送到打印机",CIR:"读取对操作系统的请求",ACC:"请求类型 = 打印",MAR:"打印队列",MDR:"要打印的文档"},
+   n:{PC:"1110",CIR:"1000",ACC:"0010",MAR:"0111",MDR:"1011"}}
+};
+const PROG={
+ power:{name:"电子表格",w:{PC:"计算总和",CIR:"正在 B5 输入数字",ACC:"总和 = 15,200",MAR:"销售表的 B5",MDR:"“3,500”"},n:{PC:"0010",CIR:"0001",ACC:"1111",MAR:"1010",MDR:"0101"}},
+ timer:{name:"视频导出",w:{PC:"压缩下一帧",CIR:"正在压缩第 120 帧",ACC:"进度 = 40%",MAR:"视频的第 120 帧",MDR:"这一帧的图像数据"},n:{PC:"0011",CIR:"0010",ACC:"1010",MAR:"1000",MDR:"0111"}},
+ disk:{name:"照片应用",w:{PC:"在屏幕上显示照片",CIR:"正在制作第 3 张缩略图",ACC:"已显示 = 3 张",MAR:"照片文件夹",MDR:"“beach.jpg”的一部分"},n:{PC:"1001",CIR:"1000",ACC:"0011",MAR:"0100",MDR:"1101"}},
+ kbd:{name:"文字处理软件",w:{PC:"保存这一段",CIR:"正在输入“界”字",ACC:"字数 = 128",MAR:"文档第 3 页",MDR:"“你好，世”"},n:{PC:"0101",CIR:"0100",ACC:"0011",MAR:"1001",MDR:"1100"}},
+ div:{name:"计算器应用",w:{PC:"显示答案",CIR:"正在计算“10 ÷ 0”",ACC:"被除数 = 10",MAR:"算式备忘",MDR:"除数“0”"},n:{PC:"0111",CIR:"0110",ACC:"1010",MAR:"0011",MDR:"0000"}},
+ trap:{name:"文字处理软件（打印）",w:{PC:"恢复打印按钮",CIR:"“打印”按钮被按下",ACC:"份数 = 2",MAR:"文档第 1 页",MDR:"要打印的文档"},n:{PC:"0100",CIR:"0011",ACC:"0010",MAR:"1001",MDR:"1011"}}
+};
+ORDER.forEach((k,i)=>{SRC[k].key=k;SRC[k].i=i;SRC[k].prog=PROG[k]});
+const TYPEX={hardware:"它来自外部设备。",exception:"它是程序运行时发生的错误引起的。",trap:"程序自己调用操作系统，这是软件中断。"};
+const TYPEL={hardware:"hardware",exception:"exception",trap:"trap / software"};
+const FLAG={on:["on","ON：接受","接受所有中断"],off:["","OFF：不接受","暂停接受，避免 ISR 被打断"],mk:["half","部分 ON","只有比键盘更重要的中断能进来"],mx:["","OFF：不接受","正在处理最重要的工作，所以全部停止"]};
+
+let mode="w",nestOn=false,srcKey="kbd";
+let ctx={A:SRC.kbd,B:null,prog:SRC.kbd.prog};
+const val=(o,k)=>o==="P"?ctx.prog[mode][k]:ctx[o][mode][k];
+const who=o=>o==="P"?"原程序（"+ctx.prog.name+"）":(o==="A"?(nestOn?"ISR A":"ISR")+"（"+ctx.A.name+"）":"ISR B（"+ctx.B.name+"）");
+const runText=r=>r==="W"?"切换中…":"运行中："+who(r);
+
+function buildBasic(){
+  const c=ctx.A,nm=c.name,isr=c.isr,inside=c.type!=="hardware",g=ctx.prog;
+  return [
+  {fig:"正常",s:"运行",t:`${g.name}正在运行`,e:"fetch–decode–execute cycle",b:`${g.name}正在运行。现在正在做的是“${g.w.CIR}”。CPU 一次执行一条指令，每执行完一条，就检查一次中断信号。现在全部是 0，所以没有中断。`,r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"信号",s:"信号",t:`信号到达：${nm}`,e:"interrupt received",b:`${c.ex}。${nm}的信号变成了 1。红框表示信号来自哪里。`+(inside?`这个信号不是来自外部设备，而是来自正在运行的${g.name}本身。`:"CPU 会先完成当前指令，然后才注意到这个信号。"),r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"STEP 1",s:"关开关",t:"把中断开关关掉",e:"other interrupts are disabled",b:"关掉开关，这样中断处理就不会再被其他中断打断。",r:"P",on:["A"],f:"off",run:"W",fr:[],hot:["cu"]},
+  {fig:"STEP 2",s:"保存",t:"把做到一半的工作保存到栈中",e:"state saved on the kernel stack",b:"CPU 中的值（下一件事、计算结果等）被放进一个蓝色的盒子，叫做栈帧（stack frame），然后压入内核栈。如果不这样做，程序之后就无法继续。",r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:[]},
+  {fig:"STEP 3",s:"识别",t:"找出来源，检查优先级",e:"source identified · priority checked",b:`信号来自：${nm}。类型是 ${TYPEL[c.type]}。${TYPEX[c.type]}检查优先级后，CPU 决定现在就处理它。`,r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:["irbox"]},
+  {fig:"STEP 4",s:"运行 ISR",t:`读取 IDT，运行 ${isr}`,e:"jump to the ISR using the IDT",b:`① 读取 IDT 中“${nm} → ${isr}”这一行。② 把 ${isr} 的地址放进 PC。③ 运行 ${isr}。它的工作：${c.job}。蓝色的工作已经离开 CPU，但没关系，它安全地保存在栈中。`,r:"A",on:[],f:"off",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+  {fig:"STEP 5",ret:1,s:"恢复",t:"恢复工作并继续",e:"state restored → process continues",b:`${isr} 完成后，蓝色的盒子从栈中弹出，里面的值回到 CPU。${g.name}从“${g.w.CIR}”继续。`+(c.note||""),r:"P",on:[],f:"off",run:"P",fr:[],hot:[]},
+  {fig:"STEP 6",s:"开开关",t:"重新打开中断开关",e:"interrupts restored (re-enabled)",b:"STEP 1 关掉的开关被重新打开。现在 CPU 可以处理下一个中断了。STEP 1 和 STEP 6 是一对。",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+  ];
+}
+const nest=[
+ {fig:"正常",s:"运行",t:"文字处理软件正在运行",e:"fetch–decode–execute cycle",b:"和基础场景一样的开始。这次，在键盘 ISR 运行时，来了一个更重要的中断。",r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"信号",s:"信号",t:"信号到达：键盘",e:"interrupt received",b:"键盘的信号变成了 1。红框表示发出信号的设备（键盘）。",r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"STEP 1",x:1,s:"部分关闭",t:"只停止不太重要的中断",e:"lower-priority interrupts disabled",b:"课本把所有中断都关掉。真实的 CPU 常常让更重要的中断通过。这部分超出了课本范围。",r:"P",on:["A"],f:"mk",run:"W",fr:[],hot:["cu"]},
+ {fig:"STEP 2",s:"保存①",t:"保存文字处理软件的工作",e:"state saved on the kernel stack",b:"蓝色盒子（原程序的工作）被压入栈中。",r:"P",on:["A"],f:"mk",run:"W",fr:["P"],hot:[]},
+ {fig:"STEP 3–4",s:"ISR A",t:"运行键盘 ISR（ISR A）",e:"jump to ISR A using the IDT",b:"是键盘，所以 CPU 读取 IDT 中 ISR_kbd 这一行并运行它。现在 CPU 中是绿色的工作。",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+ {fig:"信号 ②",x:1,s:"紧急信号",t:"键盘 ISR 运行中，电源故障！",e:"higher-priority interrupt received",b:"最左边（最重要）的信号变成了 1。红框移到了电源。开关是部分 ON，所以这个信号可以进来。",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox","cu"]},
+ {fig:"STEP 3 ②",s:"比较",t:"哪一个更重要？",e:"priority checked",b:"电源故障比键盘更重要。ISR A 被暂停，先处理电源故障。不太重要的信号就得等待。",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox"]},
+ {fig:"STEP 1–2 ②",s:"保存②",t:"把键盘 ISR 的工作也保存起来",e:"ISR A state pushed on top",b:"关闭所有中断。绿色盒子（ISR A 做到一半的工作）被压在蓝色盒子上面。现在栈中有两个盒子。",r:"A",on:["B"],f:"mx",run:"W",fr:["P","A"],hot:["cu"]},
+ {fig:"STEP 4 ②",s:"ISR B",t:"运行电源故障 ISR（ISR B）",e:"jump to ISR B using the IDT",b:"CPU 读取 IDT 中 ISR_power 这一行并运行它。现在 CPU 中是紫色的工作，它会紧急保存文档。",r:"B",on:[],f:"mx",run:"B",fr:["P","A"],hot:["idtbox"],idt:"B"},
+ {fig:"STEP 5 ②",ret:1,s:"绿色回来",t:"弹出最上面的绿色盒子",e:"pop: ISR A continues",b:"ISR B 完成后，只弹出最上面的绿色盒子，键盘 ISR 继续运行。最后放进去的盒子最先出来（LIFO），所以顺序不会乱。",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:[]},
+ {fig:"STEP 5",ret:1,s:"蓝色回来",t:"弹出蓝色盒子",e:"pop: original program continues",b:"键盘 ISR 也完成了。蓝色盒子被弹出，文字处理软件从“正在输入‘界’字”继续。",r:"P",on:[],f:"mk",run:"P",fr:[],hot:[]},
+ {fig:"STEP 6",s:"开开关",t:"重新打开所有中断",e:"interrupts restored (re-enabled)",b:"所有中断都重新被接受。栈是空的，一切回到开始的状态。",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+];
+let seq=buildBasic(),s=0,timer=null,prev=null,popTok=0;
+
+function ownerOf(i){return ctx.A&&ctx.A.i===i?"A":(ctx.B&&ctx.B.i===i?"B":"W")}
+function buildStatic(){
+  $('srcs').innerHTML=ORDER.map(k=>{const c=SRC[k];return `<button class="src" data-k="${k}" aria-pressed="${k===srcKey}"><span class="nm">${c.name}</span><span class="ty">${TYPEL[c.type]}</span><span class="ex">${c.ex}</span><span class="pg">暂停：${c.prog.name}</span></button>`}).join('');
+  $('srcs').querySelectorAll('.src').forEach(b=>b.onclick=()=>setSource(b.dataset.k));
+  $('bits').innerHTML=ORDER.map((k,i)=>{const c=SRC[k];const kind=c.type==="hardware"?"HW":(c.type==="exception"?"exception":"trap");
+    return (i===4?'<span class="div" aria-hidden="true"></span>':'')+`<div class="bit" id="b${i}"><span class="tagsig">⚡ 信号</span><span class="d">0</span><span class="l">${c.short}</span><span class="k">${kind}</span></div>`}).join('');
+  $('idtb').innerHTML=ORDER.map((k,i)=>`<tr id="i${i}"><td>${SRC[k].name}</td><td class="ty">${SRC[k].type}</td><td id="i${i}v"></td></tr>`).join('');
+  $('cmpb').innerHTML=ORDER.map(k=>{const c=SRC[k];const cls=c.type==="hardware"?"hw":(c.type==="trap"?"tr":"");
+    return `<tr><td><b>${c.name}</b></td><td><span class="tyb ${cls}">${TYPEL[c.type]}</span></td><td>${c.prog.name}<br><span class="small">${c.prog.w.CIR}</span></td><td>${c.from}</td><td>${c.ex}</td><td class="m">${c.isr}<br>地址 ${c.addr}</td><td>${c.job}</td><td><button class="btn sm" data-k="${k}">查看</button></td></tr>`}).join('');
+  $('cmpb').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(nestOn)setScenario(false);setSource(b.dataset.k);go(5,true);$('sim').scrollIntoView({behavior:'smooth',block:'start'})});
+}
+function buildRegs(){
+  $('regs').innerHTML=RG.map(k=>`<div class="reg" id="r${k}"><span class="n"><b>${k}</b>${mode==="w"?NAME[k]:NAMEN[k]}</span><span class="v" id="v${k}"></span><span class="new">NEW</span></div>`).join('');
+  $('bench').classList.toggle('mode-num',mode==="n");
+}
+function frameHTML(o,top){
+  return `<div class="frame o-${o}"><div class="h"><span class="who">${who(o)}</span>${top?'<span class="sp">最上面</span>':''}</div><ul>${RG.map(k=>`<li><i>${k}</i><span>${val(o,k)}</span></li>`).join('')}</ul></div>`;
+}
+function renderFrames(cur,old,animate,onArrive){
+  const el=$('frames');const tok=++popTok;
+  document.querySelectorAll('.flyer').forEach(x=>x.remove());
+  const draw=arr=>{el.innerHTML=arr.length?arr.map((o,i)=>frameHTML(o,i===arr.length-1)).join(''):'<div class="empty">空（没有保存任何东西）</div>'};
+  const still=()=>el.querySelectorAll('.frame').forEach(x=>x.style.animation='none');
+  const label=()=>{$('stackN').textContent=cur.length?`${cur.length} 个盒子`:'空'};
+  if(animate&&old&&old.length>cur.length){
+    draw(old);still();
+    const top=el.lastElementChild,a=top.getBoundingClientRect(),b=$('regs').getBoundingClientRect();
+    const fly=top.cloneNode(true);fly.classList.add('flyer');
+    fly.style.cssText=`position:absolute;left:${a.left+scrollX}px;top:${a.top+scrollY}px;width:${a.width}px;margin:0;z-index:50;animation:none;pointer-events:none`;
+    document.body.appendChild(fly);top.style.visibility='hidden';
+    const dx=(b.left+b.width/2)-(a.left+a.width/2),dy=(b.top+b.height/2)-(a.top+a.height/2);
+    const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const an=fly.animate([{transform:'none',opacity:1},{transform:`translate(${dx*.45}px,${dy*.45-50}px) rotate(-3deg) scale(1.06)`,opacity:1,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.85)`,opacity:.1}],{duration:rm?1:1100,easing:'cubic-bezier(.45,0,.25,1)',fill:'forwards'});
+    $('stackN').textContent='弹出中…';
+    an.onfinish=()=>{fly.remove();if(tok!==popTok)return;draw(cur);still();label();onArrive&&onArrive()};
+    return;
+  }
+  draw(cur);
+  const n=animate&&old?old.length:cur.length;
+  el.querySelectorAll('.frame').forEach((x,i)=>{if(i<n)x.style.animation='none'});
+  label();
+}
+function buildTrack(){
+  $('track').innerHTML=seq.map((d,i)=>`<button class="tstep" data-i="${i}"><b>${i}</b>${d.s}</button>`).join('');
+  $('track').querySelectorAll('.tstep').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+}
+function applyCPU(d,flash,land){
+  const cpu=$('cpu');cpu.className='cpu o-'+d.r;
+  if(land){void cpu.offsetWidth;cpu.classList.add('land')}
+  RG.forEach(k=>{$('v'+k).textContent=val(d.r,k);const r=$('r'+k);r.classList.remove('chg');if(flash){void r.offsetWidth;r.classList.add('chg')}});
+  $('running').textContent=runText(d.run);
+}
+function render(animate=true){
+  const d=seq[s];
+  $('fig').textContent=d.fig;$('fig').className='figtag'+(d.x?' extra':'');
+  $('capT').textContent=d.t;$('capE').textContent=d.e;$('capB').textContent=d.b;
+  root.querySelectorAll('.tstep').forEach(b=>{const n=+b.dataset.i;b.className='tstep'+(n===s?' now':n<s?' done':'')});
+  const p=prev,popping=!!(animate&&p&&p.fr.length>d.fr.length);
+  if(!popping)applyCPU(d,!!(animate&&p&&p.r!==d.r),false);
+  else $('running').textContent='正在从栈中恢复工作…';
+  const hitRow=d.idt?ctx[d.idt].i:-1;
+  ORDER.forEach((k,i)=>{
+    const o=ownerOf(i),on=d.on.some(x=>ctx[x]&&ctx[x].i===i);
+    const b=$('b'+i);b.className='bit o-'+o+(o!=="W"?' own':'')+(on?' one':'');b.querySelector('.d').textContent=on?'1':'0';
+    const r=$('i'+i);r.className='o-'+o+(o!=="W"?' own':'')+(i===hitRow?' hit':'');
+    $('i'+i+'v').textContent='→ '+(mode==="w"?SRC[k].isr:SRC[k].addr);
+  });
+  const f=FLAG[d.f];$('tg').className='toggle '+f[0];$('flagT').textContent=f[1];$('flagS').textContent=f[2];
+  ['cu','irbox'].forEach(id=>$(id).classList.toggle('hot',d.hot.includes(id)));
+  $('idtbox').className='box'+(d.hot.includes('idtbox')?' hot':'')+(d.idt?' own o-'+d.r:'');
+  const fl=$('flow');
+  if(d.idt){
+    const c=ctx[d.idt];
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① 读取 IDT<b>${c.name} → ${c.isr}</b></span><span class="fa">→</span><span class="fs">② 放进 PC<b>${mode==="w"?c.isr+" 的第一条指令":"PC = "+c.addr}</b></span><span class="fa">→</span><span class="fs">③ 运行<b>${c.isr} 使用 CPU</b></span>`;
+    fl.hidden=false;
+  }else if(d.ret){
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① 从栈中弹出<b>最上面的盒子：${who(d.r)}</b></span><span class="fa">→</span><span class="fs">② 写回 CPU<b>${mode==="w"?"下一件事 = "+val(d.r,"PC"):"PC = "+val(d.r,"PC")}</b></span><span class="fa">→</span><span class="fs">③ 继续<b>${mode==="w"?"从这里继续："+val(d.r,"CIR"):"从地址 "+val(d.r,"PC")+" 的指令开始"}</b></span>`;
+    fl.hidden=false;
+  }else fl.hidden=true;
+  $('isrs').innerHTML=ORDER.map((k,i)=>{const o=ownerOf(i);const act=(d.run==="A"&&ctx.A.i===i)||(d.run==="B"&&ctx.B&&ctx.B.i===i);return `<span class="isr o-${o}${o!=="W"?' own':''}${act?' act':''}"><b>${SRC[k].addr}</b>${SRC[k].isr}</span>`}).join('');
+  renderFrames(d.fr,p?p.fr:null,animate,()=>applyCPU(d,true,true));
+  prev=d;
+}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='▶ 播放'}
+function go(n,noAnim){stop();n=Math.max(0,Math.min(seq.length-1,n));const adj=!noAnim&&Math.abs(n-s)===1;if(!adj)prev=null;s=n;render(adj)}
+function setSource(k){stop();srcKey=k;ctx={A:SRC[k],B:null,prog:SRC[k].prog};seq=buildBasic();prev=null;
+  $('srcs').querySelectorAll('.src').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));render(false)}
+function setScenario(isNest){stop();nestOn=isNest;ctx=isNest?{A:SRC.kbd,B:SRC.power,prog:SRC.kbd.prog}:{A:SRC[srcKey],B:null,prog:SRC[srcKey].prog};seq=isNest?nest:buildBasic();s=0;prev=null;
+  $('scBasic').setAttribute('aria-pressed',!isNest);$('scNest').setAttribute('aria-pressed',isNest);$('srcwrap').hidden=isNest;buildTrack();render(false)}
+function setMode(m){mode=m;$('mWord').setAttribute('aria-pressed',m==="w");$('mNum').setAttribute('aria-pressed',m==="n");buildRegs();prev=null;render(false)}
+$('scBasic').onclick=()=>setScenario(false);$('scNest').onclick=()=>setScenario(true);
+$('mWord').onclick=()=>setMode("w");$('mNum').onclick=()=>setMode("n");
+$('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=()=>go(0,true);
+$('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ 暂停';
+  timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
+$('spd').onchange=()=>{if(timer){stop();$('play').click()}};
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+buildStatic();buildRegs();buildTrack();render(false);
+
+const qs=[
+ {q:"STEP 6 恢复的是什么？",o:["被暂停进程的寄存器值","保存在内核栈中的 PC 值","接受中断的能力（重新启用）","ISR 正在使用的工作数据"],a:2,ex:"STEP 6 把 STEP 1 关掉的中断重新打开。寄存器和 PC 在 STEP 5 恢复。"},
+ {q:"ISR 开始时，从 IDT 取出的地址会放进哪个寄存器？",o:["PC（程序计数器）","ACC（累加器）","MDR（存储器数据寄存器）","CIR（当前指令寄存器）"],a:0,ex:"ISR 的地址放进 PC，所以下一条要执行的指令就是 ISR 的第一条指令。"},
+ {q:"发生中断中的中断时，为什么栈能按正确的顺序恢复？",o:["最先保存的栈帧最先被取出","每个栈帧上都有自己的优先级编号","IDT 记住了所有要返回的地址","最后保存的栈帧最先被取出"],a:3,ex:"栈是 LIFO。ISR A 的盒子最后放进去，所以最先出来，顺序不会乱。"},
+ {q:"CPU 什么时候检查中断寄存器？",o:["每个信号到达的那一瞬间","每个 FDE 周期结束的时候","只在数据写入存储器的时候","只在操作系统启动时检查一次"],a:1,ex:"在每个 FDE 周期结束时检查，而不是在指令执行到一半时。所以每条指令一定会执行完。"},
+ {q:"程序请求操作系统保存文件，这是哪种中断？",o:["来自磁盘驱动器的硬件中断","运行时错误引起的异常（exception）","程序调用操作系统的 trap（软件）","来自时钟电路的定时器中断"],a:2,ex:"程序自己调用操作系统的功能，是 trap（软件中断）。保存完成时，磁盘会发出硬件中断。"}
+];
+
+let score=0;
+qs.forEach((x,i)=>{
+  const box=document.createElement('div');box.className='q';
+  box.innerHTML=`<h3>Q${i+1}. ${x.q}</h3><div class="opts">${x.o.map((t,j)=>`<button class="opt" id="q${i}o${j}" data-j="${j}">${"ABCD"[j]}. ${t}</button>`).join('')}</div><p class="fb" id="fb${i}"></p>`;
+  $('quiz').appendChild(box);
+  let done=false;
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(done)return;done=true;const j=+b.dataset.j;
+    box.querySelectorAll('.opt')[x.a].classList.add('right');
+    if(j!==x.a)b.classList.add('wrong');else score++;
+    $('fb'+i).textContent=(j===x.a?'正确。':'再想想。正确答案是 '+"ABCD"[x.a]+'。')+x.ex;
+    $('score').textContent=score+' / '+qs.length;
+  });
+});
+
+root.addEventListener('langhide',()=>stop());
+
+})(document.getElementById('vzh'));
+(function(root){
+
+const $=id=>root.querySelector('#'+id);
+const RG=["PC","CIR","ACC","MAR","MDR"];
+const NAME={PC:"งานถัดไป",CIR:"กำลังทำ",ACC:"ผลลัพธ์ระหว่างทำ",MAR:"กำลังดูที่",MDR:"ข้อมูลในมือ"};
+const NAMEN={PC:"ที่อยู่ของคำสั่งถัดไป",CIR:"คำสั่งปัจจุบัน",ACC:"ผลลัพธ์",MAR:"ที่อยู่ที่จะอ่านหรือเขียน",MDR:"ข้อมูลที่จะอ่านหรือเขียน"};
+const ORDER=["power","timer","disk","kbd","div","trap"];
+const SRC={
+ power:{name:"ไฟฟ้าขัดข้อง",short:"ไฟฟ้า",type:"hardware",from:"วงจรไฟฟ้า (อุปกรณ์ภายนอก)",isr:"ISR_power",addr:"1110",
+   ex:"แรงดันไฟฟ้าลดลงกะทันหัน",job:"บันทึกงานที่กำลังทำแบบฉุกเฉิน",
+   w:{PC:"บันทึกเอกสารแบบฉุกเฉิน",CIR:"ตรวจสถานะไฟฟ้า",ACC:"แรงดันไฟต่ำ!",MAR:"วงจรควบคุมไฟฟ้า",MDR:"ข้อความเตือน"},
+   n:{PC:"1111",CIR:"0111",ACC:"1000",MAR:"0110",MDR:"0001"}},
+ timer:{name:"ตัวจับเวลา",short:"ตัวจับเวลา",type:"hardware",from:"วงจรตัวจับเวลา (อุปกรณ์ภายนอก)",isr:"ISR_timer",addr:"0110",
+   ex:"หมดเวลาที่ได้รับ (time slice)",job:"บอก OS ว่าหมดเวลา แล้วเลือกโปรแกรมถัดไป",
+   w:{PC:"สลับไปโปรแกรมถัดไป",CIR:"นับเวลาที่ใช้ไป",ACC:"เวลาที่ใช้ = 20 ms",MAR:"วงจรตัวจับเวลา",MDR:"สัญญาณ \"หมดเวลา\""},
+   n:{PC:"0111",CIR:"0010",ACC:"0100",MAR:"0001",MDR:"1111"}},
+ disk:{name:"ดิสก์",short:"ดิสก์",type:"hardware",from:"ไดรฟ์ดิสก์ (อุปกรณ์ภายนอก)",isr:"ISR_disk",addr:"0111",
+   ex:"รูปภาพที่แอปรูปภาพขอไว้โหลดเสร็จแล้ว",job:"ส่งข้อมูลที่โหลดเสร็จให้โปรแกรมที่รออยู่",
+   w:{PC:"ส่งข้อมูลที่โหลดแล้ว",CIR:"อ่านรายงาน \"เสร็จแล้ว\" จากดิสก์",ACC:"โหลดแล้ว = 4 KB",MAR:"ตัวควบคุมดิสก์",MDR:"ส่วนหนึ่งของไฟล์รูปภาพ"},
+   n:{PC:"1000",CIR:"0110",ACC:"0101",MAR:"0010",MDR:"1010"}},
+ kbd:{name:"คีย์บอร์ด",short:"คีย์บอร์ด",type:"hardware",from:"คีย์บอร์ด (อุปกรณ์ภายนอก)",isr:"ISR_kbd",addr:"1010",
+   ex:"มีการกดปุ่ม",job:"อ่านปุ่มที่กด แล้วแสดงบนหน้าจอ",
+   w:{PC:"ส่งตัวอักษรไปที่หน้าจอ",CIR:"อ่านตัวอักษรจากคีย์บอร์ด",ACC:"ปุ่มที่กด = K",MAR:"ช่องรับข้อมูลคีย์บอร์ด",MDR:"\"K\""},
+   n:{PC:"1011",CIR:"1001",ACC:"0001",MAR:"1011",MDR:"1110"}},
+ div:{name:"หารด้วยศูนย์",short:"หารด้วย 0",type:"exception",from:"โปรแกรมที่กำลังทำงาน (ภายใน CPU)",isr:"ISR_div",addr:"1100",
+   ex:"เครื่องคิดเลขพยายามคำนวณ 10 ÷ 0",job:"แสดงข้อความผิดพลาดบนหน้าจอ (ตัวอย่างในหนังสือเรียน)",
+   w:{PC:"แสดงข้อความผิดพลาด",CIR:"หาสาเหตุของข้อผิดพลาด",ACC:"พยายามหารด้วย 0",MAR:"ข้อมูลข้อผิดพลาด",MDR:"\"หารด้วย 0 ไม่ได้\""},
+   n:{PC:"1101",CIR:"0011",ACC:"0000",MAR:"1101",MDR:"0110"},
+   note:" (ใน OS จริง โปรแกรมที่หารด้วยศูนย์มักถูกปิดไปเลย แต่ในโมเดลของหนังสือเรียน โปรแกรมจะทำงานต่อ)"},
+ trap:{name:"System call",short:"เรียก OS",type:"trap",from:"โปรแกรมที่กำลังทำงาน (ภายใน CPU)",isr:"ISR_syscall",addr:"1101",
+   ex:"โปรแกรมประมวลผลคำขอให้ OS สั่งพิมพ์",job:"OS เตรียมงานพิมพ์ แล้วส่งไปที่เครื่องพิมพ์",
+   w:{PC:"ส่งเอกสารไปที่เครื่องพิมพ์",CIR:"อ่านคำขอที่ส่งถึง OS",ACC:"ประเภทคำขอ = พิมพ์",MAR:"คิวงานพิมพ์",MDR:"เอกสารที่จะพิมพ์"},
+   n:{PC:"1110",CIR:"1000",ACC:"0010",MAR:"0111",MDR:"1011"}}
+};
+const PROG={
+ power:{name:"สเปรดชีต",w:{PC:"คำนวณผลรวม",CIR:"กำลังพิมพ์ตัวเลขในช่อง B5",ACC:"ผลรวม = 15,200",MAR:"แผ่นงานยอดขาย ช่อง B5",MDR:"\"3,500\""},n:{PC:"0010",CIR:"0001",ACC:"1111",MAR:"1010",MDR:"0101"}},
+ timer:{name:"การส่งออกวิดีโอ",w:{PC:"บีบอัดเฟรมถัดไป",CIR:"กำลังบีบอัดเฟรมที่ 120",ACC:"ความคืบหน้า = 40%",MAR:"เฟรมที่ 120 ของวิดีโอ",MDR:"ข้อมูลภาพของเฟรม"},n:{PC:"0011",CIR:"0010",ACC:"1010",MAR:"1000",MDR:"0111"}},
+ disk:{name:"แอปรูปภาพ",w:{PC:"แสดงรูปภาพบนหน้าจอ",CIR:"กำลังสร้างภาพย่อรูปที่ 3",ACC:"แสดงแล้ว = 3 รูป",MAR:"โฟลเดอร์รูปภาพ",MDR:"ส่วนหนึ่งของ \"beach.jpg\""},n:{PC:"1001",CIR:"1000",ACC:"0011",MAR:"0100",MDR:"1101"}},
+ kbd:{name:"โปรแกรมประมวลผลคำ",w:{PC:"บันทึกย่อหน้า",CIR:"กำลังพิมพ์ \"ดี\"",ACC:"จำนวนคำ = 128",MAR:"หน้า 3 ของเอกสาร",MDR:"\"สวัส\""},n:{PC:"0101",CIR:"0100",ACC:"0011",MAR:"1001",MDR:"1100"}},
+ div:{name:"แอปเครื่องคิดเลข",w:{PC:"แสดงคำตอบ",CIR:"กำลังคำนวณ \"10 ÷ 0\"",ACC:"ตัวตั้ง = 10",MAR:"บันทึกสูตร",MDR:"ตัวหาร \"0\""},n:{PC:"0111",CIR:"0110",ACC:"1010",MAR:"0011",MDR:"0000"}},
+ trap:{name:"โปรแกรมประมวลผลคำ (สั่งพิมพ์)",w:{PC:"คืนสถานะปุ่มพิมพ์",CIR:"มีการกดปุ่ม \"พิมพ์\"",ACC:"จำนวนชุด = 2",MAR:"หน้า 1 ของเอกสาร",MDR:"เอกสารที่จะพิมพ์"},n:{PC:"0100",CIR:"0011",ACC:"0010",MAR:"1001",MDR:"1011"}}
+};
+ORDER.forEach((k,i)=>{SRC[k].key=k;SRC[k].i=i;SRC[k].prog=PROG[k]});
+const TYPEX={hardware:"มาจากอุปกรณ์ภายนอก",exception:"เกิดจากข้อผิดพลาดขณะโปรแกรมกำลังทำงาน",trap:"โปรแกรมเรียกใช้ OS เอง นี่คืออินเทอร์รัปต์แบบซอฟต์แวร์"};
+const TYPEL={hardware:"hardware",exception:"exception",trap:"trap / software"};
+const FLAG={on:["on","ON: รับ","รับอินเทอร์รัปต์ทั้งหมด"],off:["","OFF: ไม่รับ","หยุดรับไว้ เพื่อไม่ให้ ISR ถูกขัดจังหวะ"],mk:["half","เปิดบางส่วน","รับเฉพาะอินเทอร์รัปต์ที่สำคัญกว่าคีย์บอร์ด"],mx:["","OFF: ไม่รับ","กำลังทำงานที่สำคัญที่สุด จึงหยุดรับทั้งหมด"]};
+
+let mode="w",nestOn=false,srcKey="kbd";
+let ctx={A:SRC.kbd,B:null,prog:SRC.kbd.prog};
+const val=(o,k)=>o==="P"?ctx.prog[mode][k]:ctx[o][mode][k];
+const who=o=>o==="P"?"โปรแกรมเดิม ("+ctx.prog.name+")":(o==="A"?(nestOn?"ISR A":"ISR")+" ("+ctx.A.name+")":"ISR B ("+ctx.B.name+")");
+const runText=r=>r==="W"?"กำลังสลับ…":"กำลังทำงาน: "+who(r);
+
+function buildBasic(){
+  const c=ctx.A,nm=c.name,isr=c.isr,inside=c.type!=="hardware",g=ctx.prog;
+  return [
+  {fig:"ปกติ",s:"ทำงาน",t:`${g.name}กำลังทำงาน`,e:"fetch–decode–execute cycle",b:`${g.name}กำลังทำงานอยู่ ตอนนี้: "${g.w.CIR}" CPU ทำงานทีละคำสั่ง หลังจบแต่ละคำสั่งจะตรวจสัญญาณอินเทอร์รัปต์ ตอนนี้ทุกสัญญาณเป็น 0 จึงยังไม่มีอะไรเข้ามา`,r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"สัญญาณ",s:"สัญญาณ",t:`มีสัญญาณเข้ามา: ${nm}`,e:"interrupt received",b:`${c.ex} สัญญาณ${nm}เปลี่ยนเป็น 1 กรอบแดงบอกว่าสัญญาณมาจากไหน `+(inside?`สัญญาณนี้ไม่ได้มาจากอุปกรณ์ภายนอก แต่มาจาก${g.name}ที่กำลังทำงานอยู่เอง`:"CPU จะทำคำสั่งปัจจุบันให้เสร็จก่อน แล้วจึงสังเกตเห็นสัญญาณนี้"),r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+  {fig:"STEP 1",s:"ปิดสวิตช์",t:"ปิดสวิตช์อินเทอร์รัปต์",e:"other interrupts are disabled",b:"ปิดสวิตช์ เพื่อไม่ให้การจัดการอินเทอร์รัปต์ถูกขัดจังหวะโดยอินเทอร์รัปต์อื่น",r:"P",on:["A"],f:"off",run:"W",fr:[],hot:["cu"]},
+  {fig:"STEP 2",s:"เก็บ",t:"เก็บงานที่ทำค้างไว้ลงในสแต็ก",e:"state saved on the kernel stack",b:"ค่าใน CPU (งานถัดไป ผลลัพธ์ระหว่างทำ ฯลฯ) จะถูกใส่ในกล่องสีน้ำเงินที่เรียกว่า stack frame แล้ว push ลงใน kernel stack ถ้าไม่ทำแบบนี้ โปรแกรมจะทำงานต่อในภายหลังไม่ได้",r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:[]},
+  {fig:"STEP 3",s:"ระบุ",t:"หาแหล่งที่มาและตรวจลำดับความสำคัญ",e:"source identified · priority checked",b:`สัญญาณมาจาก: ${nm} ประเภทคือ ${TYPEL[c.type]} ${TYPEX[c.type]} หลังตรวจลำดับความสำคัญ CPU ตัดสินใจจัดการตอนนี้เลย`,r:"P",on:["A"],f:"off",run:"W",fr:["P"],hot:["irbox"]},
+  {fig:"STEP 4",s:"รัน ISR",t:`อ่าน IDT แล้วรัน ${isr}`,e:"jump to the ISR using the IDT",b:`① อ่านแถว "${nm} → ${isr}" ใน IDT ② ใส่ที่อยู่ของ ${isr} ลงใน PC ③ รัน ${isr} หน้าที่ของมันคือ ${c.job} งานสีน้ำเงินออกจาก CPU ไปแล้ว แต่ไม่เป็นไร เพราะเก็บไว้อย่างปลอดภัยในสแต็ก`,r:"A",on:[],f:"off",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+  {fig:"STEP 5",ret:1,s:"นำกลับ",t:"นำงานกลับมาและทำต่อ",e:"state restored → process continues",b:`เมื่อ ${isr} ทำเสร็จ กล่องสีน้ำเงินจะถูก pop ออกจากสแต็ก และค่าต่างๆ กลับเข้าไปใน CPU ${g.name}ทำงานต่อจาก "${g.w.CIR}"`+(c.note||""),r:"P",on:[],f:"off",run:"P",fr:[],hot:[]},
+  {fig:"STEP 6",s:"เปิดสวิตช์",t:"เปิดสวิตช์อินเทอร์รัปต์อีกครั้ง",e:"interrupts restored (re-enabled)",b:"สวิตช์ที่ปิดใน STEP 1 ถูกเปิดอีกครั้ง ตอนนี้ CPU รับอินเทอร์รัปต์ถัดไปได้แล้ว STEP 1 กับ STEP 6 เป็นคู่กัน",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+  ];
+}
+const nest=[
+ {fig:"ปกติ",s:"ทำงาน",t:"โปรแกรมประมวลผลคำกำลังทำงาน",e:"fetch–decode–execute cycle",b:"เริ่มต้นเหมือนสถานการณ์พื้นฐาน แต่ครั้งนี้จะมีอินเทอร์รัปต์ที่สำคัญกว่าเข้ามา ขณะที่ ISR ของคีย์บอร์ดกำลังทำงาน",r:"P",on:[],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"สัญญาณ",s:"สัญญาณ",t:"มีสัญญาณเข้ามา: คีย์บอร์ด",e:"interrupt received",b:"สัญญาณคีย์บอร์ดเปลี่ยนเป็น 1 กรอบแดงแสดงอุปกรณ์ที่ส่งสัญญาณ (คีย์บอร์ด)",r:"P",on:["A"],f:"on",run:"P",fr:[],hot:["irbox"]},
+ {fig:"STEP 1",x:1,s:"ปิดบางส่วน",t:"หยุดเฉพาะอินเทอร์รัปต์ที่สำคัญน้อยกว่า",e:"lower-priority interrupts disabled",b:"หนังสือเรียนปิดอินเทอร์รัปต์ทั้งหมด แต่ CPU จริงมักให้อินเทอร์รัปต์ที่สำคัญกว่าผ่านเข้ามาได้ ส่วนนี้เกินขอบเขตของหนังสือเรียน",r:"P",on:["A"],f:"mk",run:"W",fr:[],hot:["cu"]},
+ {fig:"STEP 2",s:"เก็บ①",t:"เก็บงานของโปรแกรมประมวลผลคำ",e:"state saved on the kernel stack",b:"กล่องสีน้ำเงิน (งานของโปรแกรมเดิม) ถูก push ลงในสแต็ก",r:"P",on:["A"],f:"mk",run:"W",fr:["P"],hot:[]},
+ {fig:"STEP 3–4",s:"ISR A",t:"รัน ISR ของคีย์บอร์ด (ISR A)",e:"jump to ISR A using the IDT",b:"เป็นคีย์บอร์ด CPU จึงอ่านแถว ISR_kbd ใน IDT แล้วรัน ตอนนี้ใน CPU เป็นงานสีเขียว",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:["idtbox"],idt:"A"},
+ {fig:"สัญญาณ ②",x:1,s:"สัญญาณด่วน",t:"ไฟฟ้าขัดข้องระหว่าง ISR ของคีย์บอร์ด!",e:"higher-priority interrupt received",b:"สัญญาณซ้ายสุด (สำคัญที่สุด) เปลี่ยนเป็น 1 กรอบแดงย้ายไปที่ไฟฟ้า สวิตช์เปิดบางส่วน สัญญาณนี้จึงเข้ามาได้",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox","cu"]},
+ {fig:"STEP 3 ②",s:"เปรียบเทียบ",t:"อันไหนสำคัญกว่า?",e:"priority checked",b:"ไฟฟ้าขัดข้องสำคัญกว่าคีย์บอร์ด จึงหยุด ISR A ไว้ก่อน แล้วจัดการไฟฟ้าขัดข้อง สัญญาณที่สำคัญน้อยกว่าต้องรอ",r:"A",on:["B"],f:"mk",run:"A",fr:["P"],hot:["irbox"]},
+ {fig:"STEP 1–2 ②",s:"เก็บ②",t:"เก็บงานของ ISR คีย์บอร์ดด้วย",e:"ISR A state pushed on top",b:"ปิดอินเทอร์รัปต์ทั้งหมด กล่องสีเขียว (งานที่ค้างของ ISR A) ถูก push ซ้อนบนกล่องสีน้ำเงิน ตอนนี้มี 2 กล่องในสแต็ก",r:"A",on:["B"],f:"mx",run:"W",fr:["P","A"],hot:["cu"]},
+ {fig:"STEP 4 ②",s:"ISR B",t:"รัน ISR ไฟฟ้าขัดข้อง (ISR B)",e:"jump to ISR B using the IDT",b:"CPU อ่านแถว ISR_power ใน IDT แล้วรัน ตอนนี้ใน CPU เป็นงานสีม่วง และบันทึกเอกสารแบบฉุกเฉิน",r:"B",on:[],f:"mx",run:"B",fr:["P","A"],hot:["idtbox"],idt:"B"},
+ {fig:"STEP 5 ②",ret:1,s:"เขียวกลับ",t:"pop กล่องสีเขียวที่อยู่บนสุด",e:"pop: ISR A continues",b:"เมื่อ ISR B เสร็จ จะ pop เฉพาะกล่องสีเขียวที่อยู่บนสุด แล้ว ISR ของคีย์บอร์ดทำงานต่อ กล่องที่เข้าทีหลังจะออกก่อน (LIFO) ลำดับจึงไม่สับสน",r:"A",on:[],f:"mk",run:"A",fr:["P"],hot:[]},
+ {fig:"STEP 5",ret:1,s:"น้ำเงินกลับ",t:"pop กล่องสีน้ำเงิน",e:"pop: original program continues",b:"ISR ของคีย์บอร์ดก็เสร็จแล้ว กล่องสีน้ำเงินถูก pop และโปรแกรมประมวลผลคำทำงานต่อจากตรงที่พิมพ์ค้างไว้",r:"P",on:[],f:"mk",run:"P",fr:[],hot:[]},
+ {fig:"STEP 6",s:"เปิดสวิตช์",t:"เปิดอินเทอร์รัปต์ทั้งหมดอีกครั้ง",e:"interrupts restored (re-enabled)",b:"รับอินเทอร์รัปต์ทั้งหมดได้อีกครั้ง สแต็กว่างแล้ว ทุกอย่างกลับสู่จุดเริ่มต้น",r:"P",on:[],f:"on",run:"P",fr:[],hot:["cu"]}
+];
+let seq=buildBasic(),s=0,timer=null,prev=null,popTok=0;
+
+function ownerOf(i){return ctx.A&&ctx.A.i===i?"A":(ctx.B&&ctx.B.i===i?"B":"W")}
+function buildStatic(){
+  $('srcs').innerHTML=ORDER.map(k=>{const c=SRC[k];return `<button class="src" data-k="${k}" aria-pressed="${k===srcKey}"><span class="nm">${c.name}</span><span class="ty">${TYPEL[c.type]}</span><span class="ex">${c.ex}</span><span class="pg">หยุด: ${c.prog.name}</span></button>`}).join('');
+  $('srcs').querySelectorAll('.src').forEach(b=>b.onclick=()=>setSource(b.dataset.k));
+  $('bits').innerHTML=ORDER.map((k,i)=>{const c=SRC[k];const kind=c.type==="hardware"?"HW":(c.type==="exception"?"exception":"trap");
+    return (i===4?'<span class="div" aria-hidden="true"></span>':'')+`<div class="bit" id="b${i}"><span class="tagsig">⚡ สัญญาณ</span><span class="d">0</span><span class="l">${c.short}</span><span class="k">${kind}</span></div>`}).join('');
+  $('idtb').innerHTML=ORDER.map((k,i)=>`<tr id="i${i}"><td>${SRC[k].name}</td><td class="ty">${SRC[k].type}</td><td id="i${i}v"></td></tr>`).join('');
+  $('cmpb').innerHTML=ORDER.map(k=>{const c=SRC[k];const cls=c.type==="hardware"?"hw":(c.type==="trap"?"tr":"");
+    return `<tr><td><b>${c.name}</b></td><td><span class="tyb ${cls}">${TYPEL[c.type]}</span></td><td>${c.prog.name}<br><span class="small">${c.prog.w.CIR}</span></td><td>${c.from}</td><td>${c.ex}</td><td class="m">${c.isr}<br>ที่อยู่ ${c.addr}</td><td>${c.job}</td><td><button class="btn sm" data-k="${k}">ดู</button></td></tr>`}).join('');
+  $('cmpb').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(nestOn)setScenario(false);setSource(b.dataset.k);go(5,true);$('sim').scrollIntoView({behavior:'smooth',block:'start'})});
+}
+function buildRegs(){
+  $('regs').innerHTML=RG.map(k=>`<div class="reg" id="r${k}"><span class="n"><b>${k}</b>${mode==="w"?NAME[k]:NAMEN[k]}</span><span class="v" id="v${k}"></span><span class="new">NEW</span></div>`).join('');
+  $('bench').classList.toggle('mode-num',mode==="n");
+}
+function frameHTML(o,top){
+  return `<div class="frame o-${o}"><div class="h"><span class="who">${who(o)}</span>${top?'<span class="sp">บนสุด</span>':''}</div><ul>${RG.map(k=>`<li><i>${k}</i><span>${val(o,k)}</span></li>`).join('')}</ul></div>`;
+}
+function renderFrames(cur,old,animate,onArrive){
+  const el=$('frames');const tok=++popTok;
+  document.querySelectorAll('.flyer').forEach(x=>x.remove());
+  const draw=arr=>{el.innerHTML=arr.length?arr.map((o,i)=>frameHTML(o,i===arr.length-1)).join(''):'<div class="empty">ว่าง (ยังไม่มีงานที่เก็บไว้)</div>'};
+  const still=()=>el.querySelectorAll('.frame').forEach(x=>x.style.animation='none');
+  const label=()=>{$('stackN').textContent=cur.length?`${cur.length} กล่อง`:'ว่าง'};
+  if(animate&&old&&old.length>cur.length){
+    draw(old);still();
+    const top=el.lastElementChild,a=top.getBoundingClientRect(),b=$('regs').getBoundingClientRect();
+    const fly=top.cloneNode(true);fly.classList.add('flyer');
+    fly.style.cssText=`position:absolute;left:${a.left+scrollX}px;top:${a.top+scrollY}px;width:${a.width}px;margin:0;z-index:50;animation:none;pointer-events:none`;
+    document.body.appendChild(fly);top.style.visibility='hidden';
+    const dx=(b.left+b.width/2)-(a.left+a.width/2),dy=(b.top+b.height/2)-(a.top+a.height/2);
+    const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const an=fly.animate([{transform:'none',opacity:1},{transform:`translate(${dx*.45}px,${dy*.45-50}px) rotate(-3deg) scale(1.06)`,opacity:1,offset:.45},{transform:`translate(${dx}px,${dy}px) scale(.85)`,opacity:.1}],{duration:rm?1:1100,easing:'cubic-bezier(.45,0,.25,1)',fill:'forwards'});
+    $('stackN').textContent='กำลัง pop…';
+    an.onfinish=()=>{fly.remove();if(tok!==popTok)return;draw(cur);still();label();onArrive&&onArrive()};
+    return;
+  }
+  draw(cur);
+  const n=animate&&old?old.length:cur.length;
+  el.querySelectorAll('.frame').forEach((x,i)=>{if(i<n)x.style.animation='none'});
+  label();
+}
+function buildTrack(){
+  $('track').innerHTML=seq.map((d,i)=>`<button class="tstep" data-i="${i}"><b>${i}</b>${d.s}</button>`).join('');
+  $('track').querySelectorAll('.tstep').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+}
+function applyCPU(d,flash,land){
+  const cpu=$('cpu');cpu.className='cpu o-'+d.r;
+  if(land){void cpu.offsetWidth;cpu.classList.add('land')}
+  RG.forEach(k=>{$('v'+k).textContent=val(d.r,k);const r=$('r'+k);r.classList.remove('chg');if(flash){void r.offsetWidth;r.classList.add('chg')}});
+  $('running').textContent=runText(d.run);
+}
+function render(animate=true){
+  const d=seq[s];
+  $('fig').textContent=d.fig;$('fig').className='figtag'+(d.x?' extra':'');
+  $('capT').textContent=d.t;$('capE').textContent=d.e;$('capB').textContent=d.b;
+  root.querySelectorAll('.tstep').forEach(b=>{const n=+b.dataset.i;b.className='tstep'+(n===s?' now':n<s?' done':'')});
+  const p=prev,popping=!!(animate&&p&&p.fr.length>d.fr.length);
+  if(!popping)applyCPU(d,!!(animate&&p&&p.r!==d.r),false);
+  else $('running').textContent='กำลังนำงานกลับจากสแต็ก…';
+  const hitRow=d.idt?ctx[d.idt].i:-1;
+  ORDER.forEach((k,i)=>{
+    const o=ownerOf(i),on=d.on.some(x=>ctx[x]&&ctx[x].i===i);
+    const b=$('b'+i);b.className='bit o-'+o+(o!=="W"?' own':'')+(on?' one':'');b.querySelector('.d').textContent=on?'1':'0';
+    const r=$('i'+i);r.className='o-'+o+(o!=="W"?' own':'')+(i===hitRow?' hit':'');
+    $('i'+i+'v').textContent='→ '+(mode==="w"?SRC[k].isr:SRC[k].addr);
+  });
+  const f=FLAG[d.f];$('tg').className='toggle '+f[0];$('flagT').textContent=f[1];$('flagS').textContent=f[2];
+  ['cu','irbox'].forEach(id=>$(id).classList.toggle('hot',d.hot.includes(id)));
+  $('idtbox').className='box'+(d.hot.includes('idtbox')?' hot':'')+(d.idt?' own o-'+d.r:'');
+  const fl=$('flow');
+  if(d.idt){
+    const c=ctx[d.idt];
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① อ่าน IDT<b>${c.name} → ${c.isr}</b></span><span class="fa">→</span><span class="fs">② ใส่ลงใน PC<b>${mode==="w"?"คำสั่งแรกของ "+c.isr:"PC = "+c.addr}</b></span><span class="fa">→</span><span class="fs">③ รัน<b>${c.isr} ใช้ CPU</b></span>`;
+    fl.hidden=false;
+  }else if(d.ret){
+    fl.className='flow o-'+d.r;
+    fl.innerHTML=`<span class="fs">① pop จากสแต็ก<b>กล่องบนสุด: ${who(d.r)}</b></span><span class="fa">→</span><span class="fs">② เขียนกลับไปที่ CPU<b>${mode==="w"?"งานถัดไป = "+val(d.r,"PC"):"PC = "+val(d.r,"PC")}</b></span><span class="fa">→</span><span class="fs">③ ทำงานต่อ<b>${mode==="w"?"ต่อจาก: "+val(d.r,"CIR"):"จากคำสั่งที่ที่อยู่ "+val(d.r,"PC")}</b></span>`;
+    fl.hidden=false;
+  }else fl.hidden=true;
+  $('isrs').innerHTML=ORDER.map((k,i)=>{const o=ownerOf(i);const act=(d.run==="A"&&ctx.A.i===i)||(d.run==="B"&&ctx.B&&ctx.B.i===i);return `<span class="isr o-${o}${o!=="W"?' own':''}${act?' act':''}"><b>${SRC[k].addr}</b>${SRC[k].isr}</span>`}).join('');
+  renderFrames(d.fr,p?p.fr:null,animate,()=>applyCPU(d,true,true));
+  prev=d;
+}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='▶ เล่น'}
+function go(n,noAnim){stop();n=Math.max(0,Math.min(seq.length-1,n));const adj=!noAnim&&Math.abs(n-s)===1;if(!adj)prev=null;s=n;render(adj)}
+function setSource(k){stop();srcKey=k;ctx={A:SRC[k],B:null,prog:SRC[k].prog};seq=buildBasic();prev=null;
+  $('srcs').querySelectorAll('.src').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));render(false)}
+function setScenario(isNest){stop();nestOn=isNest;ctx=isNest?{A:SRC.kbd,B:SRC.power,prog:SRC.kbd.prog}:{A:SRC[srcKey],B:null,prog:SRC[srcKey].prog};seq=isNest?nest:buildBasic();s=0;prev=null;
+  $('scBasic').setAttribute('aria-pressed',!isNest);$('scNest').setAttribute('aria-pressed',isNest);$('srcwrap').hidden=isNest;buildTrack();render(false)}
+function setMode(m){mode=m;$('mWord').setAttribute('aria-pressed',m==="w");$('mNum').setAttribute('aria-pressed',m==="n");buildRegs();prev=null;render(false)}
+$('scBasic').onclick=()=>setScenario(false);$('scNest').onclick=()=>setScenario(true);
+$('mWord').onclick=()=>setMode("w");$('mNum').onclick=()=>setMode("n");
+$('next').onclick=()=>go(s+1);$('prev').onclick=()=>go(s-1);$('reset').onclick=()=>go(0,true);
+$('play').onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;prev=null;render(false)}$('play').textContent='❚❚ หยุดชั่วคราว';
+  timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$('spd').value)};
+$('spd').onchange=()=>{if(timer){stop();$('play').click()}};
+document.addEventListener('keydown',e=>{if(root.hidden||root.closest('#intro[hidden]')||e.target.tagName==='SELECT')return;if(e.key==='ArrowRight')go(s+1);if(e.key==='ArrowLeft')go(s-1)});
+buildStatic();buildRegs();buildTrack();render(false);
+
+const qs=[
+ {q:"ใน STEP 6 อะไรถูกคืนค่า?",o:["ค่าในรีจิสเตอร์ของโปรเซสที่ถูกหยุด","ค่า PC ที่เก็บไว้ใน kernel stack","ความสามารถในการรับอินเทอร์รัปต์ (เปิดอีกครั้ง)","ข้อมูลที่ ISR ใช้ระหว่างทำงาน"],a:2,ex:"STEP 6 เปิดอินเทอร์รัปต์ที่ปิดไว้ใน STEP 1 อีกครั้ง ส่วนรีจิสเตอร์และ PC คืนค่าใน STEP 5"},
+ {q:"เมื่อ ISR เริ่มทำงาน ที่อยู่จาก IDT จะถูกใส่ในรีจิสเตอร์ใด?",o:["PC (Program Counter)","ACC (Accumulator)","MDR (Memory Data Register)","CIR (Current Instruction Register)"],a:0,ex:"ที่อยู่ของ ISR ถูกใส่ใน PC คำสั่งถัดไปที่จะทำจึงเป็นคำสั่งแรกของ ISR"},
+ {q:"เมื่อมีอินเทอร์รัปต์ซ้อน ทำไมสแต็กจึงกลับได้ตามลำดับที่ถูกต้อง?",o:["เฟรมที่เก็บก่อนจะถูกนำออกก่อน","แต่ละเฟรมมีหมายเลขลำดับความสำคัญของตัวเอง","IDT จำที่อยู่ที่ต้องกลับไปได้ทั้งหมด","เฟรมที่เก็บทีหลังจะถูกนำออกก่อน"],a:3,ex:"สแต็กเป็น LIFO กล่องของ ISR A ถูกเก็บทีหลังจึงออกก่อน ลำดับจึงไม่สับสน"},
+ {q:"CPU ตรวจ interrupt register เมื่อไร?",o:["ทันทีที่สัญญาณแต่ละตัวมาถึง","ตอนจบของ FDE แต่ละรอบ","เฉพาะตอนเขียนข้อมูลลงหน่วยความจำ","ครั้งเดียวตอนที่ OS เริ่มทำงาน"],a:1,ex:"ตรวจตอนจบแต่ละรอบ FDE ไม่ใช่กลางคำสั่ง ทุกคำสั่งจึงทำจนเสร็จเสมอ"},
+ {q:"โปรแกรมขอให้ OS บันทึกไฟล์ นี่คืออินเทอร์รัปต์แบบใด?",o:["อินเทอร์รัปต์ฮาร์ดแวร์จากไดรฟ์ดิสก์","exception ที่เกิดจากข้อผิดพลาดขณะทำงาน","trap (ซอฟต์แวร์) ที่โปรแกรมเรียกใช้ OS","อินเทอร์รัปต์ตัวจับเวลาจากวงจรนาฬิกา"],a:2,ex:"เมื่อโปรแกรมเรียกใช้บริการของ OS เอง คือ trap (software interrupt) เมื่อบันทึกเสร็จ ดิสก์จะส่งอินเทอร์รัปต์ฮาร์ดแวร์"}
+];
+
+let score=0;
+qs.forEach((x,i)=>{
+  const box=document.createElement('div');box.className='q';
+  box.innerHTML=`<h3>Q${i+1}. ${x.q}</h3><div class="opts">${x.o.map((t,j)=>`<button class="opt" id="q${i}o${j}" data-j="${j}">${"ABCD"[j]}. ${t}</button>`).join('')}</div><p class="fb" id="fb${i}"></p>`;
+  $('quiz').appendChild(box);
+  let done=false;
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(done)return;done=true;const j=+b.dataset.j;
+    box.querySelectorAll('.opt')[x.a].classList.add('right');
+    if(j!==x.a)b.classList.add('wrong');else score++;
+    $('fb'+i).textContent=(j===x.a?'ถูกต้อง ':'ยังไม่ถูก คำตอบคือ '+"ABCD"[x.a]+' ')+x.ex;
+    $('score').textContent=score+' / '+qs.length;
+  });
+});
+
+root.addEventListener('langhide',()=>stop());
+
+})(document.getElementById('vth'));
+(function(){
+  const L=["en","ja","zh","th"];
+  const view=c=>document.getElementById('v'+c);
+  function setLang(l,save){
+    L.forEach(c=>{const v=view(c);if(c!==l&&!v.hidden)v.dispatchEvent(new Event('langhide'));});
+    document.querySelectorAll('.flyer').forEach(x=>x.remove());
+    L.forEach(c=>{view(c).hidden=c!==l;document.getElementById('lg-'+c).setAttribute('aria-pressed',c===l)});
+    document.documentElement.lang=l==='zh'?'zh-Hans':l;
+    if(save){try{localStorage.setItem('lang4',l)}catch(e){} try{history.replaceState(null,'','#'+l)}catch(e){}}
+  }
+  L.forEach(c=>document.getElementById('lg-'+c).onclick=()=>setLang(c,true));
+  const fromHash=()=>{const h=location.hash.slice(1);return L.includes(h)?h:null};
+  let l=fromHash();
+  if(!l){try{const s=localStorage.getItem('lang4');if(L.includes(s))l=s}catch(e){}}
+  setLang(l||'en',false);
+  window.addEventListener('hashchange',()=>{const h=fromHash();if(h)setLang(h,false)});
+})();
+</script>
+<script>
+(function(){
+  const intro=document.getElementById('intro'),sw=document.getElementById('schedwrap');
+  const bi=document.getElementById('tp-intr'),bs=document.getElementById('tp-sched');
+  function topic(t,pick){
+    const s=t==='sched';
+    if(s)document.querySelectorAll('#intro > div:not([hidden])').forEach(v=>v.dispatchEvent(new Event('langhide')));
+    intro.hidden=s;sw.hidden=!s;document.body.classList.toggle('t-sched',s);
+    bi.setAttribute('aria-pressed',!s);bs.setAttribute('aria-pressed',s);
+    document.querySelectorAll('.flyer').forEach(x=>x.remove());
+    if(!s&&pick){const v=document.querySelector('#intro > div:not([hidden])');const b=v&&v.querySelector('.src[data-k="'+pick+'"]');if(b)b.click();}
+    try{history.replaceState(null,'',s?'#sched':'#'+(document.documentElement.lang||'en').slice(0,2));}catch(e){}
+    window.scrollTo(0,0);
+  }
+  bi.onclick=()=>topic('intr');bs.onclick=()=>topic('sched');
+  window.addEventListener('message',e=>{const d=e.data||{};
+    if(typeof d.h==='number')document.getElementById('schedframe').style.height=Math.max(600,d.h)+'px';
+    if(d.go==='intr')topic('intr',d.pick)});
+  if(location.hash==='#sched')topic('sched');
+  window.addEventListener('hashchange',()=>{if(location.hash==='#sched')topic('sched');else if(!intro.hidden===false)topic('intr')});
+})();
+</script>

@@ -430,6 +430,7 @@ STUDY.ch16 = {
 <table><tr><th>Preemptive</th><th>Non-preemptive</th></tr>
 <tr><td>Process gets a <b>quantum</b> (time slice); can be interrupted mid-execution</td><td>Process keeps the CPU until it finishes its <b>burst time</b> or voluntarily waits</td></tr>
 <tr><td>Risk: low-priority processes starved</td><td>Risk: short processes starved behind a long one</td></tr></table>
+<div class="sg-box def">&#9654; <b>Interactive:</b> <a href="interrupt-lab.html#sched" target="_blank" rel="noopener">Preemptive vs Non-preemptive simulator</a> &mdash; step through FCFS and Round Robin with P1 = 8 ms, P2 = 2 ms, P3 = 1 ms and compare waiting times.</div>
 
 <h3>Scheduling algorithms (worked example: P1=23ms, P2=4ms, P3=9ms, P4=3ms)</h3>
 <table><tr><th>Algorithm</th><th>Rule</th></tr>
@@ -451,6 +452,7 @@ STUDY.ch16 = {
 <p>An <b>interrupt</b> signals the CPU to stop and deal with an urgent event. Types: device interrupts, exceptions (e.g. divide by zero), traps/software interrupts.</p>
 <p>Exam-precise sequence: interrupt received (other interrupts disabled) → current task's state saved on the <b>kernel stack</b> → source and priority identified → jump to the interrupt service routine (found via the <b>interrupt dispatch table, IDT</b>) → state restored, interrupts re-enabled.</p>
 <div class="sg-box tip">Interrupts are prioritised by <b>IPL</b> (0-31) — a running process is only suspended if the new interrupt's IPL is <i>greater</i> than the current one.</div>
+<div class="sg-box def">&#9654; <b>Interactive:</b> <a href="interrupt-lab.html#en" target="_blank" rel="noopener">Interrupt simulator</a> &mdash; watch the kernel stack, IDT and ISR for 6 interrupt types (English / &#26085;&#26412;&#35486; / &#20013;&#25991; / &#3652;&#3607;&#3618;).</div>
 `,
 '16.1b': `
 <h2>16.1 Memory Management (continued)</h2>
