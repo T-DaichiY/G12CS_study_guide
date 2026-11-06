@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ページとセグメントのラボ / Memory Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Noto+Sans+SC:wght@400;700;900&family=Prompt:wght@600;700&family=Sarabun:wght@400;700&display=swap">
+<style>
+/* Layout: same lab notebook as the Interrupt Lab. Color = which program owns the block. Red is reserved for faults and warnings. */
+:root{
+  --bg:#F4F5F7; --panel:#FFFFFF; --ink:#141A22; --muted:#56606C; --line:#D5DAE1; --soft:#ECEEF2;
+  --sheet:#1F55D0; --on-sheet:#FFFFFF; --word:#13793A; --on-word:#FFFFFF; --game:#E3A81C; --on-game:#141A22;
+  --browser:#B8561F; --on-browser:#FFFFFF; --os:#6F2450; --on-os:#FFFFFF;
+  --pa:#5A6472; --on-pa:#FFFFFF; --sig:#E0201B; --sig-soft:#FCE3E0; --ok:#13793A; --ok-soft:#DCF2E4; --disk:#DCE7F5; --disk-top:#BFD3EC;
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
+  --sheet:#8AB0FF; --on-sheet:#0F1318; --word:#6BD893; --on-word:#0F1318; --game:#F0C24B; --on-game:#0F1318;
+  --browser:#F09A62; --on-browser:#0F1318; --os:#D58BB4; --on-os:#0F1318;
+  --pa:#B4BDC8; --on-pa:#0F1318; --sig:#FF5A52; --sig-soft:#401A17; --ok:#6BD893; --ok-soft:#14351F; --disk:#1C2B3E; --disk-top:#2A4059; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
+  --sheet:#8AB0FF; --on-sheet:#0F1318; --word:#6BD893; --on-word:#0F1318; --game:#F0C24B; --on-game:#0F1318;
+  --browser:#F09A62; --on-browser:#0F1318; --os:#D58BB4; --on-os:#0F1318;
+  --pa:#B4BDC8; --on-pa:#0F1318; --sig:#FF5A52; --sig-soft:#401A17; --ok:#6BD893; --ok-soft:#14351F; --disk:#1C2B3E; --disk-top:#2A4059; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body.v-ja{--f-display:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;--f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;line-height:1.75}
+body.v-zh{--f-display:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;--f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.75}
+body.v-th{--f-display:"Prompt","Noto Sans Thai",sans-serif;--f-body:"Sarabun","Noto Sans Thai","Leelawadee UI",system-ui,sans-serif;line-height:1.8;font-size:17px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:clamp(30px,5.2vw,52px);font-weight:800;letter-spacing:-.01em}
+h1 em{font-style:normal;color:var(--sheet)}
+h2{font-size:clamp(22px,3vw,30px);font-weight:800}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+section{margin-top:56px;display:flex;flex-direction:column;gap:18px}
+header{padding-top:40px;display:flex;flex-direction:column;gap:14px}
+.lead{color:var(--muted);max-width:68ch}
+button:focus-visible,select:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.c-sheet{--c:var(--sheet);--on:var(--on-sheet)} .c-word{--c:var(--word);--on:var(--on-word)} .c-game{--c:var(--game);--on:var(--on-game)}
+.c-pa{--c:var(--pa);--on:var(--on-pa)} .c-browser{--c:var(--browser);--on:var(--on-browser)} .c-os{--c:var(--os);--on:var(--on-os)}
+
+.langbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.langin{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:4px;background:var(--panel);gap:4px;flex-wrap:wrap}
+.seg .cap{font-size:12px;color:var(--muted);padding:0 6px;align-self:center}
+.seg button{appearance:none;font:inherit;font-size:14px;font-weight:700;border:0;border-radius:9px;padding:7px 14px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.langin .seg button{font-family:"Atkinson Hyperlegible","Zen Kaku Gothic New","Noto Sans SC","Sarabun",system-ui,sans-serif}
+
+.track{display:flex;flex-wrap:wrap;gap:6px}
+.tstep{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:10px;padding:6px 10px;cursor:pointer;font:inherit;font-size:12px;line-height:1.3;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.tstep b{font-family:var(--f-mono);font-size:12px}
+.tstep:hover{border-color:var(--ink)}
+.tstep.done{color:var(--ink)}
+.tstep.now{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.now-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;border-bottom:1px solid var(--line);padding-bottom:14px;min-height:150px;align-content:start}
+.figtag{font-family:var(--f-mono);font-size:13px;font-weight:600;padding:5px 12px;border-radius:8px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.figtag.extra{background:transparent;color:var(--ink);border:2px dashed var(--ink)}
+.now-card h3{font-size:22px;font-weight:800}
+.now-card .en{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-top:2px}
+.now-card .desc{margin-top:6px;max-width:74ch;font-size:16.5px}
+
+/* The stage mirrors the classroom diagram: programs, logical memory, page table, physical memory, swap. */
+.stage{position:relative;display:grid;gap:12px;align-items:stretch;
+  grid-template-columns:minmax(0,1.05fr) minmax(0,1.05fr) minmax(0,2.7fr) minmax(0,1.05fr);
+  grid-template-areas:"cpu cpu cpu cpu" "files log ram swap"}
+.stage.noswap{grid-template-columns:minmax(0,1.05fr) minmax(0,1.05fr) minmax(0,3.8fr);grid-template-areas:"cpu cpu cpu" "files log ram"}
+#ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;overflow:visible}
+#ov path{fill:none;stroke:var(--ink);stroke-width:2}
+#ov .head{fill:var(--ink);stroke:none}
+.zone{border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0;transition:box-shadow .3s}
+.zone.hot{box-shadow:0 0 0 3px var(--ink)}
+.ztag{display:inline-block;align-self:flex-start;font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:1px 8px;border-radius:5px;background:var(--ink);color:var(--bg);line-height:1.6}
+.ztag.ghost{background:transparent;color:var(--ink);border:1px dashed var(--ink)}
+.ztit{font-weight:700;font-size:15px;line-height:1.3}
+.zsub{font-size:12px;color:var(--muted);line-height:1.4}
+.zstore{background:var(--disk);border:1px solid var(--line)}
+.zram{border:2px dashed var(--muted);background:var(--soft)}
+.zlog{border:2px dotted var(--muted);background:transparent}
+.zcpu{grid-area:cpu;border:3px solid var(--ink);flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.zfiles{grid-area:files}.zlogi{grid-area:log}.zr{grid-area:ram}.zswap{grid-area:swap}
+
+.cpuhead{display:flex;flex-direction:column;gap:2px;flex:0 1 170px;min-width:120px}
+.cpuflow{flex:1 1 420px;display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;min-width:0}
+.ab{flex:1 1 150px;min-width:0;border:2px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--panel);display:flex;flex-direction:column;gap:1px;animation:fin .4s both}
+.ab .l{font-size:12px;color:var(--muted);line-height:1.35}
+.ab .v{font-family:var(--f-mono);font-weight:600;font-size:16px;line-height:1.35;font-variant-numeric:tabular-nums}
+.ab .x{font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:1.4}
+.ab.bad{border-color:var(--sig);background:var(--sig-soft)}
+.ab.bad .v{color:var(--sig)}
+.ab.good{border-color:var(--ok);background:var(--ok-soft)}
+.fa{align-self:center;font-weight:900;font-size:18px;color:var(--muted)}
+.idle{font-size:13px;color:var(--muted);align-self:center}
+.meter{flex:1 1 280px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.mbar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.mbar i{display:block;height:100%}
+.mbar .work{width:12%;background:var(--word)}
+.mbar .swapb{width:88%;background:repeating-linear-gradient(45deg,var(--sig) 0 6px,var(--sig-soft) 6px 12px)}
+@keyframes fin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+.files{display:flex;flex-direction:column;gap:6px}
+.file{appearance:none;font:inherit;text-align:left;border:1px solid var(--line);border-left:7px solid var(--c);border-radius:8px;background:var(--panel);color:var(--ink);padding:5px 8px;cursor:pointer;display:flex;flex-direction:column;gap:0;min-width:0}
+.file:disabled{cursor:default}
+.file:not(:disabled):hover{border-color:var(--ink);border-left-color:var(--c)}
+.file .fn{font-weight:700;font-size:13px;line-height:1.3;overflow-wrap:anywhere}
+.file .fx{font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:1.35;overflow-wrap:anywhere}
+.file .fs{font-size:11px;color:var(--muted);line-height:1.35}
+.file.open .fs{color:var(--ink);font-weight:700}
+.file.view{box-shadow:0 0 0 2px var(--c)}
+.file.want{animation:want 1.2s ease-in-out infinite}
+@keyframes want{50%{box-shadow:0 0 0 4px var(--c)}}
+
+.logwrap{display:flex;gap:0;flex:1;min-height:200px}
+.edge{width:9px;flex:none;border:1px solid var(--muted);border-right:0;background:repeating-linear-gradient(0deg,var(--panel) 0 11px,var(--line) 11px 12px);position:relative;border-radius:4px 0 0 4px}
+.edge::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:var(--c)}
+.sheet{flex:1;min-width:0;border:1px solid var(--muted);background:var(--panel);display:flex;flex-direction:column;border-radius:0 4px 4px 0;padding:3px;gap:2px}
+.lemp{font-size:12px;color:var(--muted);text-align:center;padding:16px 4px;line-height:1.4}
+.cell{--h:24px;height:var(--h);display:flex;align-items:center;justify-content:center;gap:6px;background:var(--c);color:var(--on);font-family:var(--f-mono);font-size:12px;font-weight:600;border-radius:3px;line-height:1;min-width:0;overflow:hidden;white-space:nowrap}
+.cell.tall{flex-direction:column;gap:1px;white-space:normal;text-align:center;font-size:11px;line-height:1.2}
+.cell.out{background:var(--panel);color:var(--ink);outline:2px dashed var(--c);outline-offset:-2px}
+.cell.part{background:linear-gradient(90deg,var(--c) 0 42%,transparent 42%),repeating-linear-gradient(45deg,var(--c) 0 2px,var(--panel) 2px 7px);outline:1px solid var(--c);outline-offset:-1px;color:var(--ink);justify-content:flex-start;padding-left:4px}
+.cell.part span{color:var(--on)}
+.cell.tall.one{flex-direction:row;gap:6px;font-size:10px;white-space:nowrap}
+button.cell,.lcell{cursor:pointer}
+.lcell:hover{filter:brightness(1.08)}
+/* Every page, frame and segment in the simulator has a strong outline */
+.sheet .cell,.slot .cell,.chips .cell{border:2px solid var(--ink)}
+.sheet .cell.out{border-color:transparent}
+
+.ramhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.free{font-family:var(--f-mono);font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--panel);border:1px solid var(--line);white-space:nowrap}
+.free.zero{background:var(--sig);border-color:var(--sig);color:var(--panel)}
+.raminner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:10px;min-width:0}
+.tablebox{border-radius:10px;padding:8px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0;align-self:start;transition:box-shadow .3s}
+.tablebox.hot,.physbox.hot{box-shadow:0 0 0 3px var(--ink)}
+.tablebox .ztit{font-size:13px}
+.ptb{width:100%;border-collapse:collapse;font-family:var(--f-mono);font-size:12px;font-variant-numeric:tabular-nums}
+.ptb th{font-family:var(--f-body);font-size:11px;font-weight:700;color:var(--muted);padding:2px 3px;text-align:left}
+.ptb td{padding:3px;border-top:1px solid var(--line);white-space:nowrap}
+.ptb td.k{font-weight:600;box-shadow:inset 4px 0 0 var(--c);padding-left:8px}
+.ptb tr.hit td{background:var(--ink);color:var(--bg)}
+.ptb tr.bad td{background:var(--sig);color:var(--panel)}
+.ptb tr.off td{color:var(--muted)}
+.physbox{border-radius:10px;padding:8px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0;transition:box-shadow .3s}
+.physbox .ztit{font-size:13px}
+.frames{display:flex;flex-direction:column;gap:2px}
+.fr{display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px;align-items:center}
+.fr>i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:right}
+.slot{height:23px;border:1px solid var(--muted);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);min-width:0;background:var(--panel)}
+.pulse .slot{animation:slotp 1.2s ease-in-out infinite;border-color:var(--ink)}
+@keyframes slotp{50%{background:var(--soft)}}
+.slot .cell{--h:21px;width:100%}
+.segram{position:relative;height:400px;margin-left:34px;border:1px solid var(--line);border-radius:3px;background:var(--bg)}
+.sb{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sb .cell{--h:100%;width:100%;height:100%;border-radius:0;border:2px solid var(--ink)}
+.hole{font-size:11px;color:var(--muted);font-family:var(--f-mono);background:repeating-linear-gradient(45deg,transparent 0 5px,var(--line) 5px 6px);height:100%;width:100%;display:flex;align-items:center;justify-content:center}
+.hole.bad{outline:2px solid var(--sig);outline-offset:-2px;color:var(--sig);font-weight:600;background:repeating-linear-gradient(45deg,var(--sig-soft) 0 5px,transparent 5px 10px)}
+.tick{position:absolute;left:-34px;width:30px;text-align:right;font-family:var(--f-mono);font-size:10px;color:var(--muted);line-height:1;transform:translateY(-1px)}
+.cyl{position:relative;background:var(--disk-top);border:1px solid var(--muted);border-radius:50%/26px;padding:34px 8px 22px;min-height:230px;display:flex;flex-direction:column;gap:3px;flex:1}
+.cyl::before{content:"";position:absolute;left:-1px;right:-1px;top:-1px;height:52px;border-radius:50%;background:var(--panel);border:1px solid var(--muted)}
+.cyl>*{position:relative}
+.swapfile{border:1px dashed var(--ink);border-radius:6px;background:var(--panel);padding:5px;display:flex;flex-direction:column;gap:3px;min-height:64px}
+.swapfile .fx{font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:1.3;overflow-wrap:anywhere}
+.chips{display:flex;flex-direction:column;gap:2px}
+.sempty{font-size:11px;color:var(--muted);line-height:1.35}
+.flyer{position:absolute;z-index:8;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;background:var(--c);color:var(--on);font-family:var(--f-mono);font-size:12px;font-weight:600;border-radius:3px;box-shadow:0 10px 24px rgba(0,0,0,.28);pointer-events:none;overflow:hidden}
+
+/* Fragmentation scenarios: one 100 MB memory column, 3.2 px per MB */
+.frag{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1.1fr);grid-template-areas:"fb fb fb" "fl fm fr";align-items:start}
+.fban{grid-area:fb;display:flex;align-items:center;gap:16px;background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 16px;min-width:0}
+.fban>div:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bnT{font-family:var(--f-display);font-size:clamp(20px,2.6vw,26px);font-weight:800;line-height:1.25}
+.bnN{font-size:14px;font-weight:700;line-height:1.4}
+.bnS{font-size:13px;line-height:1.45;opacity:.85}
+.fglyph{flex:none;width:44px;height:52px;display:flex;flex-direction:column;gap:2px}
+.fglyph i{display:block;background:var(--bg);border-radius:1px}
+.fl{grid-area:fl}.fm{grid-area:fm}.fr2{grid-area:fr}
+.fside{display:flex;flex-direction:column;gap:8px;min-width:0}
+.fwait{display:flex;flex-direction:column;gap:6px;min-height:40px}
+.fhd{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.fhd b{font-size:14px}.fhd .ps{font-size:13px;font-weight:700;color:var(--sig)}
+.fmem{box-sizing:content-box;position:relative;height:320px;margin-left:62px;background:var(--disk);border:2px solid var(--ink)}
+.fp{height:var(--h);display:flex;align-items:center;justify-content:center;background:var(--c);color:var(--on);border-radius:8px;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;line-height:1;min-width:0;position:relative}
+.fmem>.fp,.fmem>.fhole{position:absolute;left:3px;right:3px}
+.flab{position:absolute;left:-62px;width:56px;text-align:right;font-size:11px;color:var(--muted);line-height:1.2;font-family:var(--f-mono)}
+.flab.pg{font-family:var(--f-body);font-size:12px;font-weight:700;color:var(--ink);transform:translateY(38px)}
+.pgbox{position:absolute;left:0;right:0;margin:2px 3px;height:92px;border:3px solid var(--ink);border-radius:4px;background:var(--panel);display:flex;flex-direction:column;padding:2px;gap:2px}
+.pgbox .fp{border-radius:3px}
+.fmem>.fp{border:3px solid var(--ink);border-radius:4px}
+.fmem.ext{margin-right:24px}
+.fline{position:absolute;left:-62px;right:-24px;height:0;border-top:1px dashed var(--ink);transform:translateY(-.5px);z-index:1;pointer-events:none}
+.fmk{position:absolute;left:-62px;width:56px;text-align:right;font-family:var(--f-mono);font-size:13px;font-weight:600;line-height:1;color:var(--ink);transform:translateY(calc(-100% - 3px))}
+.fmk.first{transform:translateY(3px)}
+.fkey i.dl{width:26px;height:0;border:0;border-top:1px dashed var(--ink);border-radius:0}
+.fkey{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700}
+.fkey i{width:22px;height:14px;border:3px solid var(--ink);border-radius:3px;display:inline-block;flex:none}
+.pgbox .fp{flex:var(--g) 0 0;height:auto}
+.fhatch{flex:var(--g) 0 0;border:2px dashed var(--sig);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--sig);background:repeating-linear-gradient(45deg,var(--sig-soft) 0 5px,var(--panel) 5px 10px)}
+.pgfree{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
+.fleft{position:absolute;left:0;right:0;top:288px;height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center;line-height:1.2}
+.fhole{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);border:2px dashed var(--muted);background:var(--panel)}
+.fhole.bad{border:3px dashed var(--sig);color:var(--sig);background:var(--sig-soft);animation:holep 1.3s ease-in-out infinite}
+@keyframes holep{50%{background:var(--panel)}}
+.fade{animation:hfade .7s .55s both}
+@keyframes hfade{from{opacity:0}to{opacity:1}}
+.pop{animation:fin .5s both}
+.dim{opacity:.55}
+.rej{font-weight:800;color:var(--sig);font-size:15px;display:flex;align-items:center;gap:6px}
+.rej i{font-style:normal;font-size:26px;line-height:1}
+.tally{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.tally div{display:flex;justify-content:space-between;gap:8px}
+.tally b{font-family:var(--f-mono);white-space:nowrap}
+.tally .tot{border-top:1px solid var(--line);padding-top:4px;font-weight:700;color:var(--sig)}
+.call{background:var(--disk);border-radius:10px;padding:12px;font-weight:700;line-height:1.5}
+.figbtn{align-self:flex-start}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;padding-top:10px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;display:inline-block;flex:none}
+.sw.solid{background:var(--word)}
+.sw.dash{outline:2px dashed var(--word);outline-offset:-2px}
+.sw.hatch{background:repeating-linear-gradient(45deg,var(--word) 0 2px,var(--panel) 2px 5px);outline:1px solid var(--word)}
+.sw.red{outline:3px solid var(--sig);outline-offset:-3px}
+.sw.ring{box-shadow:0 0 0 3px var(--ink);border-radius:4px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{appearance:none;font:inherit;font-size:14px;font-weight:700;padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.speed{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted)}
+
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+table.cmp{width:100%;min-width:620px;border-collapse:collapse;font-size:14px}
+.cmp th,.cmp td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.5}
+.cmp th{font-size:12px;color:var(--muted);font-weight:700;background:var(--soft)}
+.cmp tbody th{background:transparent;color:var(--ink);font-size:13px;white-space:normal}
+.cmp tr:last-child td,.cmp tr:last-child th{border-bottom:0}
+.mono{font-family:var(--f-mono);font-size:12px}
+.ztagc{display:inline-block;font-family:var(--f-mono);font-size:11px;font-weight:600;padding:1px 8px;border-radius:5px;white-space:nowrap}
+.ztagc.cpu{background:var(--ink);color:var(--bg)}
+.ztagc.ram{border:2px dashed var(--ink)}
+.ztagc.store{background:var(--disk-top);color:var(--ink)}
+.ztagc.none{border:1px dotted var(--ink)}
+.figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mini{display:flex;flex-direction:column;gap:2px}
+.mini .m{height:18px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:10px;font-weight:600;background:var(--c,transparent);color:var(--on,var(--muted))}
+.mini .m.f{background:repeating-linear-gradient(45deg,transparent 0 5px,var(--line) 5px 6px);color:var(--muted);border:1px solid var(--line)}
+.mini .m.p{justify-content:flex-start;padding-left:6px;background:linear-gradient(90deg,var(--c) 0 40%,transparent 40%),repeating-linear-gradient(45deg,var(--c) 0 2px,var(--panel) 2px 7px);outline:2px solid var(--sig);outline-offset:-1px;color:var(--on)}
+.mini .m.h{outline:2px solid var(--sig);outline-offset:-2px;color:var(--sig);background:var(--sig-soft)}
+.small{font-size:13px;color:var(--muted)}
+.model{background:var(--panel);border:2px solid var(--ink);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.model .mt{font-family:var(--f-mono);font-size:15px;font-weight:600;line-height:1.5}
+.analogy{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.an{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.an .n{font-family:var(--f-mono);font-size:12px;font-weight:600}
+.an .real{font-weight:700}
+.an .cs{font-size:13px;color:var(--muted)}
+.pit{display:flex;flex-direction:column;gap:10px}
+.pitem{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.pitem .x{color:var(--sig)} .pitem .o{color:var(--ok)}
+.pitem .k{font-size:12px;font-weight:700}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.opts{display:grid;gap:6px}
+.opt{appearance:none;text-align:left;font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--ink)}
+.opt.right{background:var(--ok-soft);border-color:var(--ok);font-weight:700}
+.opt.wrong{background:var(--sig-soft);border-color:var(--sig)}
+.fb{font-size:14px;color:var(--muted)}
+.score{font-family:var(--f-mono);font-size:14px;color:var(--muted)}
+.exq{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.exhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.exhead b{font-family:var(--f-display);font-size:18px}
+.exhead span{font-family:var(--f-mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.tr{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.expart{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:4px 8px;align-items:baseline}
+.expart>i{font-style:normal;font-weight:700}
+.expart>em{font-style:normal;font-family:var(--f-mono);font-size:13px;font-weight:600;white-space:nowrap}
+.extb{border-collapse:collapse;font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.extb th,.extb td{border:1px solid var(--ink);padding:4px 12px;text-align:center}
+.extb th{font-family:var(--f-body);font-size:12px;background:var(--soft)}
+.exans{border-top:2px solid var(--ink);padding-top:10px;display:flex;flex-direction:column;gap:12px}
+.exans h4{margin:0;font-size:14px;font-weight:700}
+.exans ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.exans li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline}
+.exans li em{font-style:normal;font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--ok);white-space:nowrap}
+.exnote{font-size:13px;color:var(--muted)}
+
+@media (max-width:860px){
+  .stage{grid-template-columns:minmax(78px,.62fr) minmax(0,2.4fr);grid-template-areas:"cpu cpu" "files files" "log ram" "swap swap"}
+  .stage.noswap{grid-template-columns:minmax(78px,.62fr) minmax(0,2.4fr);grid-template-areas:"cpu cpu" "files files" "log ram"}
+  .files{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .logwrap{min-height:0}
+  .cyl{min-height:0;padding:30px 8px 14px}
+  .chips{flex-direction:row;flex-wrap:wrap}.chips .cell{width:44px}
+  .analogy{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pitem{grid-template-columns:1fr}
+  .now-card{min-height:190px}
+}
+@media (max-width:560px){
+  .bench{padding:10px}
+  .zone{padding:7px}
+  .now-card{grid-template-columns:1fr;gap:8px}
+  .figtag{justify-self:start}
+  .figs,.analogy{grid-template-columns:1fr}
+  .raminner{gap:6px;grid-template-columns:minmax(0,.86fr) minmax(0,1fr)}
+  .tablebox,.physbox{padding:5px}
+  .ptb{font-size:11px}.ptb td,.ptb th{padding:2px}
+  .speed{margin-left:0}
+  .frag{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"fb fb" "fl fr" "fm fm"}
+  .fban{gap:10px;padding:10px 12px}
+  .edge{width:6px}
+  .fa{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · 16.1 MEMORY</span>
+<div class="seg" role="group" aria-label="Language"><span class="cap">Language</span><button id="lg-en" data-l="en" aria-pressed="true">English</button><button id="lg-ja" data-l="ja" aria-pressed="false">日本語</button><button id="lg-zh" data-l="zh" aria-pressed="false">中文</button><button id="lg-th" data-l="th" aria-pressed="false">ไทย</button></div></div></div>
+
+<div class="wrap" id="app">
+<header>
+  <span class="eyebrow" id="tEyebrow"></span>
+  <h1 id="tH1"></h1>
+  <p class="lead" id="tLead"></p>
+</header>
+
+<section id="sim" aria-labelledby="simH">
+  <div><span class="eyebrow">Simulator</span><h2 id="simH"></h2></div>
+  <div class="seg" role="group" id="scen" style="align-self:flex-start"></div>
+  <div class="track" id="track"></div>
+  <div class="bench" id="bench">
+    <div class="now-card" aria-live="polite">
+      <span class="figtag" id="fig"></span>
+      <div><h3 id="capT"></h3><p class="en" id="capE"></p><p class="desc" id="capB"></p></div>
+    </div>
+    <div class="stage" id="stage">
+      <svg id="ov" aria-hidden="true"></svg>
+      <div class="zone zcpu" id="zcpu"></div>
+      <div class="zone zstore zfiles" id="zfiles"></div>
+      <div class="zone zlog zlogi" id="zlog"></div>
+      <div class="zone zram zr" id="zram"></div>
+      <div class="zone zstore zswap" id="zswap"></div>
+    </div>
+    <div class="frag" id="frag" hidden></div>
+    <div class="legend" id="legend"></div>
+    <div class="controls">
+      <button class="btn" id="prev"></button>
+      <button class="btn primary" id="play"></button>
+      <button class="btn" id="next"></button>
+      <button class="btn" id="reset"></button>
+      <label class="speed" for="spd"><span id="spdL"></span><select id="spd"></select></label>
+    </div>
+    <p class="hint" id="hint"></p>
+  </div>
+</section>
+
+<section aria-labelledby="whereH"><div><span class="eyebrow">Where is it?</span><h2 id="whereH"></h2></div><p class="lead" id="whereL"></p>
+  <div class="tablewrap"><table class="cmp"><thead id="whereHd"></thead><tbody id="whereB"></tbody></table></div></section>
+
+<section aria-labelledby="cmpH"><div><span class="eyebrow">Compare</span><h2 id="cmpH"></h2></div><p class="lead" id="cmpL"></p>
+  <div class="figs" id="figs"></div>
+  <div class="tablewrap"><table class="cmp"><thead id="cmpHd"></thead><tbody id="cmpB"></tbody></table></div>
+  <div class="model" id="model"></div></section>
+
+<section aria-labelledby="repH"><div><span class="eyebrow">Page replacement</span><h2 id="repH"></h2></div><p class="lead" id="repL"></p>
+  <div class="tablewrap"><table class="cmp"><thead id="repHd"></thead><tbody id="repB"></tbody></table></div></section>
+
+<section aria-labelledby="anH"><div><span class="eyebrow">Analogy</span><h2 id="anH"></h2></div><div class="analogy" id="ana"></div></section>
+
+<section aria-labelledby="pitH"><div><span class="eyebrow">Exam tips</span><h2 id="pitH"></h2></div><div class="pit" id="pit"></div></section>
+
+<section aria-labelledby="exH"><div><span class="eyebrow">Exam-style questions</span><h2 id="exH"></h2></div><p class="lead" id="exL"></p><div id="exam" style="display:flex;flex-direction:column;gap:12px"></div></section>
+
+<section aria-labelledby="qzH"><div><span class="eyebrow">Quick check</span><h2 id="qzH"></h2></div><div id="quiz" style="display:flex;flex-direction:column;gap:12px"></div><p class="score" id="score"></p></section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+/* ---------- Text ---------- */
+const TX={
+en:{eyebrow:"Cambridge 9618 · Topic 16.1 · Paging, segmentation, virtual memory",
+ h1:'A program does not fit in RAM <em>as one piece</em>. So how does it run?',
+ lead:"The OS cuts each program into blocks and keeps a table of where every block went. Paging cuts by size. Segmentation cuts by meaning. Watch the blocks move, and see which part lives on the disk, in RAM and in the CPU.",
+ simH:"Memory simulator",scen:"Scenario",sc:["1 Paging","2 Virtual memory","3 Segmentation","4 Internal fragmentation (paging)","5 External fragmentation (segmentation)"],
+ fg:{banI:["A problem of PAGING","Internal fragmentation","Pages have a fixed size, so space is left over inside a page."],banE:["A problem of SEGMENTATION","External fragmentation","Segments have variable sizes, so holes are left between them. Here each program is drawn as one segment."],mem:"Memory 100 MB",boxI:"Thick frame = 1 page",boxE:"Thick frame = 1 segment",bnd:"Dashed line = boundary (address in MB)",psz:"Page size 30 MB",page:"Page",prog:n=>"Program "+n,wait:"Waiting to load",ended:"Finished",left:"10 MB left: smaller than a page",free:"Free",no:"It does not fit!",inside:"Empty inside pages",callI:"Empty space appears inside the pages.",callE:"The free space is split between programs.",go:"Watch the animation",hint:"The sizes are made large so the waste is easy to see. Real pages are much smaller, for example 4 KiB."},
+ prog:{sheet:"Spreadsheet",word:"Word processor",game:"Game",browser:"Web browser",os:"Operating system"},
+ seg:{Code:"Code",Data:"Data",Stack:"Stack",Graphics:"Graphics"},
+ z:{cpu:"CPU",store:"STORAGE (HDD/SSD)",ram:"RAM",none:"NOT A REAL PLACE"},
+ cpuT:"MMU",cpuS:"Memory Management Unit. Turns logical addresses into physical addresses.",
+ filesT:"Program files",filesS:"Stored here even when closed.",
+ onDisk:"On disk only",inRam:"Open: copy in RAM",always:"Always in RAM",
+ pages:n=>n+" pages",segs:n=>n+" segments",
+ logT:"Logical memory",logS:"The addresses this program sees. Each program has its own.",logE:"No program is open yet.",
+ ramT:"Physical memory is here",free:(a,b)=>`Free ${a} / ${b}`,freeKB:(a,b)=>`Free ${a} / ${b} KB`,
+ ptT:"Page table",ptH:["Page","Frame","P"],stT:"Segment map table",stH:["No.","Size","Start"],
+ tblE:"Empty",disk:"disk",none:"none",
+ phT:"Physical memory (frames)",psT:"Physical memory (addresses in KB)",fr:"free",
+ swapT:"Virtual memory",swapS:"Swap file on the same disk.",swapF:"swap file",swapE:"Empty",
+ ab:{ask:"The program asks for",log:"Logical address",look:"MMU reads the table",phys:"Physical address",page:"page",off:"offset",frame:"frame",seg:"segment",start:"start",size:"size",
+  fault:"Page fault",faultX:"P = 0: the page is not in RAM",limit:"Refused",need:"Needed",big:"Biggest hole",tot:"Free in total",ext:"It does not fit",
+  idle:"No address to translate in this step.",meter:"Illustrative CPU time: real work vs swapping",work:"Work",swp:"Swapping"},
+ lg:["Block in RAM","Dashed: not in RAM now","Hatched: unused space inside a block","Red: fault or warning","Look here"],
+ btn:{prev:"← Back",play:"▶ Play",pause:"❚❚ Pause",next:"Next →",reset:"Restart",spd:"Speed",sp:["Slow","Normal","Fast"]},
+ hint:"Colors show which program owns the block. Click an open program to see its logical memory and table. Point to a block in logical memory to see where it went. You can also use the ← → keys. Sizes and addresses are examples.",
+ step:"STEP",extra:"EXTRA",
+ whereH:"What is stored where?",whereL:"Logical memory and swap space are not extra hardware. This table shows where each thing really is.",
+ whereHd:["Thing","Where it is","What it does"],
+ where:[["Program file","store","Stays on the disk. RAM gets a copy of the pages it needs."],["Logical memory","none","A range of addresses for one program. It is not a chip or a file."],["Page table / segment map table","ram","One table for each process. The OS keeps it up to date."],["Frames / segments in use","ram","The real place where running code and data are held."],["MMU","cpu","Translates each logical address when the program runs."],["TLB","cpu","A small cache in the MMU. It holds recent translations, so the table is read less often."],["Swap file","store","Holds pages that do not fit in RAM. Much slower than RAM."]],
+ tag:{cpu:"CPU",ram:"RAM",store:"HDD/SSD",none:"Addresses only"},
+ cmpH:"Paging vs segmentation",cmpL:"Here are both methods side by side. Look at where the waste appears.",
+ figP:"Paging: internal fragmentation",figPn:"The waste is inside the pages.",figS:"Segmentation: external fragmentation",figSn:"The waste is between the blocks.",fFree:"free",fHole:"hole",
+ cmpHd:["","Paging","Segmentation"],
+ cmp:[["Block size","Fixed. All pages are the same size.","Variable. Each segment has its own size."],["How it is split","By size. The cut can be anywhere.","By meaning: code, data, stack."],["Address given","One value. Hardware splits it into page and offset.","Two values: segment number and offset."],["Table","Page table: page → frame.","Segment map table: number → size and start."],["Place in RAM","Pages can be in any free frames.","Each segment is one continuous block."],["Wasted space","Internal fragmentation","External fragmentation"],["Programmer","Cannot see the pages.","Can see the segments."],["Procedures and data","Cannot be separated.","Can be separated."]],
+ modelL:"Exam answer: always state both sides",model:"Paging divides memory into fixed-size blocks, whereas segmentation divides memory into variable-size blocks.",
+ repH:"How is a page chosen for replacement?",repL:"Every method tries to cause as few page faults as possible. A page with D = 1 must be written to the disk first. A page with D = 0 can simply be overwritten.",
+ repHd:["Method","Which page leaves","Remember"],
+ rep:[["FIFO","The page that has been in RAM the longest.","Simple. Belady's anomaly: more frames can cause more faults."],["Optimal","The page not needed for the longest time in the future.","Fewest faults, but the OS cannot know the future."],["LRU","The page not used for the longest time in the past.","A practical approximation of optimal."],["Clock","The pointer moves round until it finds a page with R = 0.","A cheap approximation of LRU."]],
+ anH:"Think of a book and a library",
+ an:[["Page","You copy a book onto sheets of the same size.","Paging: fixed size, cut by size"],["Frame","Any sheet fits any numbered pigeonhole.","Physical memory: fixed slots"],["Page table","A list says which sheet is in which pigeonhole.","Page → frame"],["Segment","You keep each chapter whole. Long chapters need long gaps on the shelf.","Segmentation: variable size, cut by meaning"],["External fragmentation","The shelf has many small gaps, but no gap fits the next chapter.","Free space between blocks"],["Swap file","Sheets you are not reading go to a storeroom. It takes time to fetch them.","Virtual memory on the disk"]],
+ pitH:"Common mistakes",bad:"✕ Common answer",good:"○ Correct",
+ pit:[["Pages are variable size and segments are fixed size.","The other way round. Pages are fixed size and segments are variable size."],["\"Paging uses fixed-size blocks.\" (given as a difference)","A difference needs both sides: state what segmentation does too."],["A page fault is an error in the program.","A page fault is a hardware interrupt. The page is just not in RAM (P = 0)."],["Virtual memory is the same as a virtual machine.","Virtual memory is RAM plus swap space. A virtual machine runs a guest OS on a host OS."],["Logical memory is extra memory hardware.","Logical memory is only the address space the program sees."]],
+ qzH:"Check your understanding",right:"Correct. ",wrong:l=>`Not quite. The answer is ${l}. `,
+ qs:[
+ {q:"Which statement gives a correct difference?",o:["Pages vary in size, but segments are all one size","Pages are all one size, but segments vary in size","Pages are held in RAM, but segments stay on the disk","Pages are set by programmers, but segments by hardware"],a:1,ex:"Paging uses fixed-size blocks. Segmentation uses variable-size blocks."},
+ {q:"Where is a page table stored while a program runs?",o:["In RAM, one for each process","In the swap file, shared by all processes","In a CPU register, shared by all programs","In the program file, rewritten at each start"],a:0,ex:"Each process has its own table in RAM. The MMU reads it, and the TLB caches recent results."},
+ {q:"When does a page fault occur?",o:["When a program contains a coding bug","When the swap file has no more free space","When the TLB gives the wrong frame number","When the needed page is not in RAM"],a:3,ex:"The P flag is 0, so a hardware interrupt tells the OS to bring the page in."},
+ {q:"Segment 2 starts at address 900 and has size 300. What is the physical address of segment 2, offset 120?",o:["122","300","1020","1200"],a:2,ex:"Use the start address from the table and add the offset: 900 + 120 = 1020. The offset is less than the size, so it is allowed."},
+ {q:"RAM has 500 KB free in total, but no single hole can hold a 400 KB segment. What is this called?",o:["Internal fragmentation","External fragmentation","Disk thrashing","A page fault"],a:1,ex:"The free space lies between blocks in pieces that are too small. This is external fragmentation."},
+ {q:"What is virtual memory?",o:["RAM plus swap space on a disk","A guest OS running on a host OS","A cache memory inside the processor","Extra RAM chips added by the OS"],a:0,ex:"The disk is used to extend the memory. Do not confuse this with a virtual machine."}
+ ]},
+ja:{eyebrow:"Cambridge 9618 · Topic 16.1 · Paging, segmentation, virtual memory",
+ h1:'プログラムは<em>ひとかたまり</em>のままでは RAM に入らない。では、どう動く？',
+ lead:"OS はプログラムをブロックに分け、どのブロックをどこに置いたかを表に記録します。ページングは「大きさ」で分け、セグメンテーションは「意味」で分けます。ブロックの動きと、それぞれがディスク、RAM、CPU のどこにあるかを見てください。",
+ simH:"メモリのシミュレーター",scen:"シナリオ",sc:["1 ページング","2 仮想メモリ","3 セグメンテーション","4 内部断片化（ページング）","5 外部断片化（セグメント）"],
+ fg:{banI:["ページングの問題","内部断片化","ページは固定サイズなので、ページの中に空きが残る。"],banE:["セグメンテーションの問題","外部断片化","セグメントは可変サイズなので、セグメントの間に空きが残る。ここではプログラム1つを1セグメントとして描いています。"],mem:"メモリ領域 100 MB",boxI:"太枠 = 1ページ",boxE:"太枠 = 1セグメント",bnd:"点線 = 領域の境目（数字はアドレス MB）",psz:"ページサイズ 30 MB",page:"ページ",prog:n=>"プログラム"+n,wait:"読み込み待ち",ended:"終了したプログラム",left:"残り 10 MB：1ページに足りない",free:"空き領域",no:"入らない！",inside:"ページ内部の空き",callI:"ページ内部に空き領域ができてしまう",callE:"空き領域がプログラムの間に分かれてしまう",go:"アニメーションで見る",hint:"無駄が見やすいよう、大きなサイズにしています。実際のページはずっと小さく、たとえば 4 KiB です。"},
+ prog:{sheet:"表計算",word:"ワープロ",game:"ゲーム",browser:"Web ブラウザ",os:"OS"},
+ seg:{Code:"コード",Data:"データ",Stack:"スタック",Graphics:"画像"},
+ z:{cpu:"CPU",store:"ストレージ (HDD/SSD)",ram:"RAM",none:"実際の置き場所ではない"},
+ cpuT:"MMU",cpuS:"Memory Management Unit。論理アドレスを物理アドレスに変える。",
+ filesT:"プログラムのファイル",filesS:"閉じていてもここにある。",
+ onDisk:"ディスクのみ",inRam:"起動中：RAM にコピーあり",always:"常に RAM にある",
+ pages:n=>n+" ページ",segs:n=>n+" セグメント",
+ logT:"論理メモリ",logS:"プログラムから見えるアドレス。プログラムごとに別々。",logE:"まだ何も開いていません。",
+ ramT:"物理メモリはここ",free:(a,b)=>`空き ${a} / ${b}`,freeKB:(a,b)=>`空き ${a} / ${b} KB`,
+ ptT:"ページ表 (page table)",ptH:["Page","Frame","P"],stT:"セグメント表 (segment map table)",stH:["番号","サイズ","開始"],
+ tblE:"空",disk:"disk",none:"なし",
+ phT:"物理メモリ（フレーム）",psT:"物理メモリ（アドレス KB）",fr:"空き",
+ swapT:"仮想メモリ",swapS:"同じディスク上のスワップファイル。",swapF:"swap file",swapE:"空",
+ ab:{ask:"プログラムが求めるもの",log:"論理アドレス",look:"MMU が表を読む",phys:"物理アドレス",page:"page",off:"offset",frame:"frame",seg:"segment",start:"開始",size:"サイズ",
+  fault:"ページフォールト",faultX:"P = 0：ページが RAM にない",limit:"拒否",need:"必要な大きさ",big:"最大の空き",tot:"空きの合計",ext:"入らない",
+  idle:"このステップでは変換するアドレスはありません。",meter:"CPU 時間のイメージ：本来の仕事とスワップ",work:"仕事",swp:"スワップ"},
+ lg:["RAM にあるブロック","破線：今は RAM にない","斜線：ブロック内の使われない部分","赤：フォールトや警告","ここに注目"],
+ btn:{prev:"← 前へ",play:"▶ 自動再生",pause:"❚❚ 一時停止",next:"次へ →",reset:"最初から",spd:"速さ",sp:["ゆっくり","ふつう","はやい"]},
+ hint:"色は「どのプログラムのブロックか」を表します。開いているプログラムをクリックすると、その論理メモリと表を見られます。論理メモリのブロックを指すと行き先が分かります。キーボードの ← → でも操作できます。サイズとアドレスは説明用の例です。",
+ step:"STEP",extra:"発展",
+ whereH:"何がどこに置かれている？",whereL:"論理メモリやスワップ領域は、追加のハードウェアではありません。それぞれが実際にどこにあるかを確認しましょう。",
+ whereHd:["もの","置き場所","役割"],
+ where:[["プログラムのファイル","store","ディスクに残ったまま。RAM には必要なページのコピーが入る。"],["論理メモリ","none","1つのプログラム用のアドレスの範囲。チップでもファイルでもない。"],["ページ表／セグメント表","ram","プロセスごとに1つ。OS が更新する。"],["使用中のフレーム／セグメント","ram","実行中のコードとデータが実際に置かれる場所。"],["MMU","cpu","プログラムの実行中に論理アドレスを変換する。"],["TLB","cpu","MMU の中の小さなキャッシュ。最近の変換を覚えていて、表を読む回数を減らす。"],["スワップファイル","store","RAM に入らないページを置く。RAM よりずっと遅い。"]],
+ tag:{cpu:"CPU",ram:"RAM",store:"HDD/SSD",none:"アドレスだけ"},
+ cmpH:"ページングとセグメンテーションの比較",cmpL:"2つの方法を並べて見比べます。無駄がどこに出るかに注目してください。",
+ figP:"ページング：内部断片化",figPn:"無駄はページの中に出る。",figS:"セグメンテーション：外部断片化",figSn:"無駄はブロックの間に出る。",fFree:"空き",fHole:"穴",
+ cmpHd:["","ページング","セグメンテーション"],
+ cmp:[["ブロックの大きさ","固定 (fixed)。全ページが同じ大きさ。","可変 (variable)。セグメントごとに違う。"],["分け方","大きさで分ける。どこで切れてもよい。","意味で分ける：コード、データ、スタック。"],["指定するアドレス","1つの値。ハードウェアが page と offset に分ける。","2つの値：セグメント番号と offset。"],["表","ページ表：page → frame","セグメント表：番号 → サイズと開始アドレス"],["RAM での置き方","どの空きフレームにも置ける。","各セグメントは連続した1ブロック。"],["無駄","内部断片化 (internal fragmentation)","外部断片化 (external fragmentation)"],["プログラマ","ページは見えない。","セグメントは見える。"],["手続きとデータ","分けられない。","分けられる。"]],
+ modelL:"試験の解答：必ず両方について書く",model:"Paging divides memory into fixed-size blocks, whereas segmentation divides memory into variable-size blocks.",
+ repH:"どのページを追い出す？",repL:"どの方法もページフォールトをできるだけ減らすことが目的です。D = 1 のページは先にディスクへ書き戻します。D = 0 のページはそのまま上書きできます。",
+ repHd:["方法","追い出すページ","覚えること"],
+ rep:[["FIFO","RAM に一番長くあるページ。","単純。Belady の異常：フレームを増やすとフォールトが増えることがある。"],["Optimal","これから一番長く使われないページ。","フォールトは最少だが、OS は未来を知ることができない。"],["LRU","過去に一番長く使われていないページ。","Optimal に近い、実用的な方法。"],["Clock","ポインタが回って R = 0 のページを探す。","LRU に近く、コストが低い方法。"]],
+ anH:"本と図書館で考える",
+ an:[["ページ","本を同じ大きさの紙に書き写す。","ページング：固定サイズ、大きさで分ける"],["フレーム","どの紙も、番号付きのどの棚にも入る。","物理メモリの固定の枠"],["ページ表","どの紙がどの棚にあるかのリスト。","page → frame"],["セグメント","章ごとにまとめておく。長い章には長いすき間が必要。","セグメンテーション：可変サイズ、意味で分ける"],["外部断片化","小さなすき間はたくさんあるが、次の章が入るすき間がない。","ブロックの間の空き"],["スワップファイル","今読まない紙は倉庫へ。取りに行くのに時間がかかる。","ディスク上の仮想メモリ"]],
+ pitH:"よくある間違い",bad:"✕ よくある答え",good:"○ 正しくは",
+ pit:[["ページは可変サイズで、セグメントは固定サイズ","逆です。ページが固定サイズ、セグメントが可変サイズ"],["「ページングは固定サイズのブロックを使う」とだけ書く（違いを問う問題）","違いを答えるには両方が必要。セグメンテーションについても書く"],["ページフォールトはプログラムのエラー","ページフォールトはハードウェア割り込み。ページが RAM にないだけ（P = 0）"],["仮想メモリと仮想マシンは同じ","仮想メモリは RAM ＋スワップ領域。仮想マシンはホスト OS 上でゲスト OS を動かすもの"],["論理メモリは追加のメモリ装置","論理メモリはプログラムから見えるアドレス空間にすぎない"]],
+ qzH:"確認クイズ",right:"正解。",wrong:l=>`惜しい。正解は ${l}。`,
+ qs:[
+ {q:"正しい違いを述べているのはどれ？",o:["ページは大きさが様々で、セグメントは同じ大きさ","ページは同じ大きさで、セグメントは大きさが様々","ページは RAM に置き、セグメントはディスクに置く","ページはプログラマ、セグメントは機械が大きさを決める"],a:1,ex:"ページングは固定サイズ、セグメンテーションは可変サイズのブロックを使います。"},
+ {q:"プログラムの実行中、ページ表はどこにある？",o:["RAM（プロセスごとに1つ）","スワップファイル（全プロセスで共有）","CPU のレジスタ（全プログラムで共有）","プログラムのファイル（起動ごとに書き換え）"],a:0,ex:"各プロセスの表は RAM にあります。MMU が読み、TLB が最近の結果を保持します。"},
+ {q:"ページフォールトが起こるのはどんなとき？",o:["プログラムのコードにバグがあるとき","スワップファイルに空きがなくなったとき","TLB が違うフレーム番号を返したとき","必要なページが RAM にないとき"],a:3,ex:"P フラグが 0 なので、ハードウェア割り込みで OS にページを読み込ませます。"},
+ {q:"セグメント 2 の開始アドレスは 900、サイズは 300。セグメント 2、offset 120 の物理アドレスは？",o:["122","300","1020","1200"],a:2,ex:"表の開始アドレスに offset を足します：900 + 120 = 1020。offset はサイズより小さいので使えます。"},
+ {q:"RAM の空きは合計 500 KB あるが、400 KB のセグメントが入る穴がない。これを何と呼ぶ？",o:["内部の断片化","外部の断片化","スラッシング","フォールト"],a:1,ex:"空きがブロックの間に小さく分かれています。これが外部断片化です。"},
+ {q:"仮想メモリとは何か？",o:["RAM とディスク上のスワップ領域","ホスト OS 上で動くゲスト OS","プロセッサの中のキャッシュメモリ","OS が追加する RAM のチップ"],a:0,ex:"ディスクを使ってメモリを広げます。仮想マシンと混同しないでください。"}
+ ]},
+zh:{eyebrow:"Cambridge 9618 · Topic 16.1 · Paging, segmentation, virtual memory",
+ h1:'程序无法<em>整块</em>放进 RAM，那它是怎么运行的？',
+ lead:"操作系统把程序分成很多块，并用一张表记录每一块放在哪里。分页按大小分，分段按含义分。看看这些块怎样移动，也看看每样东西在磁盘、RAM 还是 CPU 里。",
+ simH:"内存模拟器",scen:"场景",sc:["1 分页","2 虚拟内存","3 分段","4 内部碎片（分页）","5 外部碎片（分段）"],
+ fg:{banI:["分页的问题","内部碎片","页的大小固定，所以页的内部会剩下空间。"],banE:["分段的问题","外部碎片","段的大小可变，所以段与段之间会留下空洞。这里把每个程序画成一个段。"],mem:"内存 100 MB",boxI:"粗框 = 1 页",boxE:"粗框 = 1 段",bnd:"虚线 = 边界（数字是地址 MB）",psz:"页大小 30 MB",page:"页",prog:n=>"程序 "+n,wait:"等待载入",ended:"已结束的程序",left:"剩余 10 MB：不够一页",free:"空闲",no:"放不下！",inside:"页内部的空闲",callI:"页的内部出现了空闲空间",callE:"空闲空间被程序隔开了",go:"观看动画",hint:"为了让浪费更容易看清，这里使用了较大的大小。实际的页小得多，例如 4 KiB。"},
+ prog:{sheet:"电子表格",word:"文字处理",game:"游戏",browser:"网页浏览器",os:"操作系统"},
+ seg:{Code:"代码",Data:"数据",Stack:"栈",Graphics:"图形"},
+ z:{cpu:"CPU",store:"存储器 (HDD/SSD)",ram:"RAM",none:"不是真实的存放位置"},
+ cpuT:"MMU",cpuS:"内存管理单元。把逻辑地址转换成物理地址。",
+ filesT:"程序文件",filesS:"即使关闭，文件也在这里。",
+ onDisk:"只在磁盘上",inRam:"已打开：RAM 中有副本",always:"一直在 RAM 中",
+ pages:n=>n+" 页",segs:n=>n+" 段",
+ logT:"逻辑内存",logS:"程序看到的地址。每个程序都有自己的逻辑内存。",logE:"还没有打开程序。",
+ ramT:"物理内存在这里",free:(a,b)=>`空闲 ${a} / ${b}`,freeKB:(a,b)=>`空闲 ${a} / ${b} KB`,
+ ptT:"页表 (page table)",ptH:["页","页框","P"],stT:"段映射表 (segment map table)",stH:["编号","大小","起始"],
+ tblE:"空",disk:"磁盘",none:"无",
+ phT:"物理内存（页框）",psT:"物理内存（地址 KB）",fr:"空闲",
+ swapT:"虚拟内存",swapS:"同一磁盘上的交换文件。",swapF:"swap file",swapE:"空",
+ ab:{ask:"程序请求",log:"逻辑地址",look:"MMU 读取表",phys:"物理地址",page:"页",off:"偏移",frame:"页框",seg:"段",start:"起始",size:"大小",
+  fault:"缺页中断",faultX:"P = 0：该页不在 RAM 中",limit:"拒绝",need:"需要",big:"最大的空洞",tot:"空闲总量",ext:"放不下",
+  idle:"这一步没有要转换的地址。",meter:"CPU 时间示意：实际工作与交换",work:"工作",swp:"交换"},
+ lg:["在 RAM 中的块","虚线：目前不在 RAM 中","斜线：块内未使用的空间","红色：故障或警告","注意这里"],
+ btn:{prev:"← 上一步",play:"▶ 播放",pause:"❚❚ 暂停",next:"下一步 →",reset:"重新开始",spd:"速度",sp:["慢","正常","快"]},
+ hint:"颜色表示这一块属于哪个程序。点击已打开的程序，可以看到它的逻辑内存和表。指向逻辑内存中的块，可以看到它去了哪里。也可以用键盘的 ← → 操作。大小和地址都是示例。",
+ step:"STEP",extra:"进阶",
+ whereH:"什么东西存放在哪里？",whereL:"逻辑内存和交换空间都不是额外的硬件。这张表说明每样东西实际在哪里。",
+ whereHd:["内容","位置","作用"],
+ where:[["程序文件","store","一直留在磁盘上。RAM 中只有所需页的副本。"],["逻辑内存","none","一个程序的地址范围。它不是芯片，也不是文件。"],["页表／段映射表","ram","每个进程一张表，由操作系统更新。"],["使用中的页框／段","ram","正在运行的代码和数据实际存放的地方。"],["MMU","cpu","程序运行时转换每个逻辑地址。"],["TLB","cpu","MMU 中的小型缓存。保存最近的转换结果，减少读表次数。"],["交换文件","store","存放 RAM 放不下的页。比 RAM 慢得多。"]],
+ tag:{cpu:"CPU",ram:"RAM",store:"HDD/SSD",none:"只是地址"},
+ cmpH:"分页与分段的比较",cmpL:"把两种方法放在一起比较。注意浪费出现在哪里。",
+ figP:"分页：内部碎片",figPn:"浪费出现在页的内部。",figS:"分段：外部碎片",figSn:"浪费出现在块与块之间。",fFree:"空闲",fHole:"空洞",
+ cmpHd:["","分页","分段"],
+ cmp:[["块的大小","固定 (fixed)。所有页大小相同。","可变 (variable)。每段大小不同。"],["如何划分","按大小，可以从任何地方切开。","按含义：代码、数据、栈。"],["给出的地址","一个值，由硬件分成页号和偏移。","两个值：段号和偏移。"],["表","页表：页 → 页框","段映射表：编号 → 大小和起始地址"],["在 RAM 中的位置","页可以放在任何空闲页框。","每段是一个连续的块。"],["浪费的空间","内部碎片 (internal fragmentation)","外部碎片 (external fragmentation)"],["程序员","看不到页。","能看到段。"],["过程和数据","不能分开。","可以分开。"]],
+ modelL:"考试答案：一定要写出两边",model:"Paging divides memory into fixed-size blocks, whereas segmentation divides memory into variable-size blocks.",
+ repH:"换出哪一页？",repL:"每种方法的目标都是尽量减少缺页中断。D = 1 的页必须先写回磁盘。D = 0 的页可以直接覆盖。",
+ repHd:["方法","换出的页","要记住"],
+ rep:[["FIFO","在 RAM 中时间最长的页。","简单。Belady 异常：页框增加，缺页反而可能增加。"],["Optimal","将来最长时间不会用到的页。","缺页最少，但操作系统无法知道将来。"],["LRU","过去最长时间没有使用的页。","接近 Optimal 的实用方法。"],["Clock","指针转动，直到找到 R = 0 的页。","接近 LRU 且开销低。"]],
+ anH:"用书和图书馆来想",
+ an:[["页","把一本书抄到大小相同的纸上。","分页：固定大小，按大小分"],["页框","每张纸都能放进任何一个编号格子。","物理内存的固定位置"],["页表","一张清单写着每张纸在哪个格子。","页 → 页框"],["段","每一章保持完整。长的章需要长的空位。","分段：大小可变，按含义分"],["外部碎片","书架上有很多小空位，但放不下下一章。","块与块之间的空闲空间"],["交换文件","暂时不读的纸放到仓库。取回来要花时间。","磁盘上的虚拟内存"]],
+ pitH:"常见错误",bad:"✕ 常见答案",good:"○ 正确",
+ pit:[["页的大小可变，段的大小固定。","正好相反。页的大小固定，段的大小可变。"],["只写“分页使用固定大小的块”（题目问区别）。","回答区别必须写两边，也要写分段的情况。"],["缺页中断是程序错误。","缺页中断是硬件中断，只是该页不在 RAM 中（P = 0）。"],["虚拟内存和虚拟机是一样的。","虚拟内存是 RAM 加交换空间。虚拟机是在宿主操作系统上运行客户操作系统。"],["逻辑内存是额外的内存硬件。","逻辑内存只是程序看到的地址空间。"]],
+ qzH:"检查你的理解",right:"正确。",wrong:l=>`不太对。答案是 ${l}。`,
+ qs:[
+ {q:"哪一项正确说明了区别？",o:["页的大小各不相同，段的大小全都一样","页的大小全都一样，段的大小各不相同","页放在 RAM 中，而段一直留在磁盘上","页由程序员决定，而段则由硬件决定"],a:1,ex:"分页使用固定大小的块，分段使用可变大小的块。"},
+ {q:"程序运行时，页表存放在哪里？",o:["RAM 中，每个进程一张","交换文件中，所有进程共用","CPU 寄存器中，全部共用","程序文件中，每次启动时改写"],a:0,ex:"每个进程的表都在 RAM 中。MMU 读取它，TLB 缓存最近的结果。"},
+ {q:"什么时候会发生缺页中断？",o:["程序代码中有错误时","交换文件没有空闲空间时","TLB 给出错误的页框号时","需要的页不在 RAM 中时"],a:3,ex:"P 标志为 0，硬件中断通知操作系统把这一页调入。"},
+ {q:"段 2 的起始地址是 900，大小是 300。段 2、偏移 120 的物理地址是多少？",o:["122","300","1020","1200"],a:2,ex:"用表中的起始地址加上偏移：900 + 120 = 1020。偏移小于大小，所以可以访问。"},
+ {q:"RAM 总共有 500 KB 空闲，但没有一个空洞能放下 400 KB 的段。这叫什么？",o:["内部碎片","外部碎片","磁盘抖动","缺页中断"],a:1,ex:"空闲空间分散在块与块之间，每块都太小。这就是外部碎片。"},
+ {q:"什么是虚拟内存？",o:["RAM 加磁盘上的交换空间","宿主系统上运行的客户系统","处理器内部的高速缓存","操作系统添加的 RAM 芯片"],a:0,ex:"用磁盘来扩展内存。不要和虚拟机混淆。"}
+ ]},
+th:{eyebrow:"Cambridge 9618 · Topic 16.1 · Paging, segmentation, virtual memory",
+ h1:'โปรแกรมใส่ลง RAM <em>เป็นก้อนเดียว</em>ไม่ได้ แล้วมันทำงานอย่างไร?',
+ lead:"OS แบ่งโปรแกรมเป็นบล็อก และจดไว้ในตารางว่าแต่ละบล็อกอยู่ที่ไหน Paging แบ่งตามขนาด ส่วน Segmentation แบ่งตามความหมาย ลองดูการเคลื่อนที่ของบล็อก และดูว่าแต่ละอย่างอยู่ในดิสก์ RAM หรือ CPU",
+ simH:"เครื่องจำลองหน่วยความจำ",scen:"สถานการณ์",sc:["1 Paging","2 หน่วยความจำเสมือน","3 Segmentation","4 Internal fragmentation (Paging)","5 External fragmentation (Segmentation)"],
+ fg:{banI:["ปัญหาของ PAGING","Internal fragmentation","หน้ามีขนาดคงที่ จึงเหลือที่ว่างภายในหน้า"],banE:["ปัญหาของ SEGMENTATION","External fragmentation","เซกเมนต์มีขนาดเปลี่ยนได้ จึงเหลือช่องว่างระหว่างเซกเมนต์ ในที่นี้วาดแต่ละโปรแกรมเป็นหนึ่งเซกเมนต์"],mem:"หน่วยความจำ 100 MB",boxI:"กรอบหนา = 1 หน้า",boxE:"กรอบหนา = 1 เซกเมนต์",bnd:"เส้นประ = ขอบเขต (ตัวเลขคือที่อยู่ MB)",psz:"ขนาดหน้า 30 MB",page:"หน้า",prog:n=>"โปรแกรม "+n,wait:"รอโหลด",ended:"โปรแกรมที่จบแล้ว",left:"เหลือ 10 MB: เล็กกว่าหนึ่งหน้า",free:"ว่าง",no:"ใส่ไม่ได้!",inside:"ที่ว่างภายในหน้า",callI:"เกิดที่ว่างภายในหน้า",callE:"ที่ว่างถูกแยกอยู่ระหว่างโปรแกรม",go:"ดูแอนิเมชัน",hint:"ใช้ขนาดใหญ่เพื่อให้เห็นความสูญเปล่าชัดเจน หน้าจริงเล็กกว่านี้มาก เช่น 4 KiB"},
+ prog:{sheet:"สเปรดชีต",word:"โปรแกรมประมวลคำ",game:"เกม",browser:"เว็บเบราว์เซอร์",os:"ระบบปฏิบัติการ"},
+ seg:{Code:"โค้ด",Data:"ข้อมูล",Stack:"สแต็ก",Graphics:"กราฟิก"},
+ z:{cpu:"CPU",store:"ที่เก็บข้อมูล (HDD/SSD)",ram:"RAM",none:"ไม่ใช่ที่เก็บจริง"},
+ cpuT:"MMU",cpuS:"Memory Management Unit แปลงที่อยู่เชิงตรรกะเป็นที่อยู่จริง",
+ filesT:"ไฟล์โปรแกรม",filesS:"อยู่ที่นี่แม้ปิดโปรแกรมแล้ว",
+ onDisk:"อยู่บนดิสก์เท่านั้น",inRam:"เปิดอยู่: มีสำเนาใน RAM",always:"อยู่ใน RAM เสมอ",
+ pages:n=>n+" หน้า",segs:n=>n+" เซกเมนต์",
+ logT:"หน่วยความจำเชิงตรรกะ",logS:"ที่อยู่ที่โปรแกรมเห็น แต่ละโปรแกรมมีของตัวเอง",logE:"ยังไม่ได้เปิดโปรแกรม",
+ ramT:"หน่วยความจำจริงอยู่ที่นี่",free:(a,b)=>`ว่าง ${a} / ${b}`,freeKB:(a,b)=>`ว่าง ${a} / ${b} KB`,
+ ptT:"ตารางหน้า (page table)",ptH:["Page","Frame","P"],stT:"ตารางเซกเมนต์ (segment map table)",stH:["เลข","ขนาด","เริ่ม"],
+ tblE:"ว่าง",disk:"disk",none:"ไม่มี",
+ phT:"หน่วยความจำจริง (เฟรม)",psT:"หน่วยความจำจริง (ที่อยู่ KB)",fr:"ว่าง",
+ swapT:"หน่วยความจำเสมือน",swapS:"ไฟล์สลับบนดิสก์ลูกเดียวกัน",swapF:"swap file",swapE:"ว่าง",
+ ab:{ask:"โปรแกรมขอ",log:"ที่อยู่เชิงตรรกะ",look:"MMU อ่านตาราง",phys:"ที่อยู่จริง",page:"page",off:"offset",frame:"frame",seg:"segment",start:"เริ่ม",size:"ขนาด",
+  fault:"Page fault",faultX:"P = 0: หน้านี้ไม่อยู่ใน RAM",limit:"ปฏิเสธ",need:"ต้องการ",big:"ช่องว่างใหญ่ที่สุด",tot:"ว่างรวม",ext:"ใส่ไม่ได้",
+  idle:"ขั้นตอนนี้ไม่มีที่อยู่ให้แปลง",meter:"เวลา CPU โดยประมาณ: งานจริงกับการสลับหน้า",work:"งาน",swp:"สลับหน้า"},
+ lg:["บล็อกใน RAM","เส้นประ: ตอนนี้ไม่อยู่ใน RAM","ลายเฉียง: พื้นที่ไม่ได้ใช้ในบล็อก","สีแดง: fault หรือคำเตือน","ดูตรงนี้"],
+ btn:{prev:"← ย้อนกลับ",play:"▶ เล่น",pause:"❚❚ หยุดชั่วคราว",next:"ถัดไป →",reset:"เริ่มใหม่",spd:"ความเร็ว",sp:["ช้า","ปกติ","เร็ว"]},
+ hint:"สีบอกว่าบล็อกเป็นของโปรแกรมไหน คลิกโปรแกรมที่เปิดอยู่เพื่อดูหน่วยความจำเชิงตรรกะและตาราง ชี้ที่บล็อกในหน่วยความจำเชิงตรรกะเพื่อดูว่าไปอยู่ที่ไหน ใช้ปุ่ม ← → ได้ด้วย ขนาดและที่อยู่เป็นเพียงตัวอย่าง",
+ step:"STEP",extra:"ขั้นสูง",
+ whereH:"อะไรเก็บอยู่ที่ไหน?",whereL:"หน่วยความจำเชิงตรรกะและพื้นที่ swap ไม่ใช่ฮาร์ดแวร์เพิ่มเติม ตารางนี้บอกว่าแต่ละอย่างอยู่ที่ไหนจริงๆ",
+ whereHd:["สิ่งของ","อยู่ที่","หน้าที่"],
+ where:[["ไฟล์โปรแกรม","store","อยู่บนดิสก์ตลอด RAM ได้สำเนาของหน้าที่ต้องใช้"],["หน่วยความจำเชิงตรรกะ","none","ช่วงที่อยู่ของโปรแกรมหนึ่ง ไม่ใช่ชิปหรือไฟล์"],["ตารางหน้า / ตารางเซกเมนต์","ram","หนึ่งตารางต่อหนึ่งโปรเซส OS เป็นผู้ปรับปรุง"],["เฟรม / เซกเมนต์ที่ใช้อยู่","ram","ที่เก็บจริงของโค้ดและข้อมูลที่กำลังทำงาน"],["MMU","cpu","แปลงที่อยู่เชิงตรรกะทุกครั้งขณะโปรแกรมทำงาน"],["TLB","cpu","แคชเล็กๆ ใน MMU เก็บผลการแปลงล่าสุด ทำให้อ่านตารางน้อยลง"],["ไฟล์สลับ (swap file)","store","เก็บหน้าที่ใส่ RAM ไม่พอ ช้ากว่า RAM มาก"]],
+ tag:{cpu:"CPU",ram:"RAM",store:"HDD/SSD",none:"มีแค่ที่อยู่"},
+ cmpH:"เปรียบเทียบ Paging กับ Segmentation",cmpL:"ดูสองวิธีนี้เทียบกัน สังเกตว่าพื้นที่สูญเปล่าเกิดที่ไหน",
+ figP:"Paging: internal fragmentation",figPn:"พื้นที่สูญเปล่าอยู่ภายในหน้า",figS:"Segmentation: external fragmentation",figSn:"พื้นที่สูญเปล่าอยู่ระหว่างบล็อก",fFree:"ว่าง",fHole:"ช่องว่าง",
+ cmpHd:["","Paging","Segmentation"],
+ cmp:[["ขนาดบล็อก","คงที่ (fixed) ทุกหน้าขนาดเท่ากัน","เปลี่ยนได้ (variable) แต่ละเซกเมนต์มีขนาดของตัวเอง"],["วิธีแบ่ง","ตามขนาด ตัดตรงไหนก็ได้","ตามความหมาย: โค้ด ข้อมูล สแต็ก"],["ที่อยู่ที่ให้","ค่าเดียว ฮาร์ดแวร์แยกเป็น page กับ offset","สองค่า: เลขเซกเมนต์และ offset"],["ตาราง","ตารางหน้า: page → frame","ตารางเซกเมนต์: เลข → ขนาดและที่อยู่เริ่มต้น"],["การวางใน RAM","หน้าอยู่ในเฟรมว่างใดก็ได้","แต่ละเซกเมนต์เป็นบล็อกต่อเนื่องหนึ่งบล็อก"],["พื้นที่สูญเปล่า","Internal fragmentation","External fragmentation"],["โปรแกรมเมอร์","มองไม่เห็นหน้า","มองเห็นเซกเมนต์"],["โพรซีเจอร์และข้อมูล","แยกกันไม่ได้","แยกกันได้"]],
+ modelL:"คำตอบในข้อสอบ: ต้องเขียนทั้งสองฝั่งเสมอ",model:"Paging divides memory into fixed-size blocks, whereas segmentation divides memory into variable-size blocks.",
+ repH:"เลือกหน้าไหนออก?",repL:"ทุกวิธีพยายามให้เกิด page fault น้อยที่สุด หน้าที่ D = 1 ต้องเขียนลงดิสก์ก่อน หน้าที่ D = 0 เขียนทับได้เลย",
+ repHd:["วิธี","หน้าที่ถูกนำออก","จำไว้"],
+ rep:[["FIFO","หน้าที่อยู่ใน RAM นานที่สุด","ง่าย Belady's anomaly: เฟรมมากขึ้นอาจเกิด fault มากขึ้น"],["Optimal","หน้าที่จะไม่ถูกใช้นานที่สุดในอนาคต","fault น้อยที่สุด แต่ OS ไม่รู้อนาคต"],["LRU","หน้าที่ไม่ได้ใช้นานที่สุดในอดีต","วิธีที่ใช้ได้จริงและใกล้เคียง Optimal"],["Clock","ตัวชี้หมุนไปจนเจอหน้าที่ R = 0","ใกล้เคียง LRU และใช้ทรัพยากรน้อย"]],
+ anH:"ลองนึกถึงหนังสือและห้องสมุด",
+ an:[["หน้า (page)","คัดลอกหนังสือลงกระดาษขนาดเท่ากัน","Paging: ขนาดคงที่ แบ่งตามขนาด"],["เฟรม (frame)","กระดาษทุกแผ่นใส่ช่องที่มีเลขช่องใดก็ได้","ช่องขนาดคงที่ในหน่วยความจำจริง"],["ตารางหน้า","รายการบอกว่ากระดาษแผ่นไหนอยู่ช่องไหน","page → frame"],["เซกเมนต์","เก็บแต่ละบทไว้ด้วยกัน บทยาวต้องการช่องว่างยาว","Segmentation: ขนาดเปลี่ยนได้ แบ่งตามความหมาย"],["External fragmentation","ชั้นมีช่องว่างเล็กๆ มากมาย แต่ไม่มีช่องที่ใส่บทถัดไปได้","พื้นที่ว่างระหว่างบล็อก"],["ไฟล์สลับ","กระดาษที่ยังไม่อ่านไปอยู่ในห้องเก็บของ ต้องใช้เวลาไปเอา","หน่วยความจำเสมือนบนดิสก์"]],
+ pitH:"ข้อผิดพลาดที่พบบ่อย",bad:"✕ คำตอบที่พบบ่อย",good:"○ ที่ถูกต้อง",
+ pit:[["หน้ามีขนาดเปลี่ยนได้ และเซกเมนต์มีขนาดคงที่","กลับกัน หน้ามีขนาดคงที่ และเซกเมนต์มีขนาดเปลี่ยนได้"],["เขียนแค่ \"Paging ใช้บล็อกขนาดคงที่\" (โจทย์ถามความแตกต่าง)","ความแตกต่างต้องมีสองฝั่ง ต้องเขียนเรื่อง Segmentation ด้วย"],["Page fault คือข้อผิดพลาดของโปรแกรม","Page fault คืออินเทอร์รัปต์จากฮาร์ดแวร์ แค่หน้าไม่อยู่ใน RAM (P = 0)"],["หน่วยความจำเสมือนเหมือนกับเครื่องเสมือน","หน่วยความจำเสมือนคือ RAM บวกพื้นที่ swap ส่วนเครื่องเสมือนรัน guest OS บน host OS"],["หน่วยความจำเชิงตรรกะคือฮาร์ดแวร์เพิ่มเติม","หน่วยความจำเชิงตรรกะเป็นเพียงช่วงที่อยู่ที่โปรแกรมเห็น"]],
+ qzH:"ตรวจสอบความเข้าใจ",right:"ถูกต้อง ",wrong:l=>`ยังไม่ถูก คำตอบคือ ${l} `,
+ qs:[
+ {q:"ข้อใดบอกความแตกต่างได้ถูกต้อง?",o:["หน้ามีหลายขนาด แต่เซกเมนต์มีขนาดเท่ากันหมด","หน้ามีขนาดเท่ากันหมด แต่เซกเมนต์มีหลายขนาด","หน้าอยู่ใน RAM แต่เซกเมนต์อยู่บนดิสก์เท่านั้น","โปรแกรมเมอร์กำหนดหน้า แต่ฮาร์ดแวร์กำหนดเซกเมนต์"],a:1,ex:"Paging ใช้บล็อกขนาดคงที่ Segmentation ใช้บล็อกขนาดเปลี่ยนได้"},
+ {q:"ขณะโปรแกรมทำงาน ตารางหน้าเก็บอยู่ที่ไหน?",o:["ใน RAM โปรเซสละหนึ่งตาราง","ในไฟล์สลับ ใช้ร่วมกันทุกโปรเซส","ในรีจิสเตอร์ CPU ใช้ร่วมกันทุกโปรแกรม","ในไฟล์โปรแกรม เขียนใหม่ทุกครั้งที่เริ่ม"],a:0,ex:"แต่ละโปรเซสมีตารางใน RAM MMU อ่านตาราง และ TLB เก็บผลล่าสุด"},
+ {q:"Page fault เกิดขึ้นเมื่อใด?",o:["เมื่อโค้ดของโปรแกรมมีบั๊กอยู่ภายใน","เมื่อไฟล์สลับไม่มีที่ว่างเหลืออยู่แล้ว","เมื่อ TLB ให้เลขเฟรมที่ผิดออกมา","เมื่อหน้าที่ต้องการไม่อยู่ใน RAM"],a:3,ex:"แฟล็ก P เป็น 0 อินเทอร์รัปต์จากฮาร์ดแวร์จึงแจ้งให้ OS นำหน้าเข้ามา"},
+ {q:"เซกเมนต์ 2 เริ่มที่ที่อยู่ 900 และมีขนาด 300 ที่อยู่จริงของเซกเมนต์ 2, offset 120 คือเท่าใด?",o:["122","300","1020","1200"],a:2,ex:"นำที่อยู่เริ่มต้นจากตารางบวก offset: 900 + 120 = 1020 offset น้อยกว่าขนาดจึงเข้าถึงได้"},
+ {q:"RAM ว่างรวม 500 KB แต่ไม่มีช่องว่างใดใส่เซกเมนต์ 400 KB ได้ เรียกว่าอะไร?",o:["Internal fragmentation","External fragmentation","Disk thrashing","Page fault"],a:1,ex:"พื้นที่ว่างแตกเป็นชิ้นเล็กๆ ระหว่างบล็อก จึงเรียกว่า external fragmentation"},
+ {q:"หน่วยความจำเสมือนคืออะไร?",o:["RAM บวกพื้นที่ swap บนดิสก์","guest OS ที่รันอยู่บน host OS","แคชที่อยู่ภายในตัวโปรเซสเซอร์","ชิป RAM ที่ OS เพิ่มเข้ามาใหม่"],a:0,ex:"ใช้ดิสก์ขยายหน่วยความจำ อย่าสับสนกับเครื่องเสมือน"}
+ ]}
+};
+/* [short, title, English terms, body] */
+const ST={
+en:{
+p0:["Start","Programs wait on the disk","Program files · RAM","Programs are stored as files on the disk. The CPU can only run what is in RAM, so a program must be copied in first. At the start, RAM holds only the operating system."],
+p1:["Pages","Open the spreadsheet: it becomes pages","Logical memory · Pages","The OS gives the program its own logical memory and divides it into pages. Every page is the same size, here 4 KiB. The program is cut by size, not by meaning."],
+p2:["Frames","RAM is divided into frames","Physical memory · Frames","Physical memory is divided into frames. A frame is exactly the same size as a page, so any page fits in any frame."],
+p3:["Load","Pages go into any free frames","Loading pages into frames","The pages are copied into free frames. They do not have to be next to each other. The program still sees its pages in order."],
+p4:["Page table","The page table remembers where each page went","Page table · P flag","Each program has its own page table, and it is stored in RAM. The page number is the index: page 3 is in frame 9. P = 1 means the page is present in RAM."],
+p5:["Translate","Logical address → physical address","MMU · Address translation","The program gives one address. The MMU splits it into a page number and an offset, finds the frame in the page table, and keeps the offset the same. The program never needs to know the frame number."],
+p6:["Share","More programs share the RAM","Each process has its own table","The word processor and the game are opened. Each one gets its own logical memory and page table. Their pages fill the free frames, so RAM looks mixed, but each table keeps its pages in order."],
+v0:["RAM full","The browser opens, but RAM is full","No free frames","All 16 frames are in use. Without virtual memory, the new program could not be loaded, and programs larger than RAM could not run at all."],
+v1:["Swap file","Virtual memory adds space on the disk","Virtual memory = RAM + swap space","Part of the HDD or SSD is used as a swap file. Programs can now use more memory than the RAM has. The program does not know which of its pages are on the disk."],
+v2:["Swap out","A page moves to the swap file","Swap out · P flag · D flag","The OS chooses G1, which has not been used for the longest time. It was changed in RAM (dirty, D = 1), so it is written to the swap file. In the table, its P flag becomes 0, and frame 5 is now free."],
+v3:["Demand","The browser's first page loads","Demand paging","B0 goes into frame 5. B1 stays on the disk until it is needed. Loading a page only when it is needed is called demand paging."],
+v4:["Page fault","The game needs G1 again","Page fault (interrupt)","The MMU reads the table and sees P = 0. This raises a page fault, which is a hardware interrupt. It is not a bug in the program. The OS must now bring G1 back into RAM."],
+v5:["Replace","One page out, one page in","Page replacement","No frame is free, so the OS replaces a page. S5 has not been used for the longest time, so it goes to the swap file and G1 comes into frame 6. The table is updated, and the game continues."],
+v6:["Thrashing","Too much swapping","Disk thrashing · Thrash point","If programs need more memory than RAM can hold, pages move in and out all the time. The disk is very busy and the CPU does little real work. At the thrash point, the programs almost stop. More RAM or fewer programs reduces this."],
+i0:["Pages","Memory is cut into 30 MB pages","Memory 100 MB · Page size 30 MB","The memory has 100 MB and each page is 30 MB, so there are three pages. The last 10 MB is smaller than a page, so it cannot be used as one."],
+i1:["Program A","Program A fits exactly","No waste","Program A is 30 MB, the same size as a page. Page 1 is completely full."],
+i2:["Program B","Program B takes a whole page","Allocated in whole pages","Program B is only 10 MB, but memory is given in whole pages. It takes all of page 2, so 20 MB inside the page stays empty."],
+i3:["Program C","The same happens with program C","Empty space inside the page","Program C is 20 MB, so 10 MB inside page 3 stays empty. Inside the pages, 30 MB is now empty."],
+i4:["Program D","Program D cannot use the empty space","Internal fragmentation","Program D needs 20 MB, and page 2 has 20 MB empty. But page 2 belongs to program B, and no page is free. Empty space inside a page that others cannot use is called internal fragmentation."],
+e0:["Full","Programs of different sizes fill the memory","Variable-size blocks","Here each program gets exactly the space it needs, in one continuous block, as with segments. There is no empty space inside a block. The memory is full."],
+e1:["Finish","Programs B and D finish","Deallocation","Programs B and D finish, and the OS frees their memory."],
+e2:["Holes","Two holes appear","Holes between blocks","There are now 20 MB free. But it is in two holes of 10 MB, with program C between them."],
+e3:["Program F","Program F needs 20 MB","External fragmentation","Program F needs one continuous block of 20 MB. The total free space is 20 MB, but each hole is only 10 MB, so F does not fit. Free space split up between blocks is called external fragmentation. Paging avoids this, because any page fits any frame."],
+s0:["Start","No equal blocks this time","Program file · RAM","With segmentation, physical memory is not cut into frames. Here it is one long range of addresses from 0 to 1600 KB, with the OS at the end."],
+s1:["Segments","The program is split by meaning","Segments · Logical memory","The word processor is split into code, data and stack. Each part is a segment. The sizes are different because each part needs a different amount of memory. The programmer can see these parts."],
+s2:["Load","Each segment stays in one piece","Segments in physical memory","The OS finds a space that is big enough for each segment. One segment stays in one continuous block, but different segments can be in different places."],
+s3:["Map table","The segment map table records each segment","Segment map table","Each process has its own table, stored in RAM. The segment number is the index. The table gives each segment's size and start address. Data is segment 1: size 200 KB, starting at 600."],
+s4:["Translate","Start address + offset","Segment number + offset","The program gives two values: segment 1, offset 150. The table gives the start address 600, so the physical address is 600 + 150 = 750. Your textbook writes \"segment number + offset\": the number is used to find the start address."],
+s5:["Limit","The size stops a bad address","Offset must be less than size","Offset 250 is outside segment 1, because its size is only 200 KB. The address is refused and an exception interrupt is raised. This protects the memory of other segments."],
+s6:["Share","The game fills some of the gaps","Variable-size blocks","The game's segments go into the spaces between the word processor's segments. Only 100 KB is left free now."],
+},
+ja:{
+p0:["開始","プログラムはディスクで待っている","Program files · RAM","プログラムはファイルとしてディスクに保存されています。CPU が実行できるのは RAM にあるものだけなので、先に RAM へコピーする必要があります。最初の RAM には OS だけが入っています。"],
+p1:["ページ","表計算を開くと、ページに分かれる","Logical memory · Pages","OS はプログラム専用の論理メモリを用意し、ページに分けます。どのページも同じ大きさで、ここでは 4 KiB です。意味ではなく大きさで切ります。"],
+p2:["フレーム","RAM はフレームに分かれている","Physical memory · Frames","物理メモリはフレームに分かれています。フレームはページとまったく同じ大きさなので、どのページもどのフレームにも入ります。"],
+p3:["読み込み","ページを空いているフレームに入れる","Loading pages into frames","ページを空きフレームにコピーします。隣り合っている必要はありません。プログラムからは、ページは順番どおりに見えています。"],
+p4:["ページ表","ページ表が行き先を覚えている","Page table · P flag","ページ表はプログラムごとに1つあり、RAM に置かれます。ページ番号が索引で、ページ 3 はフレーム 9 にあります。P = 1 はそのページが RAM にあるという意味です。"],
+p5:["変換","論理アドレス → 物理アドレス","MMU · Address translation","プログラムが指定するアドレスは1つです。MMU はそれを page 番号と offset に分け、ページ表でフレームを調べます。offset は変わりません。プログラムはフレーム番号を知らなくてもよいのです。"],
+p6:["共有","複数のプログラムで RAM を共有する","Each process has its own table","ワープロとゲームを開きます。それぞれに専用の論理メモリとページ表があります。ページが空きフレームを埋めるので RAM は混ざって見えますが、表があるので順番は分かります。"],
+v0:["RAM 満杯","ブラウザを開きたいが、RAM がいっぱい","No free frames","16 個のフレームはすべて使用中です。仮想メモリがなければ新しいプログラムは読み込めず、RAM より大きいプログラムも動きません。"],
+v1:["スワップ","仮想メモリはディスクの場所を借りる","Virtual memory = RAM + swap space","HDD や SSD の一部をスワップファイルとして使います。これで RAM より多くのメモリを使えます。プログラムは、自分のどのページがディスクにあるかを知りません。"],
+v2:["追い出す","ページをスワップファイルへ移す","Swap out · P flag · D flag","OS は一番長く使われていない G1 を選びます。G1 は RAM 上で変更されている（dirty、D = 1）ので、スワップファイルに書き込みます。表の P は 0 になり、フレーム 5 が空きます。"],
+v3:["必要時に","ブラウザの最初のページを読み込む","Demand paging","B0 がフレーム 5 に入ります。B1 は必要になるまでディスクに置いたままです。必要なときだけページを読み込むことを demand paging といいます。"],
+v4:["フォールト","ゲームがまた G1 を必要とする","Page fault (interrupt)","MMU が表を読むと P = 0 です。するとページフォールトが発生します。これはハードウェア割り込みで、プログラムのバグではありません。OS は G1 を RAM に戻します。"],
+v5:["入れ替え","1ページ出して、1ページ入れる","Page replacement","空きフレームがないので、OS はページを入れ替えます。一番長く使われていない S5 をスワップファイルへ移し、G1 をフレーム 6 に入れます。表を更新すると、ゲームは続きを実行できます。"],
+v6:["スラッシング","スワップが多すぎる","Disk thrashing · Thrash point","必要なメモリが RAM より多すぎると、ページの出し入れが止まらなくなります。ディスクはとても忙しくなり、CPU は本来の仕事がほとんどできません。thrash point に達すると、プログラムはほぼ止まります。RAM を増やすか、プログラムを減らすと改善します。"],
+i0:["ページ","メモリを 30 MB のページに分ける","Memory 100 MB · Page size 30 MB","メモリは 100 MB、ページは 30 MB なので、ページは3つできます。最後の 10 MB は1ページに足りないので、ページとして使えません。"],
+i1:["A","プログラムAはぴったり入る","No waste","プログラムAは 30 MB で、ページと同じ大きさです。ページ①はいっぱいになります。"],
+i2:["B","プログラムBはページを丸ごと使う","Allocated in whole pages","プログラムBは 10 MB だけですが、メモリはページ単位で割り当てられます。ページ②を丸ごと使うので、ページ内の 20 MB は空いたままです。"],
+i3:["C","プログラムCも同じ","Empty space inside the page","プログラムCは 20 MB なので、ページ③の中に 10 MB の空きが残ります。ページ内部の空きは合計 30 MB になりました。"],
+i4:["D","プログラムDはその空きを使えない","Internal fragmentation","プログラムDには 20 MB が必要で、ページ②には 20 MB の空きがあります。しかしページ②はプログラムBのもので、空いているページもありません。ページ内部にできて他が使えない空きを内部断片化といいます。"],
+e0:["満杯","大きさの違うプログラムでメモリが埋まる","Variable-size blocks","ここでは、セグメントのように、各プログラムに必要な分だけを連続した領域で割り当てます。ブロックの中に空きはなく、メモリはいっぱいです。"],
+e1:["終了","プログラムBとDが終了する","Deallocation","プログラムBとDが終了し、OS がそのメモリを解放します。"],
+e2:["空き領域","2つの空き領域ができる","Holes between blocks","空きは合計 20 MB になりました。ただし 10 MB ずつの2か所に分かれていて、間にプログラムCがあります。"],
+e3:["F","プログラムFには 20 MB が必要","External fragmentation","プログラムFには連続した 20 MB が必要です。空きの合計は 20 MB ありますが、どの空きも 10 MB しかないので入りません。空きがブロックの間に分かれて使えないことを外部断片化といいます。ページングなら、どのページもどのフレームにも入るので起こりません。"],
+s0:["開始","今度は同じ大きさに分けない","Program file · RAM","セグメンテーションでは、物理メモリをフレームに分けません。ここでは 0 から 1600 KB まで続くアドレスの範囲で、最後の部分に OS があります。"],
+s1:["セグメント","プログラムを意味で分ける","Segments · Logical memory","ワープロをコード、データ、スタックに分けます。それぞれがセグメントです。必要なメモリが違うので、大きさも違います。プログラマからはこの分け方が見えます。"],
+s2:["読み込み","各セグメントはひとかたまりのまま","Segments in physical memory","OS は各セグメントが入る大きさの場所を探します。1つのセグメントは連続した1ブロックのままですが、セグメント同士は離れていてもかまいません。"],
+s3:["セグメント表","セグメント表が各セグメントを記録する","Segment map table","表はプロセスごとに1つあり、RAM に置かれます。セグメント番号が索引で、サイズと開始アドレスが分かります。データはセグメント 1 で、サイズ 200 KB、開始は 600 です。"],
+s4:["変換","開始アドレス + offset","Segment number + offset","プログラムは2つの値を指定します：セグメント 1、offset 150。表の開始アドレスは 600 なので、物理アドレスは 600 + 150 = 750 です。教科書の「segment number + offset」では、番号を使って開始アドレスを調べます。"],
+s5:["範囲","サイズを超えるアドレスは止める","Offset must be less than size","offset 250 はセグメント 1 の外です。サイズが 200 KB しかないからです。アドレスは拒否され、例外（exception）の割り込みが起こります。これで他のセグメントのメモリを守ります。"],
+s6:["共有","ゲームがすき間の一部を埋める","Variable-size blocks","ゲームのセグメントがワープロのセグメントの間に入ります。残りの空きは 100 KB だけです。"],
+},
+zh:{
+p0:["开始","程序在磁盘上等待","Program files · RAM","程序以文件形式保存在磁盘上。CPU 只能运行 RAM 中的内容，所以必须先把程序复制进来。一开始，RAM 中只有操作系统。"],
+p1:["页","打开电子表格：它被分成页","Logical memory · Pages","操作系统为程序提供专用的逻辑内存，并把它分成页。每一页大小相同，这里是 4 KiB。程序是按大小切开的，而不是按含义。"],
+p2:["页框","RAM 被分成页框","Physical memory · Frames","物理内存被分成页框。页框和页的大小完全相同，所以任何一页都能放进任何一个页框。"],
+p3:["载入","页进入任何空闲页框","Loading pages into frames","页被复制到空闲页框中。它们不需要相邻。程序看到的页仍然是按顺序的。"],
+p4:["页表","页表记住每一页的去向","Page table · P flag","每个程序都有自己的页表，存放在 RAM 中。页号是索引：第 3 页在页框 9。P = 1 表示这一页在 RAM 中。"],
+p5:["转换","逻辑地址 → 物理地址","MMU · Address translation","程序只给出一个地址。MMU 把它分成页号和偏移，在页表中找到页框，偏移保持不变。程序不需要知道页框号。"],
+p6:["共享","更多程序共享 RAM","Each process has its own table","打开文字处理和游戏。每个程序都有自己的逻辑内存和页表。它们的页填满空闲页框，RAM 看起来很混杂，但每张表都记录了页的顺序。"],
+v0:["RAM 已满","要打开浏览器，但 RAM 已满","No free frames","16 个页框全部在使用。没有虚拟内存的话，新程序无法载入，比 RAM 大的程序也根本无法运行。"],
+v1:["交换文件","虚拟内存在磁盘上增加空间","Virtual memory = RAM + swap space","HDD 或 SSD 的一部分被用作交换文件。现在程序可以使用比 RAM 更多的内存。程序并不知道自己的哪些页在磁盘上。"],
+v2:["换出","一页移到交换文件","Swap out · P flag · D flag","操作系统选择最久没有使用的 G1。它在 RAM 中被修改过（dirty，D = 1），所以要写入交换文件。表中它的 P 变为 0，页框 5 空出来了。"],
+v3:["按需","载入浏览器的第一页","Demand paging","B0 进入页框 5。B1 留在磁盘上，直到需要时才载入。只在需要时才载入页，叫作按需调页 (demand paging)。"],
+v4:["缺页","游戏又需要 G1","Page fault (interrupt)","MMU 读表，发现 P = 0。于是产生缺页中断，这是硬件中断，不是程序的错误。操作系统现在必须把 G1 调回 RAM。"],
+v5:["置换","换出一页，换入一页","Page replacement","没有空闲页框，所以操作系统要置换一页。S5 最久没有使用，它被移到交换文件，G1 进入页框 6。表更新后，游戏继续运行。"],
+v6:["抖动","交换太频繁","Disk thrashing · Thrash point","如果程序需要的内存超过 RAM 的容量，页就会不停地换入换出。磁盘非常忙，CPU 几乎做不了实际工作。到达 thrash point 时，程序几乎停止。增加 RAM 或减少程序可以缓解。"],
+i0:["页","把内存分成 30 MB 的页","Memory 100 MB · Page size 30 MB","内存有 100 MB，每页 30 MB，所以有三页。最后的 10 MB 不够一页，不能作为页使用。"],
+i1:["程序 A","程序 A 正好放下","No waste","程序 A 是 30 MB，和一页一样大。第 1 页完全用满。"],
+i2:["程序 B","程序 B 占用整整一页","Allocated in whole pages","程序 B 只有 10 MB，但内存是按整页分配的。它占用整个第 2 页，所以页内有 20 MB 是空的。"],
+i3:["程序 C","程序 C 也一样","Empty space inside the page","程序 C 是 20 MB，所以第 3 页内有 10 MB 是空的。现在页内部总共有 30 MB 是空的。"],
+i4:["程序 D","程序 D 不能使用这些空闲空间","Internal fragmentation","程序 D 需要 20 MB，第 2 页正好空着 20 MB。但第 2 页属于程序 B，也没有空闲的页。页内部出现、其他程序不能使用的空闲空间叫作内部碎片。"],
+e0:["已满","大小不同的程序占满内存","Variable-size blocks","这里像分段一样，每个程序得到正好够用的连续空间。块的内部没有空闲，内存已满。"],
+e1:["结束","程序 B 和 D 结束","Deallocation","程序 B 和 D 结束，操作系统释放它们的内存。"],
+e2:["空洞","出现两个空洞","Holes between blocks","现在有 20 MB 空闲，但分成两个 10 MB 的空洞，中间隔着程序 C。"],
+e3:["程序 F","程序 F 需要 20 MB","External fragmentation","程序 F 需要一个连续的 20 MB 空间。空闲总量是 20 MB，但每个空洞只有 10 MB，所以放不下。空闲空间被分隔在块与块之间，叫作外部碎片。分页可以避免这一点，因为任何一页都能放进任何页框。"],
+s0:["开始","这次不分成相同大小的块","Program file · RAM","分段时，物理内存不分成页框。这里它是一段从 0 到 1600 KB 的连续地址，操作系统在最后。"],
+s1:["段","程序按含义划分","Segments · Logical memory","文字处理程序被分成代码、数据和栈。每一部分是一个段。各部分需要的内存不同，所以大小也不同。程序员能看到这些部分。"],
+s2:["载入","每个段保持完整","Segments in physical memory","操作系统为每个段找到足够大的空间。一个段是一个连续的块，但不同的段可以在不同的地方。"],
+s3:["段映射表","段映射表记录每个段","Segment map table","每个进程都有自己的表，存放在 RAM 中。段号是索引。表中有每段的大小和起始地址。数据是段 1：大小 200 KB，从 600 开始。"],
+s4:["转换","起始地址 + 偏移","Segment number + offset","程序给出两个值：段 1，偏移 150。表中的起始地址是 600，所以物理地址是 600 + 150 = 750。教科书写的是 “segment number + offset”：用段号来找到起始地址。"],
+s5:["界限","大小可以阻止错误的地址","Offset must be less than size","偏移 250 在段 1 之外，因为它的大小只有 200 KB。这个地址被拒绝，并产生异常 (exception) 中断。这样可以保护其他段的内存。"],
+s6:["共享","游戏填补了部分空隙","Variable-size blocks","游戏的段放进文字处理程序各段之间的空隙。现在只剩 100 KB 空闲。"],
+},
+th:{
+p0:["เริ่ม","โปรแกรมรออยู่บนดิสก์","Program files · RAM","โปรแกรมเก็บเป็นไฟล์บนดิสก์ CPU รันได้เฉพาะสิ่งที่อยู่ใน RAM จึงต้องคัดลอกโปรแกรมเข้ามาก่อน ตอนเริ่มต้น RAM มีแค่ระบบปฏิบัติการ"],
+p1:["หน้า","เปิดสเปรดชีต: มันถูกแบ่งเป็นหน้า","Logical memory · Pages","OS ให้หน่วยความจำเชิงตรรกะแก่โปรแกรม และแบ่งเป็นหน้า (page) ทุกหน้ามีขนาดเท่ากัน ในที่นี้คือ 4 KiB โปรแกรมถูกตัดตามขนาด ไม่ใช่ตามความหมาย"],
+p2:["เฟรม","RAM ถูกแบ่งเป็นเฟรม","Physical memory · Frames","หน่วยความจำจริงถูกแบ่งเป็นเฟรม (frame) เฟรมมีขนาดเท่ากับหน้าพอดี หน้าใดจึงใส่เฟรมใดก็ได้"],
+p3:["โหลด","หน้าเข้าไปอยู่ในเฟรมว่างใดก็ได้","Loading pages into frames","หน้าถูกคัดลอกไปยังเฟรมว่าง ไม่จำเป็นต้องอยู่ติดกัน โปรแกรมยังเห็นหน้าตามลำดับเหมือนเดิม"],
+p4:["ตารางหน้า","ตารางหน้าจำว่าแต่ละหน้าไปอยู่ที่ไหน","Page table · P flag","แต่ละโปรแกรมมีตารางหน้าของตัวเอง เก็บอยู่ใน RAM เลขหน้าคือดัชนี: หน้า 3 อยู่ในเฟรม 9 P = 1 หมายความว่าหน้านั้นอยู่ใน RAM"],
+p5:["แปลง","ที่อยู่เชิงตรรกะ → ที่อยู่จริง","MMU · Address translation","โปรแกรมให้ที่อยู่เพียงค่าเดียว MMU แยกเป็นเลขหน้ากับ offset หาเฟรมจากตารางหน้า และคง offset ไว้เท่าเดิม โปรแกรมไม่ต้องรู้เลขเฟรมเลย"],
+p6:["ใช้ร่วมกัน","หลายโปรแกรมใช้ RAM ร่วมกัน","Each process has its own table","เปิดโปรแกรมประมวลคำและเกม แต่ละโปรแกรมมีหน่วยความจำเชิงตรรกะและตารางหน้าของตัวเอง หน้าต่างๆ เติมเฟรมว่าง RAM จึงดูปนกัน แต่ตารางยังรักษาลำดับหน้าไว้"],
+v0:["RAM เต็ม","จะเปิดเบราว์เซอร์ แต่ RAM เต็ม","No free frames","ทั้ง 16 เฟรมถูกใช้หมด ถ้าไม่มีหน่วยความจำเสมือน ก็โหลดโปรแกรมใหม่ไม่ได้ และโปรแกรมที่ใหญ่กว่า RAM ก็รันไม่ได้เลย"],
+v1:["ไฟล์สลับ","หน่วยความจำเสมือนเพิ่มพื้นที่บนดิสก์","Virtual memory = RAM + swap space","ส่วนหนึ่งของ HDD หรือ SSD ถูกใช้เป็นไฟล์สลับ (swap file) โปรแกรมจึงใช้หน่วยความจำได้มากกว่า RAM โปรแกรมไม่รู้ว่าหน้าไหนของตัวเองอยู่บนดิสก์"],
+v2:["สลับออก","หน้าหนึ่งย้ายไปไฟล์สลับ","Swap out · P flag · D flag","OS เลือก G1 ซึ่งไม่ได้ใช้นานที่สุด หน้านี้ถูกแก้ไขใน RAM (dirty, D = 1) จึงต้องเขียนลงไฟล์สลับ ในตาราง P เปลี่ยนเป็น 0 และเฟรม 5 ว่างแล้ว"],
+v3:["ตามต้องการ","โหลดหน้าแรกของเบราว์เซอร์","Demand paging","B0 เข้าไปในเฟรม 5 ส่วน B1 อยู่บนดิสก์จนกว่าจะต้องใช้ การโหลดหน้าเฉพาะเมื่อต้องใช้เรียกว่า demand paging"],
+v4:["Page fault","เกมต้องการ G1 อีกครั้ง","Page fault (interrupt)","MMU อ่านตารางแล้วเห็น P = 0 จึงเกิด page fault ซึ่งเป็นอินเทอร์รัปต์จากฮาร์ดแวร์ ไม่ใช่บั๊กของโปรแกรม ตอนนี้ OS ต้องนำ G1 กลับเข้า RAM"],
+v5:["แทนที่","ออกหนึ่งหน้า เข้าหนึ่งหน้า","Page replacement","ไม่มีเฟรมว่าง OS จึงต้องแทนที่หน้า S5 ไม่ได้ใช้นานที่สุด จึงย้ายไปไฟล์สลับ และ G1 เข้าเฟรม 6 เมื่ออัปเดตตารางแล้ว เกมก็ทำงานต่อ"],
+v6:["Thrashing","สลับหน้ามากเกินไป","Disk thrashing · Thrash point","ถ้าโปรแกรมต้องการหน่วยความจำมากกว่าที่ RAM มี หน้าจะเข้าออกตลอดเวลา ดิสก์ทำงานหนักมาก และ CPU แทบไม่ได้ทำงานจริง เมื่อถึง thrash point โปรแกรมแทบหยุด การเพิ่ม RAM หรือลดจำนวนโปรแกรมจะช่วยได้"],
+i0:["หน้า","แบ่งหน่วยความจำเป็นหน้าละ 30 MB","Memory 100 MB · Page size 30 MB","หน่วยความจำมี 100 MB และแต่ละหน้าคือ 30 MB จึงมี 3 หน้า ส่วน 10 MB สุดท้ายเล็กกว่าหนึ่งหน้า จึงใช้เป็นหน้าไม่ได้"],
+i1:["โปรแกรม A","โปรแกรม A ใส่ได้พอดี","No waste","โปรแกรม A มีขนาด 30 MB เท่ากับหนึ่งหน้า หน้า 1 จึงเต็มพอดี"],
+i2:["โปรแกรม B","โปรแกรม B ใช้ทั้งหน้า","Allocated in whole pages","โปรแกรม B มีแค่ 10 MB แต่หน่วยความจำจัดสรรเป็นหน้าเต็ม จึงใช้หน้า 2 ทั้งหน้า และ 20 MB ภายในหน้ายังว่างอยู่"],
+i3:["โปรแกรม C","โปรแกรม C ก็เหมือนกัน","Empty space inside the page","โปรแกรม C มีขนาด 20 MB จึงเหลือที่ว่าง 10 MB ภายในหน้า 3 ตอนนี้ที่ว่างภายในหน้ารวมเป็น 30 MB"],
+i4:["โปรแกรม D","โปรแกรม D ใช้ที่ว่างนี้ไม่ได้","Internal fragmentation","โปรแกรม D ต้องการ 20 MB และหน้า 2 ว่างอยู่ 20 MB แต่หน้า 2 เป็นของโปรแกรม B และไม่มีหน้าว่างเลย ที่ว่างภายในหน้าที่โปรแกรมอื่นใช้ไม่ได้เรียกว่า internal fragmentation"],
+e0:["เต็ม","โปรแกรมขนาดต่างกันเต็มหน่วยความจำ","Variable-size blocks","ในที่นี้แต่ละโปรแกรมได้พื้นที่ต่อเนื่องเท่าที่ต้องการ เหมือนเซกเมนต์ ไม่มีที่ว่างภายในบล็อก และหน่วยความจำเต็มแล้ว"],
+e1:["จบ","โปรแกรม B และ D จบการทำงาน","Deallocation","โปรแกรม B และ D จบการทำงาน และ OS คืนหน่วยความจำของทั้งสอง"],
+e2:["ช่องว่าง","เกิดช่องว่าง 2 ช่อง","Holes between blocks","ตอนนี้มีที่ว่าง 20 MB แต่แยกเป็นสองช่อง ช่องละ 10 MB โดยมีโปรแกรม C คั่นกลาง"],
+e3:["โปรแกรม F","โปรแกรม F ต้องการ 20 MB","External fragmentation","โปรแกรม F ต้องการบล็อกต่อเนื่อง 20 MB ที่ว่างรวมมี 20 MB แต่แต่ละช่องมีแค่ 10 MB จึงใส่ไม่ได้ ที่ว่างที่แตกกระจายระหว่างบล็อกเรียกว่า external fragmentation Paging หลีกเลี่ยงปัญหานี้ได้ เพราะหน้าใดก็ใส่เฟรมใดได้"],
+s0:["เริ่ม","ครั้งนี้ไม่แบ่งเป็นบล็อกเท่ากัน","Program file · RAM","ใน Segmentation หน่วยความจำจริงไม่ถูกแบ่งเป็นเฟรม ในที่นี้เป็นช่วงที่อยู่ยาวตั้งแต่ 0 ถึง 1600 KB โดยมี OS อยู่ท้ายสุด"],
+s1:["เซกเมนต์","แบ่งโปรแกรมตามความหมาย","Segments · Logical memory","โปรแกรมประมวลคำถูกแบ่งเป็นโค้ด ข้อมูล และสแต็ก แต่ละส่วนคือเซกเมนต์ ขนาดต่างกันเพราะแต่ละส่วนต้องการหน่วยความจำไม่เท่ากัน โปรแกรมเมอร์มองเห็นส่วนเหล่านี้"],
+s2:["โหลด","แต่ละเซกเมนต์อยู่เป็นชิ้นเดียว","Segments in physical memory","OS หาที่ว่างที่ใหญ่พอสำหรับแต่ละเซกเมนต์ หนึ่งเซกเมนต์เป็นบล็อกต่อเนื่องหนึ่งบล็อก แต่เซกเมนต์ต่างกันอยู่คนละที่ได้"],
+s3:["ตาราง","ตารางเซกเมนต์บันทึกแต่ละเซกเมนต์","Segment map table","แต่ละโปรเซสมีตารางของตัวเอง เก็บอยู่ใน RAM เลขเซกเมนต์คือดัชนี ตารางบอกขนาดและที่อยู่เริ่มต้น ข้อมูลคือเซกเมนต์ 1: ขนาด 200 KB เริ่มที่ 600"],
+s4:["แปลง","ที่อยู่เริ่มต้น + offset","Segment number + offset","โปรแกรมให้สองค่า: เซกเมนต์ 1, offset 150 ตารางบอกที่อยู่เริ่มต้น 600 ที่อยู่จริงจึงเป็น 600 + 150 = 750 ตำราเขียนว่า \"segment number + offset\" โดยใช้เลขเซกเมนต์เพื่อหาที่อยู่เริ่มต้น"],
+s5:["ขอบเขต","ขนาดช่วยหยุดที่อยู่ที่ผิด","Offset must be less than size","offset 250 อยู่นอกเซกเมนต์ 1 เพราะมีขนาดแค่ 200 KB ที่อยู่นี้ถูกปฏิเสธ และเกิดอินเทอร์รัปต์แบบ exception วิธีนี้ปกป้องหน่วยความจำของเซกเมนต์อื่น"],
+s6:["ใช้ร่วมกัน","เกมเติมช่องว่างบางส่วน","Variable-size blocks","เซกเมนต์ของเกมเข้าไปอยู่ระหว่างเซกเมนต์ของโปรแกรมประมวลคำ ตอนนี้เหลือที่ว่างแค่ 100 KB"],
+}};
+
+/* ---------- Model ---------- */
+const PG={sheet:["S0","S1","S2","S3","S4","S5"],word:["W0","W1","W2"],game:["G0","G1","G2","G3"],browser:["B0","B1"]};
+const OWN=k=>({S:"sheet",W:"word",G:"game",B:"browser",O:"os"})[k[0]];
+const FS={S0:2,S1:4,S2:8,S3:9,S4:11,S5:6},FW={W0:7,W1:1,W2:10},FG={G0:0,G1:5,G2:3,G3:12};
+const ALL={...FS,...FW,...FG};
+const NF=16,OSF=[13,14,15];
+const without=(o,...ks)=>{const c={...o};ks.forEach(k=>delete c[k]);return c};
+const SG={word:[["W0","Code",300],["W1","Data",200],["W2","Stack",100]],game:[["G0","Code",300],["G1","Graphics",300]],sheet:[["S0","Code",400]]};
+const BASE_W={W0:0,W1:600,W2:1100},BASE_G={G0:300,G1:800};
+const RAMKB=1600,OSB=1300,SC=.25;
+const fly=(from,to,k,d=0)=>({from,to,k,d});
+const load=(pre,keys)=>keys.map((k,i)=>fly(pre==="L"?"L-"+k:"file-"+OWN(k),"F-"+ALL[k],k,i*110));
+const SEQ={
+ page:[
+  {id:"p0",open:[],view:null,fr:{},hot:["zfiles"]},
+  {id:"p1",open:["sheet"],view:"sheet",fr:{},hot:["zlog"],fly:PG.sheet.map((k,i)=>fly("file-sheet","L-"+k,k,i*110))},
+  {id:"p2",open:["sheet"],view:"sheet",fr:{},hot:["physbox"],pulse:true},
+  {id:"p3",open:["sheet"],view:"sheet",fr:{...FS},hot:["physbox","tablebox"],fly:load("L",PG.sheet)},
+  {id:"p4",open:["sheet"],view:"sheet",fr:{...FS},hot:["tablebox"],arrow:"S3",row:"S3"},
+  {id:"p5",open:["sheet"],view:"sheet",fr:{...FS},hot:["zcpu"],arrow:"S3",row:"S3",cpu:{t:"page",p:3,o:120,f:9}},
+  {id:"p6",open:["sheet","word","game"],view:"game",fr:{...ALL},hot:["physbox"],fly:[...load("F",PG.word),...load("F",PG.game).map(f=>({...f,d:f.d+330}))]}
+ ],
+ virt:[
+  {id:"v0",open:["sheet","word","game"],view:"game",fr:{...ALL},hot:["physbox"],want:"browser"},
+  {id:"v1",open:["sheet","word","game"],view:"game",fr:{...ALL},hot:["zswap"],want:"browser"},
+  {id:"v2",open:["sheet","word","game"],view:"game",fr:without(ALL,"G1"),sw:["G1"],hot:["tablebox","zswap"],row:"G1",arrow:"G1",fly:[fly("F-5","SW-G1","G1")]},
+  {id:"v3",open:["sheet","word","game","browser"],view:"browser",fr:{...without(ALL,"G1"),B0:5},sw:["G1"],hot:["physbox"],row:"B0",arrow:"B0",fly:[fly("file-browser","F-5","B0")]},
+  {id:"v4",open:["sheet","word","game","browser"],view:"game",fr:{...without(ALL,"G1"),B0:5},sw:["G1"],hot:["zcpu","tablebox"],bad:"G1",cpu:{t:"fault",p:1,o:300}},
+  {id:"v5",open:["sheet","word","game","browser"],view:"game",fr:{...without(ALL,"S5"),G1:6,B0:5},sw:["S5"],hot:["physbox","zswap"],row:"G1",arrow:"G1",cpu:{t:"page",p:1,o:300,f:6},fly:[fly("F-6","SW-S5","S5"),fly("SW-G1","F-6","G1",450)]},
+  {id:"v6",open:["sheet","word","game","browser"],view:"game",fr:{...without(ALL,"S5"),G1:6,B0:5},sw:["S5"],hot:["zswap"],cpu:{t:"thrash"},thrash:true}
+ ],
+ seg:[
+  {id:"s0",open:[],view:null,sg:{},hot:["zfiles","physbox"]},
+  {id:"s1",open:["word"],view:"word",sg:{},hot:["zlog"],fly:SG.word.map((x,i)=>fly("file-word","L-"+x[0],x[0],i*160))},
+  {id:"s2",open:["word"],view:"word",sg:{...BASE_W},hot:["physbox","tablebox"],fly:SG.word.map((x,i)=>fly("L-"+x[0],"SB-"+x[0],x[0],i*200))},
+  {id:"s3",open:["word"],view:"word",sg:{...BASE_W},hot:["tablebox"],arrow:"W1",row:"W1"},
+  {id:"s4",open:["word"],view:"word",sg:{...BASE_W},hot:["zcpu"],arrow:"W1",row:"W1",cpu:{t:"seg",n:1,o:150,b:600,sz:200}},
+  {id:"s5",open:["word"],view:"word",sg:{...BASE_W},hot:["zcpu"],bad:"W1",cpu:{t:"limit",n:1,o:250,sz:200},x:true},
+  {id:"s6",open:["word","game"],view:"game",sg:{...BASE_W,...BASE_G},hot:["physbox"],fly:SG.game.map((x,i)=>fly("file-game","SB-"+x[0],x[0],i*220))}
+ ],
+ int:[0,1,2,3,4].map(n=>({id:"i"+n,frag:"int",n,hot:[],tryIt:n===4?["D","h1"]:null})),
+ ext:[0,1,2,3].map(n=>({id:"e"+n,frag:"ext",n,hot:[],tryIt:n===3?["F","hole0"]:null}))
+};
+const SIZE=Object.fromEntries(Object.values(SG).flat().map(x=>[x[0],x[2]]));
+const NAMEK=Object.fromEntries(Object.values(SG).flat().map(x=>[x[0],x[1]]));
+
+/* ---------- State ---------- */
+let lang="en",sc="page",s=0,view=null,timer=null,hover=null,token=0,thrashT=null;
+let T=TX.en,seq=SEQ.page,score=0;
+const isSeg=()=>sc==="seg";
+
+/* ---------- Drawing ---------- */
+function drawFiles(d){
+  const list=isSeg()?["word","game","sheet","os"]:["browser","word","game","sheet","os"];
+  const fname={word:"word.exe",game:"game.exe",sheet:"sheet.exe",browser:"browser.exe",os:"kernel"};
+  $("zfiles").innerHTML=`<span class="ztag">${T.z.store}</span><span class="ztit">${T.filesT}</span><span class="zsub">${T.filesS}</span><div class="files">`+list.map(p=>{
+    const open=d.open.includes(p),os=p==="os",canView=!os&&(open||d.want===p);
+    const n=os?"":isSeg()?T.segs(SG[p].length):T.pages(PG[p].length);
+    const st=os?T.always:open?T.inRam:T.onDisk;
+    return `<button class="file c-${p}${open||os?" open":""}${view===p?" view":""}${d.want===p?" want":""}" data-id="file-${p}" data-p="${p}" ${canView?"":"disabled"}><span class="fn">${T.prog[p]}</span><span class="fx">${fname[p]}${n?" · "+n:""}</span><span class="fs">${st}</span></button>`}).join("")+`</div>`;
+  $("zfiles").querySelectorAll(".file:not(:disabled)").forEach(b=>b.onclick=()=>{stopThrash();view=b.dataset.p;hover=null;draw(seq[s]);arrows(seq[s]);if(seq[s].thrash)startThrash()});
+}
+function drawLog(d){
+  const others=d.open.filter(p=>p!==view);
+  let body;
+  if(!view)body=`<div class="sheet"><div class="lemp">${T.logE}</div></div>`;
+  else if(isSeg()){
+    body=`<div class="sheet c-${view}">`+SG[view].map(x=>{const loaded=d.sg[x[0]]!==undefined;
+      return `<div class="cell tall lcell c-${view}${loaded?"":" out"}" data-id="L-${x[0]}" data-k="${x[0]}" style="--h:${Math.max(x[2]*SC,30)}px"><span>${x[0][1]} · ${T.seg[x[1]]}</span><span>${x[2]} KB</span></div>`}).join("")+`</div>`;
+  }else{
+    body=`<div class="sheet c-${view}">`+PG[view].map(k=>{const inR=d.fr[k]!==undefined,pt=(d.part||[]).includes(k);
+      return `<div class="cell lcell c-${view}${inR?"":" out"}${pt?" part":""}" data-id="L-${k}" data-k="${k}"><span>${k}</span></div>`}).join("")+`</div>`;
+  }
+  $("zlog").innerHTML=`<span class="ztag ghost">${T.z.none}</span><span class="ztit">${T.logT}</span><span class="zsub">${T.logS}</span><div class="logwrap">`+others.map(p=>`<i class="edge c-${p}" aria-hidden="true"></i>`).join("")+body+`</div>`;
+  $("zlog").querySelectorAll(".lcell").forEach(c=>{
+    c.onpointerenter=()=>{hover=c.dataset.k;arrows(d)};c.onpointerleave=()=>{hover=null;arrows(d)};c.onclick=()=>{hover=c.dataset.k;arrows(d)}});
+}
+function tableHTML(d){
+  const hot=d.hot.includes("tablebox")?" hot":"";
+  const name=view?T.prog[view]:"";
+  const empty=`<div class="sempty">${T.tblE}</div>`;
+  if(isSeg()){
+    const rows=view?SG[view].map((x,i)=>{const b=d.sg[x[0]],cls=d.bad===x[0]?"bad":d.row===x[0]?"hit":b===undefined?"off":"";
+      return `<tr class="c-${view} ${cls}" data-id="R-${x[0]}"><td class="k">${i}</td><td>${x[2]}</td><td>${b===undefined?T.none:b}</td></tr>`}).join(""):"";
+    return `<div class="tablebox${hot}" id="tablebox"><span class="ztit">${T.stT}</span><span class="zsub">${name}</span>${view?`<table class="ptb"><thead><tr>${T.stH.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`:empty}</div>`;
+  }
+  const rows=view?PG[view].map((k,i)=>{const f=d.fr[k],onSw=(d.sw||[]).includes(k),cls=d.bad===k?"bad":d.row===k?"hit":f===undefined?"off":"";
+    return `<tr class="c-${view} ${cls}" data-id="R-${k}"><td class="k">${i}</td><td>${f!==undefined?f:onSw?T.disk:T.none}</td><td>${f!==undefined?1:0}</td></tr>`}).join(""):"";
+  return `<div class="tablebox${hot}" id="tablebox"><span class="ztit">${T.ptT}</span><span class="zsub">${name}</span>${view?`<table class="ptb"><thead><tr>${T.ptH.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`:empty}</div>`;
+}
+function physHTML(d){
+  const hot=d.hot.includes("physbox")?" hot":"";
+  if(isSeg()){
+    const blocks=[...Object.entries(d.sg).map(([k,b])=>({k,b,sz:SIZE[k]})),{k:"OS",b:OSB,sz:RAMKB-OSB}].sort((a,b)=>a.b-b.b);
+    let out="",pos=0;
+    const hole=(a,z)=>`<div class="sb" style="top:${a*SC}px;height:${(z-a)*SC}px"><div class="hole">${z-a}</div></div><span class="tick" style="top:${a*SC}px">${a}</span>`;
+    blocks.forEach(x=>{
+      if(x.b>pos)out+=hole(pos,x.b);
+      const own=x.k==="OS"?"os":OWN(x.k);
+      const txt=x.k==="OS"?"OS":`${x.k[0]}${x.k[1]} ${T.seg[NAMEK[x.k]]}`;
+      out+=`<div class="sb c-${own}" data-id="SB-${x.k}" style="top:${x.b*SC}px;height:${x.sz*SC}px"><div class="cell tall${x.sz*SC<30?" one":""}"><span>${txt}</span><span>${x.sz}</span></div></div><span class="tick" style="top:${x.b*SC}px">${x.b}</span>`;
+      pos=x.b+x.sz;
+    });
+    const used=blocks.reduce((a,x)=>a+x.sz,0);
+    return {free:`<span class="free${RAMKB-used===0?" zero":""}">${T.freeKB(RAMKB-used,RAMKB)}</span>`,
+      html:`<div class="physbox${hot}" id="physbox"><span class="ztit">${T.psT}</span><div class="segram">${out}</div></div>`};
+  }
+  const inv={};Object.entries(d.fr).forEach(([k,f])=>inv[f]=k);
+  let rows="";
+  for(let i=0;i<NF;i++){
+    const isOS=OSF.includes(i),k=inv[i],pt=k&&(d.part||[]).includes(k);
+    const inner=isOS?`<div class="cell c-os"><span>OS</span></div>`:k?`<div class="cell c-${OWN(k)}${pt?" part":""}"><span>${k}</span></div>`:T.fr;
+    rows+=`<div class="fr"><i>${i}</i><div class="slot" data-id="F-${i}">${inner}</div></div>`;
+  }
+  const free=NF-OSF.length-Object.keys(d.fr).length;
+  return {free:`<span class="free${free===0?" zero":""}">${T.free(free,NF)}</span>`,
+    html:`<div class="physbox${hot}" id="physbox"><span class="ztit">${T.phT}</span><div class="frames${d.pulse?" pulse":""}">${rows}</div></div>`};
+}
+function drawRam(d){
+  const p=physHTML(d);
+  $("zram").innerHTML=`<div class="ramhead"><span class="ztag">${T.z.ram}</span>${p.free}</div><div class="raminner">${tableHTML(d)}${p.html}</div>`;
+}
+function drawSwap(d){
+  const list=d.sw||[];
+  $("zswap").innerHTML=`<span class="ztag">${T.z.store}</span><span class="ztit">${T.swapT}</span><span class="zsub">${T.swapS}</span><div class="cyl"><div class="swapfile" id="swapfile"><span class="fx">${T.swapF}</span><div class="chips">${list.length?list.map(k=>`<div class="cell c-${OWN(k)}" data-id="SW-${k}"><span>${k}</span></div>`).join(""):`<span class="sempty">${isSeg()?"":T.swapE}</span>`}</div></div></div>`;
+  $("zswap").hidden=isSeg();$("stage").classList.toggle("noswap",isSeg());
+}
+function drawCpu(d){
+  const a=T.ab,c=d.cpu;let body;
+  if(!c)body=`<div class="idle">${a.idle}</div>`;
+  else if(c.t==="page"){const lg=c.p*4096+c.o,ph=c.f*4096+c.o;
+    body=`<div class="ab"><span class="l">${a.log}</span><span class="v">${a.page} ${c.p} | ${a.off} ${c.o}</span><span class="x">${c.p} × 4096 + ${c.o} = ${lg}</span></div><span class="fa">→</span><div class="ab"><span class="l">${a.look}</span><span class="v">${a.page} ${c.p} → ${a.frame} ${c.f}</span></div><span class="fa">→</span><div class="ab good"><span class="l">${a.phys}</span><span class="v">${a.frame} ${c.f} | ${a.off} ${c.o}</span><span class="x">${c.f} × 4096 + ${c.o} = ${ph}</span></div>`;}
+  else if(c.t==="fault"){const lg=c.p*4096+c.o;
+    body=`<div class="ab"><span class="l">${a.log}</span><span class="v">${a.page} ${c.p} | ${a.off} ${c.o}</span><span class="x">${c.p} × 4096 + ${c.o} = ${lg}</span></div><span class="fa">→</span><div class="ab bad"><span class="l">${a.look}</span><span class="v">${a.fault}</span><span class="x">${a.faultX}</span></div>`;}
+  else if(c.t==="seg")
+    body=`<div class="ab"><span class="l">${a.log}</span><span class="v">${a.seg} ${c.n} | ${a.off} ${c.o}</span></div><span class="fa">→</span><div class="ab"><span class="l">${a.look}</span><span class="v">${a.start} ${c.b} · ${a.size} ${c.sz}</span><span class="x">${c.o} &lt; ${c.sz}</span></div><span class="fa">→</span><div class="ab good"><span class="l">${a.phys}</span><span class="v">${c.b} + ${c.o} = ${c.b+c.o}</span></div>`;
+  else if(c.t==="limit")
+    body=`<div class="ab"><span class="l">${a.log}</span><span class="v">${a.seg} ${c.n} | ${a.off} ${c.o}</span></div><span class="fa">→</span><div class="ab bad"><span class="l">${a.look}</span><span class="v">${a.limit}: ${c.o} ≥ ${c.sz}</span></div>`;
+  else if(c.t==="thrash")
+    body=`<div class="meter"><span class="ab" style="border:0;padding:0;background:none;animation:none"><span class="l">${a.meter}</span></span><div class="mbar"><i class="work"></i><i class="swapb"></i></div><span class="zsub">${a.work} · ${a.swp}</span></div>`;
+    $("zcpu").innerHTML=`<div class="cpuhead"><span class="ztag">${T.z.cpu}</span><span class="ztit">${T.cpuT}</span><span class="zsub">${T.cpuS}</span></div><div class="cpuflow">${body}</div>`;
+}
+function draw(d){
+  drawCpu(d);drawFiles(d);drawLog(d);drawRam(d);drawSwap(d);
+  ["zfiles","zlog","zswap","zcpu"].forEach(id=>$(id).classList.toggle("hot",d.hot.includes(id)));
+}
+/* Arrows: logical block → table row → where the block really is */
+function pt(el,side){const b=$("stage").getBoundingClientRect(),r=el.getBoundingClientRect();
+  const m={l:[r.left,r.top+r.height/2],r:[r.right,r.top+r.height/2],t:[r.left+r.width/2,r.top]}[side];return [m[0]-b.left,m[1]-b.top]}
+const q=id=>document.querySelector(`[data-id="${id}"]`);
+function arrows(d){
+  const k=hover||d.arrow,svg=$("ov");svg.innerHTML="";
+  if(!k)return;
+  const a=q("L-"+k),r=q("R-"+k);
+  if(!a||!r)return;
+  let tgt=null;
+  if(isSeg())tgt=q("SB-"+k);
+  else if(d.fr[k]!==undefined)tgt=q("F-"+d.fr[k]).parentElement;
+  else tgt=q("SW-"+k);
+  const seg=(p,z)=>{const dx=Math.max(16,Math.abs(z[0]-p[0])/2);return `M${p[0]} ${p[1]}C${p[0]+dx} ${p[1]} ${z[0]-dx} ${z[1]} ${z[0]} ${z[1]}`};
+  const head=(z,down)=>down?`<polygon class="head" points="${z[0]-5},${z[1]-8} ${z[0]+5},${z[1]-8} ${z[0]},${z[1]}"/>`:`<polygon class="head" points="${z[0]-8},${z[1]-5} ${z[0]-8},${z[1]+5} ${z[0]},${z[1]}"/>`;
+  const p1=pt(a,"r"),p2=pt(r,"l");
+  let html=`<path d="${seg(p1,p2)}"/>${head(p2)}`;
+  if(tgt){const p3=pt(r,"r"),below=tgt.getBoundingClientRect().left<r.getBoundingClientRect().right;
+    const p4=pt(tgt,below?"t":"l");if(isSeg()&&!below)p4[0]-=36;
+    html+=below?`<path d="M${p3[0]} ${p3[1]}C${p3[0]+30} ${p3[1]} ${p4[0]} ${p4[1]-40} ${p4[0]} ${p4[1]}"/>${head(p4,true)}`:`<path d="${seg(p3,p4)}"/>${head(p4)}`}
+  svg.innerHTML=html;
+}
+/* Flights */
+function rectOf(id){const e=q(id);if(!e)return null;const b=$("stage").getBoundingClientRect(),r=e.getBoundingClientRect();return {x:r.left-b.left,y:r.top-b.top,w:r.width,h:r.height}}
+const reduced=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+function launch(k,a,z,delay,done){
+  const f=document.createElement("div");
+  f.className="flyer c-"+OWN(k);f.textContent=k;
+  f.style.cssText=`left:${a.x}px;top:${a.y}px;width:${a.w}px;height:${a.h}px`;
+  $("stage").appendChild(f);
+  const dx=z.x-a.x,dy=z.y-a.y,sx=z.w/a.w,sy=z.h/a.h;
+  const an=f.animate([{transform:"none"},{transform:`translate(${dx*.5}px,${dy*.5-26}px) scale(${(1+sx)/2},${(1+sy)/2})`,offset:.5},{transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`}],
+    {duration:reduced()?1:820,delay:reduced()?0:delay,easing:"cubic-bezier(.45,0,.25,1)",fill:"both"});
+  f.style.transformOrigin="0 0";
+  an.onfinish=()=>{f.remove();done&&done()};
+  an.oncancel=()=>f.remove();
+  return an;
+}
+function clearFly(){document.querySelectorAll(".flyer").forEach(x=>x.remove());stopThrash()}
+function stopThrash(){clearInterval(thrashT);thrashT=null}
+function startThrash(){
+  if(reduced())return;
+  const keys=Object.keys(seq[s].fr);
+  const box=()=>{const r=rectOf("SW-S5")||rectOf("SW-G1");return r};
+  const beat=()=>{
+    const d=seq[s];if(!d.thrash)return;
+    const k=keys[Math.floor(Math.random()*keys.length)],a=rectOf("F-"+d.fr[k]),b=box();if(!a||!b)return;
+    launch(k,a,b,0);
+    const k2=keys[Math.floor(Math.random()*keys.length)],a2=rectOf("F-"+d.fr[k2]);
+    if(a2)launch(k2,b,a2,260);
+  };
+  beat();thrashT=setInterval(beat,900);
+}
+function render(animate){
+  const d=seq[s],tok=++token;
+  /* capture where blocks start, from the old screen, before redrawing */
+  const flights=animate&&d.fly?d.fly.map(f=>({...f,a:rectOf(f.from)})):[];
+  clearFly();
+  view=d.view;hover=null;
+  const tx=ST[lang][d.id],n=seq.indexOf(d);
+  $("fig").textContent=d.x?T.extra:`${T.step} ${n}`;$("fig").className="figtag"+(d.x?" extra":"");
+  $("capT").textContent=tx[1];$("capE").textContent=tx[2];$("capB").textContent=tx[3];
+  document.querySelectorAll(".tstep").forEach(b=>{const m=+b.dataset.i;b.className="tstep"+(m===s?" now":m<s?" done":"")});
+  $("stage").hidden=!!d.frag;$("frag").hidden=!d.frag;$("legend").hidden=!!d.frag;
+  $("hint").textContent=d.frag?T.fg.hint:T.hint;
+  if(d.frag){$("ov").innerHTML="";renderFrag(d,animate);return}
+  draw(d);$("ov").innerHTML="";
+  let left=0;
+  const fin=()=>{if(tok===token&&--left<=0){arrows(d);if(d.thrash)startThrash()}};
+  flights.forEach(f=>{
+    const tgtEl=q(f.to),z=rectOf(f.to);
+    if(!f.a||!z)return;
+    left++;
+    const isFile=f.to.startsWith("file-");
+    const inner=tgtEl.firstElementChild&&f.to.startsWith("F-")?tgtEl.firstElementChild:tgtEl;
+    if(!isFile)inner.style.visibility="hidden";
+    launch(f.k,f.a,z,f.d,()=>{inner.style.visibility="";fin()});
+  });
+  if(!left){arrows(d);if(d.thrash)startThrash()}
+}
+function stop(){clearInterval(timer);timer=null;$("play").textContent=T.btn.play}
+function go(n,noAnim){stop();n=Math.max(0,Math.min(seq.length-1,n));const adj=!noAnim&&n-s===1;s=n;render(adj)}
+function setSc(k){stop();sc=k;seq=SEQ[k];s=0;buildTrack();buildScen();render(false)}
+function buildTrack(){
+  $("track").innerHTML=seq.map((d,i)=>`<button class="tstep" data-i="${i}"><b>${i}</b>${ST[lang][d.id][0]}</button>`).join("");
+  $("track").querySelectorAll(".tstep").forEach(b=>b.onclick=()=>go(+b.dataset.i));
+}
+function buildScen(){
+  $("scen").setAttribute("aria-label",T.scen);
+  $("scen").innerHTML=`<span class="cap">${T.scen}</span>`+["page","virt","seg","int","ext"].map((k,i)=>`<button id="sc-${k}" data-k="${k}" aria-pressed="${sc===k}">${T.sc[i]}</button>`).join("");
+  $("scen").querySelectorAll("button").forEach(b=>b.onclick=()=>setSc(b.dataset.k));
+}
+/* ---------- Fragmentation scenarios ---------- */
+const FPX=3.2,INT=[["A",30,"pa"],["B",10,"word"],["C",20,"sheet"],["D",20,"browser"]];
+const EXT=[["A",0,30,"pa"],["B",30,10,"word"],["C",40,20,"sheet"],["D",60,10,"word"],["E",70,30,"pa"]];
+const fid=(live,id)=>live?` data-fid="${id}"`:"";
+const pill=(n,mb,c,live,x="")=>`<div class="fp c-${c} ${x}"${fid(live,n)} style="--h:${mb*FPX}px">${T.fg.prog(n)} ${mb} MB</div>`;
+function memInt(n,live){
+  const circ="①②③";
+  const pages=INT.slice(0,3).map((p,i)=>{
+    const placed=n>i,rest=30-p[1];
+    const inner=placed?`<div class="fp c-${p[2]}"${fid(live,p[0])} style="--g:${p[1]}">${T.fg.prog(p[0])} ${p[1]} MB</div>`+(rest?`<div class="fhatch${live&&n===i+1?" fade":""}"${fid(live,"h"+i)} style="--g:${rest}">${T.fg.free} ${rest} MB</div>`:""):`<div class="pgfree">30 MB</div>`;
+    return `<div class="pgbox" style="top:${i*96}px">${inner}</div><span class="flab pg" style="top:${i*96}px">${T.fg.page}${circ[i]}</span>`}).join("");
+  return `<div class="fhd"><b>${T.fg.mem}</b><span class="ps">${T.fg.psz}</span><span class="fkey"><i></i>${T.fg.boxI}</span></div><div class="fmem">${pages}<div class="fleft">${T.fg.left}</div></div>`;
+}
+function memExt(n,live){
+  let html="";
+  /* a dashed boundary line that runs past both sides of the memory box, with its address */
+  const mark=b=>`<i class="fline" style="top:${b*FPX}px"></i><span class="fmk${b===0?" first":""}" style="top:${b*FPX}px">${b}</span>`;
+  EXT.forEach(([k,b,mb,c])=>{
+    const tick=mark(b);
+    if(n>=1&&(k==="B"||k==="D")){const i=k==="B"?0:1;
+      html+=`<div class="fhole${n>=2?" bad":""}"${fid(live,"hole"+i)} style="top:${b*FPX+3}px;height:${mb*FPX-6}px">${T.fg.free} ${mb} MB</div>${tick}`;
+    }else html+=`<div class="fp c-${c}"${fid(live,k)} style="--h:${mb*FPX-6}px;top:${b*FPX+3}px">${T.fg.prog(k)} ${mb} MB</div>${tick}`;
+  });
+  return `<div class="fhd"><b>${T.fg.mem}</b><span class="fkey"><i></i>${T.fg.boxE}</span><span class="fkey"><i class="dl"></i>${T.fg.bnd}</span></div><div class="fmem ext">${html}${mark(100)}</div>`;
+}
+function fragHTML(d){
+  const n=d.n,g=T.fg,a=T.ab,bn=d.frag==="int"?g.banI:g.banE;
+  /* the glyph repeats the idea: equal strips for pages, uneven strips for segments */
+  const bars=(d.frag==="int"?[12,12,12,12]:[20,6,14,6]).map(h=>`<i style="height:${h}px"></i>`).join("");
+  const ban=`<div class="fban"><span class="fglyph" aria-hidden="true">${bars}</span><div><span class="bnT">${bn[0]}</span><span class="bnN">${bn[1]}</span><span class="bnS">${bn[2]}</span></div></div>`;
+  const rej=show=>`<div class="rej"${fid(true,"rej")} ${show?"":'style="visibility:hidden"'}><i>✕</i>${g.no}</div>`;
+  if(d.frag==="int"){
+    const wait=INT.filter((p,i)=>i>=n||i===3).map(p=>pill(p[0],p[1],p[2],true)).join("");
+    const used=INT.slice(0,3).filter((p,i)=>n>i);
+    const rows=used.map((p,i)=>`<div><span>${g.page}${"①②③"[i]}</span><b>${30-p[1]} MB</b></div>`).join("");
+    const tot=used.reduce((x,p)=>x+30-p[1],0);
+    return `${ban}<div class="fside fl"><span class="ztit">${g.wait}</span><div class="fwait">${wait}</div>${n===4?rej(true):""}</div>
+     <div class="fside fm"><span class="ztag">${T.z.ram}</span>${memInt(n,true)}</div>
+     <div class="fside fr2">${used.length?`<div class="tally">${rows}<div class="tot"><span>${g.inside}</span><b>${tot} MB</b></div></div>`:""}${n>=2?`<div class="call">${g.callI}</div>`:""}</div>`;
+  }
+  const ended=n>=1?pill("B",10,"word",true,"dim")+pill("D",10,"word",true,"dim"):"";
+  return `${ban}<div class="fside fl"><span class="ztit">${g.ended}</span><div class="fwait">${ended}</div></div>
+   <div class="fside fm"><span class="ztag">${T.z.ram}</span>${memExt(n,true)}</div>
+   <div class="fside fr2">${n===3?pill("F",20,"browser",true,"pop")+rej(true):""}
+    ${n>=2?`<div class="tally"><div><span>${a.tot}</span><b>20 MB</b></div><div><span>${a.big}</span><b>10 MB</b></div>${n===3?`<div class="tot"><span>${a.need}</span><b>20 MB</b></div>`:""}</div><div class="call">${g.callE}</div>`:""}</div>`;
+}
+function renderFrag(d,animate){
+  const box=$("frag"),qf=id=>box.querySelector(`[data-fid="${id}"]`),old={};
+  if(animate)box.querySelectorAll("[data-fid]").forEach(e=>{old[e.dataset.fid]=e.getBoundingClientRect()});
+  box.innerHTML=fragHTML(d);
+  if(!animate||reduced())return;
+  box.querySelectorAll(".fp[data-fid]").forEach(e=>{
+    const o=old[e.dataset.fid];if(!o)return;
+    const r=e.getBoundingClientRect(),dx=o.left-r.left,dy=o.top-r.top;
+    if(Math.abs(dx)<1&&Math.abs(dy)<1)return;
+    e.style.transformOrigin="0 0";e.style.zIndex=5;
+    e.animate([{transform:`translate(${dx}px,${dy}px) scale(${o.width/r.width},${o.height/r.height})`},{transform:"none"}],{duration:850,easing:"cubic-bezier(.45,0,.25,1)"}).onfinish=()=>{e.style.zIndex=""};
+  });
+  if(d.tryIt){
+    /* the program moves onto the empty space, does not get in, and returns */
+    const e=qf(d.tryIt[0]),t=qf(d.tryIt[1]),x=qf("rej");if(!e||!t)return;
+    if(x)x.style.visibility="hidden";
+    const r=e.getBoundingClientRect(),z=t.getBoundingClientRect();
+    const dx=z.left+z.width/2-r.left-r.width/2,dy=z.top+z.height/2-r.top-r.height/2,sx=z.width/r.width;
+    const at=`translate(${dx}px,${dy}px) scaleX(${sx})`;
+    e.style.zIndex=5;
+    e.animate([{transform:"none",offset:0},{transform:at,offset:.4},{transform:at+" translateX(-6px)",offset:.48},{transform:at+" translateX(6px)",offset:.56},{transform:at,offset:.64},{transform:"none",offset:1}],{duration:2000,delay:450,easing:"ease-in-out",fill:"backwards"}).onfinish=()=>{e.style.zIndex="";if(x)x.style.visibility=""};
+  }
+}
+/* ---------- Exam-style questions: English is the exam language, translations sit underneath ---------- */
+const EXUI={
+ en:{h:"Sample exam questions and answers",l:"Three original examples in the exam style, with reference answers. They are not from past papers.",ms:"Reference answer",q:"Question",mk:n=>n+" marks",any:"Any two points. Each point must compare both methods."},
+ ja:{h:"試験問題と答えの例",l:"試験形式のオリジナル例題3問と、参考の答えです。過去問ではありません。実際の試験に合わせて英語で載せ、下に訳を付けています。",ms:"参考の答え",q:"問題",mk:n=>n+" 点",any:"2つ答える。どの解答も両方の方法を比べていること。"},
+ zh:{h:"考试题目和答案示例",l:"三道考试形式的原创例题和参考答案，不是历年真题。内容按实际考试使用英文，下面附有翻译。",ms:"参考答案",q:"题目",mk:n=>n+" 分",any:"任答两点。每一点都必须比较两种方法。"},
+ th:{h:"ตัวอย่างข้อสอบและคำตอบ",l:"ตัวอย่างแนวข้อสอบที่แต่งขึ้นใหม่ 3 ข้อ พร้อมคำตอบอ้างอิง ไม่ใช่ข้อสอบเก่า เนื้อหาเป็นภาษาอังกฤษเหมือนข้อสอบจริง และมีคำแปลด้านล่าง",ms:"คำตอบอ้างอิง",q:"ข้อ",mk:n=>n+" คะแนน",any:"ตอบ 2 ข้อ แต่ละข้อต้องเปรียบเทียบทั้งสองวิธี"}
+};
+const EX=[
+ {parts:[
+  {l:"(a)",m:2,q:{en:"State two differences between paging and segmentation.",ja:"ページングとセグメンテーションの違いを2つ述べなさい。",zh:"说出分页和分段的两个区别。",th:"จงบอกความแตกต่างระหว่าง paging กับ segmentation มา 2 ข้อ"},any:true,a:[
+   {en:"Paging uses fixed-size blocks, whereas segmentation uses variable-size blocks.",ja:"ページングは固定サイズ、セグメンテーションは可変サイズのブロックを使う。",zh:"分页使用固定大小的块，分段使用可变大小的块。",th:"Paging ใช้บล็อกขนาดคงที่ ส่วน segmentation ใช้บล็อกขนาดเปลี่ยนได้"},
+   {en:"A paged address is one value, whereas a segmented address is two values (segment number and offset).",ja:"ページングのアドレスは1つの値、セグメンテーションは2つの値（セグメント番号と offset）。",zh:"分页地址是一个值，分段地址是两个值（段号和偏移）。",th:"ที่อยู่แบบ paging เป็นค่าเดียว ส่วนแบบ segmentation เป็นสองค่า (เลขเซกเมนต์และ offset)"},
+   {en:"Pages are invisible to the programmer, whereas segments are visible.",ja:"ページはプログラマから見えないが、セグメントは見える。",zh:"程序员看不到页，但能看到段。",th:"โปรแกรมเมอร์มองไม่เห็นหน้า แต่มองเห็นเซกเมนต์"},
+   {en:"Paging can cause internal fragmentation, whereas segmentation can cause external fragmentation.",ja:"ページングは内部断片化、セグメンテーションは外部断片化を起こすことがある。",zh:"分页可能产生内部碎片，分段可能产生外部碎片。",th:"Paging อาจเกิด internal fragmentation ส่วน segmentation อาจเกิด external fragmentation"}]},
+  {l:"(b)",m:2,q:{en:"Explain how internal fragmentation occurs in paging.",ja:"ページングで内部断片化がどのように起こるか説明しなさい。",zh:"解释分页中内部碎片是如何产生的。",th:"จงอธิบายว่า internal fragmentation เกิดขึ้นใน paging ได้อย่างไร"},a:[
+   {en:"Memory is allocated in whole pages, so a process's last page may not be full.",ja:"メモリはページ単位で割り当てられるので、プロセスの最後のページがいっぱいにならないことがある。",zh:"内存按整页分配，所以进程的最后一页可能用不满。",th:"หน่วยความจำจัดสรรเป็นหน้าเต็ม หน้าสุดท้ายของโปรเซสจึงอาจไม่เต็ม"},
+   {en:"The unused space inside that page cannot be used by another process.",ja:"そのページ内の使われない部分は、他のプロセスが使えない。",zh:"这一页内未使用的空间不能被其他进程使用。",th:"ที่ว่างภายในหน้านั้นโปรเซสอื่นใช้ไม่ได้"}]}
+ ]},
+ {stem:{en:"A process has the following page table. The page size is 4096 bytes.",ja:"あるプロセスのページ表は次のとおりである。ページサイズは 4096 バイトである。",zh:"某进程的页表如下。页大小为 4096 字节。",th:"โปรเซสหนึ่งมีตารางหน้าดังนี้ ขนาดหน้าคือ 4096 ไบต์"},
+  table:{h:["Page number","Frame number","Present flag (P)"],r:[[0,5,1],[1,2,1],[2,7,1],[3,"–",0]]},
+  parts:[
+  {l:"(a)",m:1,q:{en:"State the frame number that holds page 2.",ja:"ページ 2 が入っているフレーム番号を答えなさい。",zh:"写出存放第 2 页的页框号。",th:"จงบอกเลขเฟรมที่เก็บหน้า 2"},a:[{en:"Frame 7",ja:"フレーム 7",zh:"页框 7",th:"เฟรม 7"}]},
+  {l:"(b)",m:2,q:{en:"The program uses page 1, offset 300. Calculate the physical address. Show your working.",ja:"プログラムがページ 1、offset 300 を使う。物理アドレスを計算しなさい。途中式も書くこと。",zh:"程序使用第 1 页、偏移 300。计算物理地址，并写出计算过程。",th:"โปรแกรมใช้หน้า 1, offset 300 จงคำนวณที่อยู่จริงและแสดงวิธีทำ"},a:[
+   {en:"Working: page 1 is in frame 2, so 2 × 4096 + 300",ja:"途中式：ページ 1 はフレーム 2 にあるので 2 × 4096 + 300",zh:"过程：第 1 页在页框 2，所以 2 × 4096 + 300",th:"วิธีทำ: หน้า 1 อยู่ในเฟรม 2 จึงได้ 2 × 4096 + 300"},
+   {en:"Answer: 8492",ja:"答え：8492",zh:"答案：8492",th:"คำตอบ: 8492"}]},
+  {l:"(c)",m:3,q:{en:"The program now tries to use page 3. Name the event that occurs and describe how the operating system handles it.",ja:"次にプログラムがページ 3 を使おうとする。起こる事象の名前を答え、OS がどう処理するかを説明しなさい。",zh:"程序接着要使用第 3 页。写出发生的事件名称，并说明操作系统如何处理。",th:"จากนั้นโปรแกรมพยายามใช้หน้า 3 จงบอกชื่อเหตุการณ์ที่เกิดขึ้น และอธิบายว่า OS จัดการอย่างไร"},a:[
+   {en:"Page fault (an interrupt, because P = 0).",ja:"ページフォールト（P = 0 なので起こる割り込み）。",zh:"缺页中断（因为 P = 0）。",th:"Page fault (อินเทอร์รัปต์ เพราะ P = 0)"},
+   {en:"The OS loads page 3 from the disk into a free frame, or replaces a page if no frame is free.",ja:"OS はページ 3 をディスクから空きフレームに読み込む。空きがなければページを置換する。",zh:"操作系统把第 3 页从磁盘载入空闲页框；没有空闲页框时就置换一页。",th:"OS โหลดหน้า 3 จากดิสก์เข้าเฟรมว่าง ถ้าไม่มีเฟรมว่างก็แทนที่หน้าหนึ่ง"},
+   {en:"The OS updates the page table (new frame number, P = 1).",ja:"OS がページ表を更新する（新しいフレーム番号、P = 1）。",zh:"操作系统更新页表（新的页框号，P = 1）。",th:"OS อัปเดตตารางหน้า (เลขเฟรมใหม่, P = 1)"}]}
+ ]},
+ {stem:{en:"A process has the following segment map table.",ja:"あるプロセスのセグメント表は次のとおりである。",zh:"某进程的段映射表如下。",th:"โปรเซสหนึ่งมีตารางเซกเมนต์ดังนี้"},
+  table:{h:["Segment number","Size (KB)","Start address (KB)"],r:[[0,300,1000],[1,200,2500],[2,100,400]]},
+  parts:[
+  {l:"(a)",m:1,q:{en:"Calculate the physical address of segment 1, offset 150.",ja:"セグメント 1、offset 150 の物理アドレスを計算しなさい。",zh:"计算段 1、偏移 150 的物理地址。",th:"จงคำนวณที่อยู่จริงของเซกเมนต์ 1, offset 150"},a:[{en:"2500 + 150 = 2650",ja:"2500 + 150 = 2650",zh:"2500 + 150 = 2650",th:"2500 + 150 = 2650"}]},
+  {l:"(b)",m:3,q:{en:"Memory has two free blocks of 60 KB and 40 KB. A new 80 KB segment cannot be loaded, although 100 KB is free. Name this problem and explain why it occurs.",ja:"メモリに 60 KB と 40 KB の空きがある。合計 100 KB 空いているのに、80 KB の新しいセグメントを読み込めない。この問題の名前を答え、起こる理由を説明しなさい。",zh:"内存有 60 KB 和 40 KB 两个空闲块。虽然共有 100 KB 空闲，但 80 KB 的新段无法载入。写出这个问题的名称，并解释原因。",th:"หน่วยความจำมีบล็อกว่าง 60 KB และ 40 KB แม้จะว่างรวม 100 KB แต่โหลดเซกเมนต์ใหม่ขนาด 80 KB ไม่ได้ จงบอกชื่อปัญหานี้และอธิบายสาเหตุ"},a:[
+   {en:"External fragmentation.",ja:"外部断片化。",zh:"外部碎片。",th:"External fragmentation"},
+   {en:"Segments have variable sizes, so loading and removing them leaves holes between blocks.",ja:"セグメントは可変サイズなので、読み込みと削除を繰り返すとブロックの間に穴が残る。",zh:"段的大小可变，所以载入和移除后会在块之间留下空洞。",th:"เซกเมนต์มีขนาดเปลี่ยนได้ การโหลดและนำออกจึงทำให้เกิดช่องว่างระหว่างบล็อก"},
+   {en:"A segment must be one continuous block, and each hole is too small for it.",ja:"セグメントは連続した1ブロックである必要があり、どの穴も小さすぎる。",zh:"一个段必须是一个连续的块，而每个空洞都太小。",th:"เซกเมนต์ต้องเป็นบล็อกต่อเนื่องหนึ่งบล็อก และแต่ละช่องว่างเล็กเกินไป"}]},
+  {l:"(c)",m:1,q:{en:"State why paging does not have this problem.",ja:"ページングでこの問題が起こらない理由を述べなさい。",zh:"说明为什么分页没有这个问题。",th:"จงบอกเหตุผลที่ paging ไม่มีปัญหานี้"},a:[
+   {en:"Pages are fixed size, so a page fits in any free frame and frames do not have to be next to each other.",ja:"ページは固定サイズなので、どの空きフレームにも入り、フレームが隣り合っている必要もない。",zh:"页的大小固定，可以放进任何空闲页框，页框也不需要相邻。",th:"หน้ามีขนาดคงที่ จึงใส่เฟรมว่างใดก็ได้ และเฟรมไม่จำเป็นต้องอยู่ติดกัน"}]}
+ ]}
+];
+function buildExam(){
+  const u=EXUI[lang];
+  const both=o=>`${o.en}${lang==="en"?"":`<span class="tr">${o[lang]}</span>`}`;
+  $("exH").textContent=u.h;$("exL").textContent=u.l;
+  $("exam").innerHTML=EX.map((x,i)=>{
+    const total=x.parts.reduce((a,p)=>a+p.m,0);
+    const table=x.table?`<div style="overflow-x:auto"><table class="extb"><thead><tr>${x.table.h.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${x.table.r.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:"";
+    const parts=x.parts.map(p=>`<div class="expart"><i>${p.l}</i><span>${both(p.q)}</span><em>[${p.m}]</em></div>`).join("");
+    const ans=x.parts.map(p=>`<div><h4>${p.l} · ${u.mk(p.m)}</h4>${p.any?`<p class="exnote">${u.any}</p>`:""}<ul>${p.a.map(a=>`<li><span>${both(a)}</span><em>[1]</em></li>`).join("")}</ul></div>`).join("");
+    return `<article class="exq"><div class="exhead"><b>${u.q} ${i+1}</b><span>${u.mk(total)}</span></div>${x.stem?`<p>${both(x.stem)}</p>`:""}${table}${parts}
+      <div class="exans"><h3>${u.ms}</h3>${ans}</div></article>`}).join("");
+}
+/* ---------- Static sections ---------- */
+function buildStatic(){
+  const set=(id,v)=>{$(id).innerHTML=v};
+  set("tEyebrow",T.eyebrow);set("tH1",T.h1);set("tLead",T.lead);set("simH",T.simH);
+  set("prev",T.btn.prev);set("next",T.btn.next);set("reset",T.btn.reset);$("play").textContent=T.btn.play;set("spdL",T.btn.spd);
+  const keep=$("spd").value||"5500";
+  $("spd").innerHTML=[8000,5500,3500].map((v,i)=>`<option value="${v}">${T.btn.sp[i]}</option>`).join("");$("spd").value=keep;
+  set("hint",T.hint);
+  const sw=["solid","dash","hatch","red","ring"];
+  set("legend",T.lg.map((t,i)=>`<span><i class="sw ${sw[i]}"></i>${t}</span>`).join(""));
+  set("whereH",T.whereH);set("whereL",T.whereL);
+  set("whereHd","<tr>"+T.whereHd.map(h=>`<th>${h}</th>`).join("")+"</tr>");
+  set("whereB",T.where.map(r=>`<tr><th scope="row">${r[0]}</th><td><span class="ztagc ${r[1]}">${T.tag[r[1]]}</span></td><td>${r[2]}</td></tr>`).join(""));
+  set("cmpH",T.cmpH);set("cmpL",T.cmpL);
+  const fbtn=k=>`<button class="btn figbtn" data-go="${k}">${T.fg.go}</button>`;
+  set("figs",`<div class="fig"><h3>${T.figP}</h3>${memInt(4,false)}<p class="small">${T.figPn}</p>${fbtn("int")}</div>
+   <div class="fig"><h3>${T.figS}</h3>${memExt(3,false)}<p class="small">${T.figSn}</p>${fbtn("ext")}</div>`);
+  $("figs").querySelectorAll("[data-go]").forEach(x=>x.onclick=()=>{setSc(x.dataset.go);$("sim").scrollIntoView({behavior:"smooth",block:"start"})});
+  set("cmpHd","<tr>"+T.cmpHd.map(h=>`<th>${h}</th>`).join("")+"</tr>");
+  set("cmpB",T.cmp.map(r=>`<tr><th scope="row">${r[0]}</th><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(""));
+  set("model",`<span class="small">${T.modelL}</span><span class="mt">${T.model}</span>`);
+  set("repH",T.repH);set("repL",T.repL);
+  set("repHd","<tr>"+T.repHd.map(h=>`<th>${h}</th>`).join("")+"</tr>");
+  set("repB",T.rep.map(r=>`<tr><th scope="row">${r[0]}</th><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(""));
+  set("anH",T.anH);set("ana",T.an.map(a=>`<div class="an"><span class="n">${a[0]}</span><span class="real">${a[1]}</span><span class="cs">${a[2]}</span></div>`).join(""));
+  set("pitH",T.pitH);set("pit",T.pit.map(p=>`<div class="pitem"><div><span class="k x">${T.bad}</span><p>${p[0]}</p></div><div><span class="k o">${T.good}</span><p>${p[1]}</p></div></div>`).join(""));
+  buildExam();
+  set("qzH",T.qzH);buildQuiz();
+}
+function buildQuiz(){
+  score=0;$("quiz").innerHTML="";$("score").textContent=`0 / ${T.qs.length}`;
+  T.qs.forEach((x,i)=>{
+    const box=document.createElement("div");box.className="q";
+    box.innerHTML=`<h3>Q${i+1}. ${x.q}</h3><div class="opts">${x.o.map((o,j)=>`<button class="opt" id="q${i}o${j}">${"ABCD"[j]}. ${o}</button>`).join("")}</div><p class="fb" id="fb${i}"></p>`;
+    $("quiz").appendChild(box);let done=false;
+    box.querySelectorAll(".opt").forEach((b,j)=>b.onclick=()=>{if(done)return;done=true;
+      box.querySelectorAll(".opt")[x.a].classList.add("right");if(j!==x.a)b.classList.add("wrong");else score++;
+      $("fb"+i).textContent=(j===x.a?T.right:T.wrong("ABCD"[x.a]))+x.ex;$("score").textContent=`${score} / ${T.qs.length}`});
+  });
+}
+function setLang(l){
+  lang=l;T=TX[l];document.body.className="v-"+l;
+  document.documentElement.lang={en:"en",ja:"ja",zh:"zh-Hans",th:"th"}[l];
+  document.querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
+  try{localStorage.setItem("memlab-lang",l)}catch(e){}
+  stop();buildStatic();buildScen();buildTrack();render(false);
+}
+document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+$("next").onclick=()=>go(s+1);$("prev").onclick=()=>go(s-1);$("reset").onclick=()=>go(0,true);
+$("play").onclick=()=>{if(timer){stop();return}if(s===seq.length-1){s=0;render(false)}$("play").textContent=T.btn.pause;
+  timer=setInterval(()=>{if(s>=seq.length-1){stop();return}s++;render(true)},+$("spd").value)};
+$("spd").onchange=()=>{if(timer){stop();$("play").click()}};
+document.addEventListener("keydown",e=>{if(e.target.tagName==="SELECT")return;if(e.key==="ArrowRight")go(s+1);if(e.key==="ArrowLeft")go(s-1)});
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(!seq[s].frag)arrows(seq[s])},120)});
+let start="ja";try{const v=localStorage.getItem("memlab-lang");if(v&&TX[v])start=v}catch(e){}
+setLang(start);
+</script>
+
+</body>
+</html>
