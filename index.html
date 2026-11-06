@@ -463,11 +463,13 @@ STUDY.ch16 = {
 <tr><td>Page table maps logical→physical</td><td>Segment map table (number+offset) maps logical→physical</td></tr>
 <tr><td>Invisible to the user/programmer</td><td>Visible to the user/programmer</td></tr></table>
 <div class="sg-box warn">A "difference" question needs ONE true fact about BOTH sides — a fact about only paging (or only segmentation) is not a difference.</div>
+<div class="sg-box def">&#9654; <b>Interactive:</b> <a href="memory-lab.html#en-page" target="_blank" rel="noopener">Paging</a> and <a href="memory-lab.html#en-seg" target="_blank" rel="noopener">segmentation</a> simulators &mdash; watch pages and segments move into RAM and follow an address through the table. See <a href="memory-lab.html#en-int" target="_blank" rel="noopener">internal</a> and <a href="memory-lab.html#en-ext" target="_blank" rel="noopener">external</a> fragmentation step by step (English / &#26085;&#26412;&#35486; / &#20013;&#25991; / &#3652;&#3607;&#3618;).</div>
 
 <h3>Virtual memory</h3>
 <p><b>Virtual memory = RAM + swap space on disk</b>, using <b>demand paging</b> (pages copied from disk only when needed). Gives the illusion of unlimited memory. Benefits: programs can exceed physical RAM, less fragmentation, no need for extra RAM.</p>
 <div class="sg-box warn"><b>Critical distinction (confirmed by examiner report):</b> virtual memory ≠ virtual machine. Virtual memory extends RAM using disk. A virtual machine emulates a whole computer system via a hypervisor. Never conflate them — this scores zero either way.</div>
 <p><b>Disk thrashing</b> — excessive swapping causes heavy disk head movement; if it gets bad enough, a <b>thrash point</b> is reached where the system is too busy paging to make progress. Fix: more RAM, fewer running programs, smaller swap file.</p>
+<div class="sg-box def">&#9654; <b>Interactive:</b> <a href="memory-lab.html#en-virt" target="_blank" rel="noopener">Virtual memory simulator</a> &mdash; watch a page move to the swap file, then a page fault, page replacement and disk thrashing (English / &#26085;&#26412;&#35486; / &#20013;&#25991; / &#3652;&#3607;&#3618;).</div>
 
 <h3>Page replacement</h3>
 <p>A <b>page fault</b> (an interrupt, not an error) occurs when a requested page isn't in memory. Goal: minimise page faults.</p>
