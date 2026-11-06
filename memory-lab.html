@@ -1147,6 +1147,11 @@ $("spd").onchange=()=>{if(timer){stop();$("play").click()}};
 document.addEventListener("keydown",e=>{if(e.target.tagName==="SELECT")return;if(e.key==="ArrowRight")go(s+1);if(e.key==="ArrowLeft")go(s-1)});
 let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(!seq[s].frag)arrows(seq[s])},120)});
 let start="ja";try{const v=localStorage.getItem("memlab-lang");if(v&&TX[v])start=v}catch(e){}
+/* a link can choose the language and tab, for example #en-virt */
+const hashParts=location.hash.slice(1).split("-");
+const hashLang=hashParts.find(x=>TX[x]),hashSc=hashParts.find(x=>SEQ[x]);
+if(hashLang)start=hashLang;
+if(hashSc){sc=hashSc;seq=SEQ[hashSc]}
 setLang(start);
 </script>
 
