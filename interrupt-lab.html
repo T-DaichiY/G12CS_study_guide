@@ -274,7 +274,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .pill{border:1px solid var(--edge)} .pill.solid{background:var(--accent);color:var(--on-accent)}
 button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
-<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-sched" aria-pressed="false">Scheduling</button><button id="tp-algo" aria-pressed="false">Algorithms</button><button id="tp-mem" aria-pressed="false">Memory</button></div>
+<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-states" aria-pressed="false">States</button><button id="tp-sched" aria-pressed="false">Scheduling</button><button id="tp-algo" aria-pressed="false">Algorithms</button><button id="tp-mem" aria-pressed="false">Memory</button></div>
 <div class="seg" role="group" aria-label="Language"><span class="cap">Language</span><button id="lg-en" data-l="en" aria-pressed="true">English</button><button id="lg-ja" data-l="ja" aria-pressed="false">日本語</button><button id="lg-zh" data-l="zh" aria-pressed="false">中文</button><button id="lg-th" data-l="th" aria-pressed="false">ไทย</button></div></div></div>
 <div id="intro">
 <div class="v-en" id="ven" lang="en">
@@ -852,6 +852,605 @@ button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outlin
 </div>
 </div>
 </div>
+<div id="stateswrap" hidden><iframe id="statesframe" title="Process states: ready, running, blocked" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;title&gt;Process States Lab (Task Names)&lt;/title&gt;
+&lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=JetBrains+Mono:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;700&amp;family=Noto+Sans+SC:wght@400;700&amp;family=Sarabun:wght@400;700&amp;display=swap&quot;&gt;
+&lt;style&gt;
+/* Light theme only. Layout: textbook Figure 16.3 as a live triangle (ready, running, blocked), arrows light up when used. State colour = box tint, process colour = chip. */
+:root{
+  --bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;
+  --accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;
+  --rdy:#F5C76A;--rdy-s:#FDF3DA;--rdy-d:#8A5A00;
+  --run:#7CCB95;--run-s:#E3F5E8;--run-d:#23774A;
+  --blk:#EE9A9A;--blk-s:#FDE8E8;--blk-d:#A23B3B;
+  --p1:#F6A38E;--p2:#8DB4F2;--p3:#B8A7F3;
+  --f-display:&quot;Bricolage Grotesque&quot;,&quot;Zen Kaku Gothic New&quot;,system-ui,sans-serif;
+  --f-body:&quot;Atkinson Hyperlegible&quot;,&quot;Zen Kaku Gothic New&quot;,system-ui,sans-serif;
+  --f-mono:&quot;JetBrains Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-block:0 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body.ja{font-family:&quot;Zen Kaku Gothic New&quot;,&quot;Atkinson Hyperlegible&quot;,system-ui,sans-serif}
+body.zh{font-family:&quot;Noto Sans SC&quot;,&quot;Atkinson Hyperlegible&quot;,system-ui,sans-serif}
+body.th{font-family:&quot;Sarabun&quot;,&quot;Atkinson Hyperlegible&quot;,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:18px}
+html,body{overflow-x:clip}
+h1,h2,h3{font-family:var(--f-display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.01em;line-height:1.15}
+h2{font-size:1.25rem}
+h3{font-size:1rem}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:64ch;font-size:16px}
+header{padding-block:22px 0;display:grid;gap:15px}
+body.emb header{padding-block:40px 0}
+body.emb .top{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:14px;flex-wrap:wrap}
+.test{font-family:var(--f-mono);font-size:.72rem;padding:3px 9px;border-radius:999px;background:var(--rdy-s);color:var(--rdy-d);border:1px dashed var(--rdy)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+button{font:inherit;font-size:.92rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 12px;min-height:38px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+.seg{display:flex;gap:6px}
+.seg button[aria-pressed=&quot;true&quot;]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.spacer{flex:1}
+.steps{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.steps button{min-height:30px;min-width:34px;padding:2px 8px;font-family:var(--f-mono);font-size:.8rem}
+.steps button.now{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.steps button.seen{background:var(--accent-soft)}
+
+/* diagram */
+.dg{position:relative;height:400px;margin-top:12px}
+.st{position:absolute;border-radius:14px;border:3px solid;padding:10px 12px;display:grid;grid-template-rows:auto auto 1fr;align-content:start;gap:4px;transition:box-shadow .3s}
+.st h3{font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.st h3 small{font-family:var(--f-body);text-transform:none;letter-spacing:0;font-size:.74rem;font-weight:400;color:var(--muted)}
+.st .what{font-size:.76rem;color:var(--muted);line-height:1.3}
+.st .bin{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding-top:6px}
+#sReady{left:0;top:0;width:36%;min-height:150px;background:var(--rdy-s);border-color:var(--rdy)}
+#sReady h3{color:var(--rdy-d)}
+#sRun{right:0;top:0;width:36%;min-height:150px;background:var(--run-s);border-color:var(--run)}
+#sRun h3{color:var(--run-d)}
+#sRun .bin{justify-content:center}
+#sBlk{left:32%;width:36%;top:240px;min-height:130px;background:var(--blk-s);border-color:var(--blk)}
+#sBlk h3{color:var(--blk-d)}
+.st.hot{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 35%,transparent)}
+.cpu{font-family:var(--f-mono);font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--run);color:var(--ink)}
+.empty{font-size:.82rem;color:var(--muted);font-style:italic}
+svg#ar{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#ar path{fill:none;stroke:#A9B6CB;stroke-width:3}
+#ar path.on{stroke:var(--accent-ink);stroke-width:5}
+#ar marker path{fill:#A9B6CB;stroke:none}
+.al{position:absolute;max-width:150px;font-size:.78rem;line-height:1.25;text-align:center;padding:4px 8px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--muted);transform:translate(-50%,-50%);transition:background-color .3s,color .3s,box-shadow .3s}
+.al b{display:block;color:var(--ink);font-size:.8rem}
+.dg.narrow .al{display:none;max-width:220px}
+.dg.narrow .al.on{display:block}
+.al.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:0 2px 8px rgba(31,74,168,.3);z-index:2}
+.al.on b{color:var(--on-accent)}
+.al .cnt{font-family:var(--f-mono);font-size:.68rem;opacity:.8}
+
+.pc{display:inline-grid;gap:1px;min-width:66px;padding:6px 10px;border-radius:9px;background:var(--c);color:var(--ink);
+  border:2px solid color-mix(in srgb,var(--c) 62%,#1F2A3C);box-shadow:0 1px 2px rgba(31,42,60,.12);will-change:transform}
+.pc .nm{font-weight:700;font-size:.95rem;line-height:1.15}
+.pid{display:inline-block;font-family:var(--f-mono);font-size:.72em;font-weight:600;padding:0 5px;margin-right:5px;border-radius:4px;background:rgba(255,255,255,.6);border:1px solid rgba(31,42,60,.25);vertical-align:1px}
+td .pid,.hrow .pid{background:var(--soft)}
+.pc .shp{font-family:system-ui,sans-serif;margin-right:4px}
+.pc .sub{font-size:.72rem;line-height:1.2;white-space:nowrap}
+#sRun .pc{min-width:110px;padding:8px 14px}
+#sRun .pc .nm{font-size:1.25rem}
+.pc.mv{box-shadow:0 0 0 3px var(--panel),0 0 0 6px var(--accent)}
+.pc .q{font-family:var(--f-mono);font-size:.66rem;opacity:.8}
+
+.fin{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:8px 12px;border:2px dashed var(--line);border-radius:10px;min-height:56px}
+.fin.hot{border-color:var(--accent);background:var(--accent-soft)}
+.fin .lbl{font-size:.82rem;color:var(--muted)}
+.fin .pc{opacity:.7;min-width:56px;padding:3px 8px}
+
+.msg{margin-top:10px;padding:12px 16px;border-radius:10px;background:var(--soft);border-left:4px solid var(--accent);display:grid;gap:6px}
+.msg h3{font-size:1.1rem}
+.msg .tag{font-family:var(--f-mono);font-size:.76rem;color:var(--accent-ink);font-weight:600}
+.msg .exam{font-size:.92rem;padding:8px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line)}
+.msg .exam b{font-size:.74rem;color:var(--muted);display:block}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.76rem;color:var(--muted)}
+tr.on td{background:var(--accent-soft)}
+tr.on td:first-child{box-shadow:inset 4px 0 0 var(--accent)}
+.pill{display:inline-block;white-space:nowrap;font-size:.76rem;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid}
+.pill.ready{background:var(--rdy-s);border-color:var(--rdy);color:var(--rdy-d)}
+.pill.running{background:var(--run-s);border-color:var(--run);color:var(--run-d)}
+.pill.blocked{background:var(--blk-s);border-color:var(--blk);color:var(--blk-d)}
+.pill.done{background:var(--soft);border-color:var(--line);color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+.hist{display:grid;gap:5px;overflow-x:auto}
+.hrow{display:grid;grid-template-columns:10.5rem repeat(15,minmax(22px,1fr));gap:2px;align-items:center;min-width:540px}
+.hrow span{height:24px;border-radius:3px;font-family:var(--f-mono);font-size:.66rem;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.hrow .h-ready{background:var(--rdy-s);border:1px solid var(--rdy)}
+.hrow .h-running{background:var(--run);border:1px solid var(--run-d)}
+.hrow .h-blocked{background:var(--blk);border:1px solid var(--blk-d)}
+.hrow .h-done{background:transparent;border:1px dashed var(--line)}
+.hrow .h-fut{background:transparent}
+.hrow .h-now{outline:2px solid var(--accent);outline-offset:1px}
+.hrow .who{font-weight:700;font-size:.82rem;justify-content:flex-start;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.never{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.never{grid-template-columns:minmax(0,1fr)}}
+.never div{border:2px dashed var(--blk);border-radius:10px;padding:10px 12px;background:var(--panel)}
+.never b{color:var(--blk-d);font-family:var(--f-mono)}
+.note{font-size:.86rem;color:var(--muted);max-width:75ch}
+
+/* I/O devices strip */
+.devs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+@media (max-width:620px){.devs{grid-template-columns:minmax(0,1fr)}}
+.dev{border:2px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel);display:grid;gap:6px;transition:border-color .3s,background-color .3s}
+.dev h3{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.95rem}
+.dev h3 small{font-family:var(--f-mono);font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.dev .who{font-size:.86rem}
+.dev .file{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.dev .pbar{height:12px;border-radius:6px;background:var(--soft);border:1px solid var(--line);overflow:hidden}
+.dev .pbar i{display:block;height:100%;background:var(--p2);transition:width .6s}
+.dev .typed{font-family:var(--f-mono);font-size:.9rem;padding:6px 10px;border-radius:8px;background:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dev .typed .cur{display:inline-block;width:.55em;height:1.05em;vertical-align:-2px;background:var(--p3);animation:blink 1s steps(1) infinite}
+.dev .typed .k{display:inline-block;padding:0 6px;border-radius:5px;border:2px solid var(--blk-d);background:var(--blk-s);font-weight:700;margin-left:4px}
+@keyframes blink{50%{opacity:0}}
+.dev.busy{border-color:var(--blk);background:var(--blk-s)}
+.dev.busy h3 small{background:var(--blk);color:var(--ink)}
+.dev.irq{border-color:var(--accent);background:var(--accent-soft)}
+.dev.irq h3 small{background:var(--accent);color:var(--on-accent)}
+@media (prefers-reduced-motion:reduce){.dev .typed .cur{animation:none}.dev .pbar i{transition:none}}
+@media (max-width:640px){
+  .hrow{grid-template-columns:5.8rem repeat(15,minmax(0,1fr));min-width:0}
+  .hrow .who{white-space:normal;font-size:.68rem;line-height:1.15;height:auto!important}
+  .hrow span{height:20px}
+  .dg{height:560px}
+  #sReady,#sRun{width:44%;min-height:170px}
+  #sBlk{left:20%;width:60%;min-height:150px}
+  .st h3{flex-wrap:wrap;gap:2px 6px;font-size:1rem}
+  .st .what,.st h3 small{display:none}
+  .al{display:none;max-width:200px}
+  .al.on{display:block}
+  .pc{min-width:56px;padding:4px 7px}
+  #sRun .pc{min-width:0;max-width:100%}
+  #sRun .pc .nm{font-size:1rem}
+  .pc{max-width:100%}
+}
+&lt;/style&gt;
+
+&lt;div class=&quot;wrap&quot;&gt;
+  &lt;div class=&quot;top&quot;&gt;&lt;span class=&quot;test&quot; id=&quot;testTag&quot;&gt;&lt;/span&gt;
+    &lt;div class=&quot;seg&quot; role=&quot;group&quot; aria-label=&quot;Language&quot;&gt;&lt;button id=&quot;lg-en&quot; aria-pressed=&quot;true&quot;&gt;English&lt;/button&gt;&lt;button id=&quot;lg-ja&quot; aria-pressed=&quot;false&quot;&gt;日本語&lt;/button&gt;&lt;button id=&quot;lg-zh&quot; aria-pressed=&quot;false&quot;&gt;中文&lt;/button&gt;&lt;button id=&quot;lg-th&quot; aria-pressed=&quot;false&quot;&gt;ไทย&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;header&gt;
+    &lt;p class=&quot;eyebrow&quot;&gt;Cambridge 9618 · Topic 16 · Process states · Figure 16.3&lt;/p&gt;
+    &lt;h1 id=&quot;h1&quot;&gt;&lt;/h1&gt;
+    &lt;p class=&quot;lede&quot; id=&quot;lede&quot;&gt;&lt;/p&gt;
+  &lt;/header&gt;
+
+  &lt;div class=&quot;panel&quot;&gt;
+    &lt;div class=&quot;controls&quot;&gt;
+      &lt;button id=&quot;back&quot;&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;play&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;next&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;restart&quot;&gt;&lt;/button&gt;
+      &lt;span class=&quot;spacer&quot;&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;steps&quot; id=&quot;steps&quot;&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;dg&quot; id=&quot;dg&quot;&gt;
+      &lt;svg id=&quot;ar&quot; aria-hidden=&quot;true&quot;&gt;&lt;defs&gt;
+        &lt;marker id=&quot;hd&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;8&quot; refY=&quot;5&quot; markerWidth=&quot;6&quot; markerHeight=&quot;6&quot; orient=&quot;auto-start-reverse&quot;&gt;&lt;path d=&quot;M0 0L10 5L0 10z&quot;/&gt;&lt;/marker&gt;
+        &lt;marker id=&quot;hdOn&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;8&quot; refY=&quot;5&quot; markerWidth=&quot;5&quot; markerHeight=&quot;5&quot; orient=&quot;auto-start-reverse&quot;&gt;&lt;path d=&quot;M0 0L10 5L0 10z&quot; style=&quot;fill:var(--accent-ink)&quot;/&gt;&lt;/marker&gt;
+      &lt;/defs&gt;&lt;path id=&quot;pA&quot;/&gt;&lt;path id=&quot;pB&quot;/&gt;&lt;path id=&quot;pC&quot;/&gt;&lt;path id=&quot;pD&quot;/&gt;&lt;/svg&gt;
+      &lt;div class=&quot;st&quot; id=&quot;sReady&quot;&gt;&lt;h3&gt;&lt;span id=&quot;hR&quot;&gt;&lt;/span&gt;&lt;small id=&quot;hRs&quot;&gt;&lt;/small&gt;&lt;/h3&gt;&lt;p class=&quot;what&quot; id=&quot;wR&quot;&gt;&lt;/p&gt;&lt;div class=&quot;bin&quot; id=&quot;bR&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;st&quot; id=&quot;sRun&quot;&gt;&lt;h3&gt;&lt;span id=&quot;hU&quot;&gt;&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU&lt;/span&gt;&lt;/h3&gt;&lt;p class=&quot;what&quot; id=&quot;wU&quot;&gt;&lt;/p&gt;&lt;div class=&quot;bin&quot; id=&quot;bU&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;st&quot; id=&quot;sBlk&quot;&gt;&lt;h3&gt;&lt;span id=&quot;hB&quot;&gt;&lt;/span&gt;&lt;small id=&quot;hBs&quot;&gt;&lt;/small&gt;&lt;/h3&gt;&lt;p class=&quot;what&quot; id=&quot;wB&quot;&gt;&lt;/p&gt;&lt;div class=&quot;bin&quot; id=&quot;bB&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;al&quot; id=&quot;lA&quot;&gt;&lt;/div&gt;&lt;div class=&quot;al&quot; id=&quot;lB&quot;&gt;&lt;/div&gt;&lt;div class=&quot;al&quot; id=&quot;lC&quot;&gt;&lt;/div&gt;&lt;div class=&quot;al&quot; id=&quot;lD&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class=&quot;msg&quot; aria-live=&quot;polite&quot;&gt;&lt;span class=&quot;tag&quot; id=&quot;mTag&quot;&gt;&lt;/span&gt;&lt;h3 id=&quot;mT&quot;&gt;&lt;/h3&gt;&lt;p id=&quot;mD&quot;&gt;&lt;/p&gt;&lt;p class=&quot;exam&quot; id=&quot;mX&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+    &lt;h3 id=&quot;devH&quot; style=&quot;margin-top:14px;font-size:1rem&quot;&gt;&lt;/h3&gt;&lt;div class=&quot;devs&quot; id=&quot;devs&quot; style=&quot;margin-top:6px&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;fin&quot; id=&quot;fin&quot;&gt;&lt;span class=&quot;lbl&quot; id=&quot;finL&quot;&gt;&lt;/span&gt;&lt;span id=&quot;bF&quot; style=&quot;display:flex;gap:6px;flex-wrap:wrap&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;two&quot;&gt;
+    &lt;div class=&quot;panel&quot;&gt;&lt;h2 id=&quot;pcbH&quot;&gt;&lt;/h2&gt;&lt;p class=&quot;note&quot; id=&quot;pcbN&quot; style=&quot;margin:4px 0 8px&quot;&gt;&lt;/p&gt;&lt;table id=&quot;pcb&quot;&gt;&lt;/table&gt;&lt;/div&gt;
+    &lt;div class=&quot;panel&quot;&gt;&lt;h2 id=&quot;tH&quot;&gt;&lt;/h2&gt;&lt;p class=&quot;note&quot; id=&quot;tN&quot; style=&quot;margin:4px 0 8px&quot;&gt;&lt;/p&gt;&lt;table id=&quot;tt&quot;&gt;&lt;/table&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;panel&quot;&gt;&lt;h2 id=&quot;hH&quot;&gt;&lt;/h2&gt;&lt;p class=&quot;note&quot; id=&quot;hN&quot; style=&quot;margin:4px 0 10px&quot;&gt;&lt;/p&gt;&lt;div class=&quot;hist&quot; id=&quot;hist&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;legend&quot; id=&quot;leg&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class=&quot;panel&quot; style=&quot;display:grid;gap:10px&quot;&gt;&lt;h2 id=&quot;nvH&quot;&gt;&lt;/h2&gt;&lt;div class=&quot;never&quot; id=&quot;never&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+(function(){
+const $=id=&gt;document.getElementById(id);
+const COL=[&#x27;--p1&#x27;,&#x27;--p2&#x27;,&#x27;--p3&#x27;],SHP=[&#x27;●&#x27;,&#x27;▲&#x27;,&#x27;■&#x27;];
+const NAMES={en:[&#x27;Video export&#x27;,&#x27;Photo app&#x27;,&#x27;Word processor&#x27;],ja:[&#x27;動画の書き出し&#x27;,&#x27;写真アプリ&#x27;,&#x27;ワープロ&#x27;],zh:[&#x27;视频导出&#x27;,&#x27;照片应用&#x27;,&#x27;文字处理器&#x27;],th:[&#x27;ส่งออกวิดีโอ&#x27;,&#x27;แอปรูปภาพ&#x27;,&#x27;โปรแกรมพิมพ์เอกสาร&#x27;]};
+const nm=i=&gt;NAMES[lang][i];
+const sub=s=&gt;s.replace(/P([123])/g,(m,d)=&gt;NAMES[lang][d-1]);
+/* r = ready queue order, u = running, b = blocked [[p,waitKey]], f = finished, a = arrow used, m = process that moved */
+const STEPS=[
+ {r:[0,1,2],u:null,b:[],f:[],a:null,m:null},
+ {r:[1,2],u:0,b:[],f:[],a:&#x27;A&#x27;,m:0},
+ {r:[1,2,0],u:null,b:[],f:[],a:&#x27;B&#x27;,m:0},
+ {r:[2,0],u:1,b:[],f:[],a:&#x27;A&#x27;,m:1},
+ {r:[2,0],u:null,b:[[1,&#x27;disk&#x27;]],f:[],a:&#x27;C&#x27;,m:1},
+ {r:[0],u:2,b:[[1,&#x27;disk&#x27;]],f:[],a:&#x27;A&#x27;,m:2},
+ {r:[0,1],u:2,b:[],f:[],a:&#x27;D&#x27;,m:1},
+ {r:[0,1],u:null,b:[[2,&#x27;kbd&#x27;]],f:[],a:&#x27;C&#x27;,m:2},
+ {r:[1],u:0,b:[[2,&#x27;kbd&#x27;]],f:[],a:&#x27;A&#x27;,m:0},
+ {r:[1],u:null,b:[[2,&#x27;kbd&#x27;]],f:[0],a:&#x27;E&#x27;,m:0},
+ {r:[],u:1,b:[[2,&#x27;kbd&#x27;]],f:[0],a:&#x27;A&#x27;,m:1},
+ {r:[2],u:1,b:[],f:[0],a:&#x27;D&#x27;,m:2},
+ {r:[2],u:null,b:[],f:[0,1],a:&#x27;E&#x27;,m:1},
+ {r:[],u:2,b:[],f:[0,1],a:&#x27;A&#x27;,m:2},
+ {r:[],u:null,b:[],f:[0,1,2],a:&#x27;E&#x27;,m:2}
+];
+const TX={
+en:{test:&#x27;TEST VERSION B · task names · 4 languages&#x27;,
+ h1:&#x27;Ready, running, blocked: how a process moves&#x27;,
+ lede:&#x27;Three tasks share one CPU: a video export (a long calculation), a photo app (needs a photo from the disk) and a word processor (waits for typing). Step through and watch each one move between the three process states. The arrow that is used lights up, with the reason for the move.&#x27;,
+ back:&#x27;← Back&#x27;,play:&#x27;▶ Play&#x27;,pause:&#x27;❚❚ Pause&#x27;,next:&#x27;Next →&#x27;,restart:&#x27;Restart&#x27;,
+ R:&#x27;Ready&#x27;,Rs:&#x27;queue: front first&#x27;,Rw:&#x27;Could run now. Waiting for the scheduler to give it the CPU.&#x27;,
+ U:&#x27;Running&#x27;,Uw:&#x27;Using the CPU. Only one process at a time on one CPU.&#x27;,
+ B:&#x27;Blocked&#x27;,Bs:&#x27;waiting for an event&#x27;,Bw:&#x27;Cannot continue until an I/O operation or event finishes.&#x27;,
+ empty:&#x27;empty&#x27;,idle:&#x27;CPU idle for a moment&#x27;,
+ lab:{A:[&#x27;dispatch&#x27;,&#x27;scheduler gives it the CPU&#x27;],B:[&#x27;time slice ends&#x27;,&#x27;timer interrupt&#x27;],C:[&#x27;waits for I/O&#x27;,&#x27;asks for disk, keyboard…&#x27;],D:[&#x27;I/O complete&#x27;,&#x27;interrupt from the device&#x27;]},
+ times:n=&gt;n+&#x27;×&#x27;,
+ wait:{disk:&#x27;⏳ disk: beach.jpg&#x27;,kbd:&#x27;⏳ next key&#x27;},waitL:{disk:&#x27;beach.jpg from the disk&#x27;,kbd:&#x27;the next key press&#x27;},
+ front:&#x27;front&#x27;,
+ finL:&#x27;Finished (leaves the system — not one of the three states)&#x27;,
+ exam:&#x27;Exam wording&#x27;,
+ s:[
+  [&#x27;Three processes are ready&#x27;,&#x27;All three are loaded in memory and could run, but there is only one CPU. They wait in the ready queue in the order P1, P2, P3.&#x27;,&#x27;A process in the ready state is waiting for CPU time; it is not waiting for anything else.&#x27;],
+  [&#x27;P1 is dispatched&#x27;,&#x27;The scheduler takes the process at the front of the ready queue and gives it the CPU. P1\&#x27;s saved register values are loaded from its PCB.&#x27;,&#x27;P1 moves from ready to running because the scheduler allocates the processor to it.&#x27;],
+  [&#x27;P1\&#x27;s time slice ends&#x27;,&#x27;A timer interrupt fires. P1 is not finished, but its time slice (quantum) is used up. Its registers are saved in its PCB and it joins the back of the ready queue.&#x27;,&#x27;P1 moves from running to ready because its time slice has run out.&#x27;],
+  [&#x27;P2 is dispatched&#x27;,&#x27;P2 is now at the front of the ready queue, so the scheduler gives it the CPU.&#x27;,&#x27;P2 moves from ready to running because it is its turn to use the processor.&#x27;],
+  [&#x27;P2 asks to read a file&#x27;,&#x27;P2 needs data from the disk. The disk is much slower than the CPU, so P2 cannot do anything until the data arrives. It gives up the CPU and is blocked.&#x27;,&#x27;P2 moves from running to blocked because it requests an I/O operation (reading from the disk).&#x27;],
+  [&#x27;P3 is dispatched&#x27;,&#x27;The CPU is not left waiting for the disk. The scheduler gives it to P3, the next ready process. This is why blocking is useful: the CPU stays busy.&#x27;,&#x27;P3 moves from ready to running.&#x27;],
+  [&#x27;The disk read finishes&#x27;,&#x27;The disk sends an interrupt: P2\&#x27;s data has arrived. P2 can continue, but P3 is using the CPU, so P2 goes to the ready queue. It does not go straight to running.&#x27;,&#x27;P2 moves from blocked to ready because the I/O operation it was waiting for has completed.&#x27;],
+  [&#x27;P3 waits for a key press&#x27;,&#x27;P3 needs input from the user. Until a key is pressed, P3 cannot continue, so it is blocked.&#x27;,&#x27;P3 moves from running to blocked because it is waiting for an I/O event (keyboard input).&#x27;],
+  [&#x27;P1 is dispatched again&#x27;,&#x27;P1 is at the front of the ready queue. Its registers are restored from its PCB and it continues exactly where it stopped in step 2.&#x27;,&#x27;P1 moves from ready to running.&#x27;],
+  [&#x27;P1 finishes&#x27;,&#x27;P1 has had all the CPU time it needs. It leaves the system and its PCB is removed. Finished is not one of the three states in the syllabus.&#x27;,&#x27;P1 terminates and leaves the system.&#x27;],
+  [&#x27;P2 is dispatched&#x27;,&#x27;P2 is the only ready process. It now gets the CPU and uses the data that arrived from the disk.&#x27;,&#x27;P2 moves from ready to running.&#x27;],
+  [&#x27;The user presses a key&#x27;,&#x27;The keyboard sends an interrupt. P3 has its input, so it moves to the ready queue. P2 keeps the CPU.&#x27;,&#x27;P3 moves from blocked to ready because the event it was waiting for has happened.&#x27;],
+  [&#x27;P2 finishes&#x27;,&#x27;P2 is done and leaves the system.&#x27;,&#x27;P2 terminates and leaves the system.&#x27;],
+  [&#x27;P3 is dispatched&#x27;,&#x27;P3 is the only ready process, so it gets the CPU.&#x27;,&#x27;P3 moves from ready to running.&#x27;],
+  [&#x27;All done&#x27;,&#x27;Every process has finished. Look at the state history below: each process moved between ready, running and blocked many times, but never directly from ready to blocked or from blocked to running.&#x27;,&#x27;Name the state and the event: &quot;moves from running to blocked because it requests I/O&quot;, not just &quot;it waits&quot;.&#x27;]
+ ],
+ pcbH:&#x27;Process control blocks&#x27;,pcbN:&#x27;The OS keeps one PCB per process. The state field changes at every move.&#x27;,
+ pcbC:[&#x27;Process ID&#x27;,&#x27;State&#x27;,&#x27;Waiting for&#x27;],st:{ready:&#x27;ready&#x27;,running:&#x27;running&#x27;,blocked:&#x27;blocked&#x27;,done:&#x27;finished&#x27;},
+ tH:&#x27;The four transitions (Table 16.3)&#x27;,tN:&#x27;The highlighted row is the move in this step.&#x27;,
+ tC:[&#x27;Move&#x27;,&#x27;What triggers it&#x27;,&#x27;So far&#x27;],
+ tr:{A:[&#x27;Ready → Running&#x27;,&#x27;It is this process\&#x27;s turn; the scheduler allocates the CPU.&#x27;],B:[&#x27;Running → Ready&#x27;,&#x27;The time slice runs out; a timer interrupt pre-empts it.&#x27;],C:[&#x27;Running → Blocked&#x27;,&#x27;It needs an I/O operation or another event.&#x27;],D:[&#x27;Blocked → Ready&#x27;,&#x27;The I/O or event it was waiting for has finished.&#x27;]},
+ hH:&#x27;State history&#x27;,hN:&#x27;One column per step. Watch the colours change for each process.&#x27;,
+ leg:[&#x27;ready&#x27;,&#x27;running&#x27;,&#x27;blocked&#x27;,&#x27;finished&#x27;],
+ nvH:&#x27;Two moves that never happen&#x27;,
+ nv:[[&#x27;Ready → Blocked ✕&#x27;,&#x27;A process can only ask for I/O while it is running. A ready process is not executing instructions, so it cannot request anything.&#x27;],
+     [&#x27;Blocked → Running ✕&#x27;,&#x27;When the I/O finishes, the process goes to the ready queue and waits for the scheduler. The CPU may be busy with another process.&#x27;]]
+},
+ja:{test:&#x27;テスト版 B・タスク名・4 言語&#x27;,
+ h1:&#x27;レディ・実行・ブロック：プロセスの状態の移り変わり&#x27;,
+ lede:&#x27;3 つのタスクが 1 つの CPU を使います。動画の書き出し（長い計算）、写真アプリ（ディスクから写真を読む）、ワープロ（キー入力を待つ）です。1 ステップずつ進めて、各プロセスが 3 つの状態の間をどう移るかを見ましょう。使われた矢印が光り、移った理由が表示されます。&#x27;,
+ back:&#x27;← 戻る&#x27;,play:&#x27;▶ 再生&#x27;,pause:&#x27;❚❚ 一時停止&#x27;,next:&#x27;次へ →&#x27;,restart:&#x27;最初から&#x27;,
+ R:&#x27;Ready&#x27;,Rs:&#x27;レディ（実行可能）・先頭から&#x27;,Rw:&#x27;すぐに実行できる。スケジューラが CPU をくれるのを待っている。&#x27;,
+ U:&#x27;Running&#x27;,Uw:&#x27;実行中。CPU を使っている。CPU 1 つにつき 1 プロセスだけ。&#x27;,
+ B:&#x27;Blocked&#x27;,Bs:&#x27;ブロック（待ち）&#x27;,Bw:&#x27;I/O 操作やイベントが終わるまで先に進めない。&#x27;,
+ empty:&#x27;空&#x27;,idle:&#x27;CPU は一瞬アイドル&#x27;,
+ lab:{A:[&#x27;ディスパッチ&#x27;,&#x27;スケジューラが CPU を渡す&#x27;],B:[&#x27;タイムスライス終了&#x27;,&#x27;タイマー割り込み&#x27;],C:[&#x27;I/O を待つ&#x27;,&#x27;ディスク・キーボードなど&#x27;],D:[&#x27;I/O 完了&#x27;,&#x27;装置からの割り込み&#x27;]},
+ times:n=&gt;n+&#x27; 回&#x27;,
+ wait:{disk:&#x27;⏳ ディスク：beach.jpg&#x27;,kbd:&#x27;⏳ 次のキー&#x27;},waitL:{disk:&#x27;ディスクの beach.jpg&#x27;,kbd:&#x27;次のキー入力&#x27;},
+ front:&#x27;先頭&#x27;,
+ finL:&#x27;終了（システムから出る。3 つの状態には含まれない）&#x27;,
+ exam:&#x27;試験での書き方&#x27;,
+ s:[
+  [&#x27;3 つのプロセスがレディ状態&#x27;,&#x27;3 つともメモリに読み込まれていて実行できますが、CPU は 1 つだけです。P1、P2、P3 の順にレディキューで待ちます。&#x27;,&#x27;レディ状態のプロセスは CPU の割り当てを待っているだけで、ほかのものは待っていない。&#x27;],
+  [&#x27;P1 がディスパッチされる&#x27;,&#x27;スケジューラはレディキューの先頭のプロセスに CPU を渡します。P1 の PCB に保存されていたレジスタの値が読み込まれます。&#x27;,&#x27;P1 はスケジューラによってプロセッサを割り当てられたので、レディから実行 (running) に移る。&#x27;],
+  [&#x27;P1 のタイムスライスが終わる&#x27;,&#x27;タイマー割り込みが起きます。P1 はまだ終わっていませんが、タイムスライス（クォンタム）を使い切りました。レジスタを PCB に保存し、レディキューの最後に並びます。&#x27;,&#x27;P1 はタイムスライスを使い切ったので、実行からレディに移る。&#x27;],
+  [&#x27;P2 がディスパッチされる&#x27;,&#x27;P2 がレディキューの先頭になったので、スケジューラが CPU を渡します。&#x27;,&#x27;P2 はプロセッサを使う順番が来たので、レディから実行に移る。&#x27;],
+  [&#x27;P2 がファイルの読み込みを頼む&#x27;,&#x27;P2 はディスクのデータが必要です。ディスクは CPU よりずっと遅いので、データが届くまで P2 は何もできません。CPU を手放してブロック状態になります。&#x27;,&#x27;P2 は I/O 操作（ディスクからの読み込み）を要求したので、実行からブロックに移る。&#x27;],
+  [&#x27;P3 がディスパッチされる&#x27;,&#x27;CPU はディスクを待ちません。次のレディのプロセス P3 に渡されます。ブロック状態があるおかげで CPU は休まずに働けます。&#x27;,&#x27;P3 はレディから実行に移る。&#x27;],
+  [&#x27;ディスクの読み込みが終わる&#x27;,&#x27;ディスクから割り込みが来ます。P2 のデータが届きました。P2 は先に進めますが、CPU は P3 が使っているので、P2 はレディキューに入ります。いきなり実行にはなりません。&#x27;,&#x27;P2 は待っていた I/O 操作が完了したので、ブロックからレディに移る。&#x27;],
+  [&#x27;P3 がキー入力を待つ&#x27;,&#x27;P3 はユーザーの入力が必要です。キーが押されるまで先に進めないので、ブロック状態になります。&#x27;,&#x27;P3 は I/O イベント（キーボード入力）を待つので、実行からブロックに移る。&#x27;],
+  [&#x27;P1 がもう一度ディスパッチされる&#x27;,&#x27;P1 がレディキューの先頭です。PCB からレジスタが復元され、ステップ 2 で止まったところから続きを実行します。&#x27;,&#x27;P1 はレディから実行に移る。&#x27;],
+  [&#x27;P1 が終わる&#x27;,&#x27;P1 は必要な CPU 時間をすべて使いました。システムから出て、PCB は削除されます。「終了」はシラバスの 3 つの状態には含まれません。&#x27;,&#x27;P1 は終了し、システムから出る。&#x27;],
+  [&#x27;P2 がディスパッチされる&#x27;,&#x27;レディのプロセスは P2 だけです。CPU を得て、ディスクから届いたデータを使います。&#x27;,&#x27;P2 はレディから実行に移る。&#x27;],
+  [&#x27;ユーザーがキーを押す&#x27;,&#x27;キーボードから割り込みが来ます。P3 は入力を受け取ったので、レディキューに移ります。CPU は P2 が使い続けます。&#x27;,&#x27;P3 は待っていたイベントが起きたので、ブロックからレディに移る。&#x27;],
+  [&#x27;P2 が終わる&#x27;,&#x27;P2 は終わり、システムから出ます。&#x27;,&#x27;P2 は終了し、システムから出る。&#x27;],
+  [&#x27;P3 がディスパッチされる&#x27;,&#x27;レディのプロセスは P3 だけなので、CPU を得ます。&#x27;,&#x27;P3 はレディから実行に移る。&#x27;],
+  [&#x27;すべて終了&#x27;,&#x27;すべてのプロセスが終わりました。下の状態の履歴を見てください。各プロセスはレディ・実行・ブロックの間を何度も移りましたが、レディからブロック、ブロックから実行へ直接移ったことは一度もありません。&#x27;,&#x27;状態と原因を書く：「I/O を要求したので実行からブロックに移る」。「待つ」だけでは不十分。&#x27;]
+ ],
+ pcbH:&#x27;プロセス制御ブロック (PCB)&#x27;,pcbN:&#x27;OS はプロセスごとに PCB を 1 つ持ちます。状態の欄は移るたびに書き換わります。&#x27;,
+ pcbC:[&#x27;プロセス ID&#x27;,&#x27;状態&#x27;,&#x27;待っているもの&#x27;],st:{ready:&#x27;レディ&#x27;,running:&#x27;実行中&#x27;,blocked:&#x27;ブロック&#x27;,done:&#x27;終了&#x27;},
+ tH:&#x27;4 つの状態遷移（表 16.3）&#x27;,tN:&#x27;色のついた行が、このステップでの移動です。&#x27;,
+ tC:[&#x27;移動&#x27;,&#x27;きっかけ&#x27;,&#x27;回数&#x27;],
+ tr:{A:[&#x27;Ready → Running&#x27;,&#x27;そのプロセスの順番が来て、スケジューラが CPU を割り当てる。&#x27;],B:[&#x27;Running → Ready&#x27;,&#x27;タイムスライスが終わり、タイマー割り込みで中断される。&#x27;],C:[&#x27;Running → Blocked&#x27;,&#x27;I/O 操作やほかのイベントが必要になる。&#x27;],D:[&#x27;Blocked → Ready&#x27;,&#x27;待っていた I/O やイベントが終わる。&#x27;]},
+ hH:&#x27;状態の履歴&#x27;,hN:&#x27;1 列が 1 ステップです。プロセスごとに色が変わる様子を見ましょう。&#x27;,
+ leg:[&#x27;レディ&#x27;,&#x27;実行中&#x27;,&#x27;ブロック&#x27;,&#x27;終了&#x27;],
+ nvH:&#x27;決して起きない 2 つの移動&#x27;,
+ nv:[[&#x27;Ready → Blocked ✕&#x27;,&#x27;I/O を要求できるのは実行中のプロセスだけです。レディのプロセスは命令を実行していないので、何も要求できません。&#x27;],
+     [&#x27;Blocked → Running ✕&#x27;,&#x27;I/O が終わったプロセスはレディキューに入り、スケジューラを待ちます。CPU はほかのプロセスが使っているかもしれません。&#x27;]]
+},
+zh:{test:&#x27;测试版 B · 任务名称 · 四种语言&#x27;,
+ h1:&#x27;就绪、运行、阻塞：进程状态怎样转换&#x27;,
+ lede:&#x27;三个任务共用一个 CPU：视频导出（长时间计算）、照片应用（需要从磁盘读取照片）和文字处理器（等待键盘输入）。一步一步地看每个进程怎样在三种状态之间移动。用到的箭头会亮起，并显示移动的原因。&#x27;,
+ back:&#x27;← 后退&#x27;,play:&#x27;▶ 播放&#x27;,pause:&#x27;❚❚ 暂停&#x27;,next:&#x27;下一步 →&#x27;,restart:&#x27;从头开始&#x27;,
+ R:&#x27;Ready&#x27;,Rs:&#x27;就绪 · 队首先&#x27;,Rw:&#x27;现在就能运行，正在等调度程序分配 CPU。&#x27;,
+ U:&#x27;Running&#x27;,Uw:&#x27;运行中，正在使用 CPU。一个 CPU 同时只运行一个进程。&#x27;,
+ B:&#x27;Blocked&#x27;,Bs:&#x27;阻塞（等待事件）&#x27;,Bw:&#x27;在 I/O 操作或事件完成之前不能继续。&#x27;,
+ empty:&#x27;空&#x27;,idle:&#x27;CPU 暂时空闲&#x27;,
+ lab:{A:[&#x27;调度 (dispatch)&#x27;,&#x27;调度程序分配 CPU&#x27;],B:[&#x27;时间片用完&#x27;,&#x27;定时器中断&#x27;],C:[&#x27;等待 I/O&#x27;,&#x27;磁盘、键盘等&#x27;],D:[&#x27;I/O 完成&#x27;,&#x27;设备发来中断&#x27;]},
+ times:n=&gt;n+&#x27; 次&#x27;,
+ wait:{disk:&#x27;⏳ 磁盘：beach.jpg&#x27;,kbd:&#x27;⏳ 下一个按键&#x27;},waitL:{disk:&#x27;磁盘上的 beach.jpg&#x27;,kbd:&#x27;下一次按键&#x27;},
+ front:&#x27;队首&#x27;,
+ finL:&#x27;已完成（离开系统，不属于三种状态）&#x27;,
+ exam:&#x27;考试中的写法&#x27;,
+ s:[
+  [&#x27;三个进程都处于就绪状态&#x27;,&#x27;三个进程都已装入内存，可以运行，但只有一个 CPU。它们按 P1、P2、P3 的顺序在就绪队列中等待。&#x27;,&#x27;处于就绪状态的进程只是在等待 CPU 时间，不在等待其他任何东西。&#x27;],
+  [&#x27;P1 被调度&#x27;,&#x27;调度程序把 CPU 交给就绪队列队首的进程。P1 保存在 PCB 中的寄存器值被装入。&#x27;,&#x27;P1 从就绪变为运行，因为调度程序把处理器分配给了它。&#x27;],
+  [&#x27;P1 的时间片用完&#x27;,&#x27;定时器中断发生。P1 还没完成，但时间片（quantum）已用完。它的寄存器被保存到 PCB，并排到就绪队列末尾。&#x27;,&#x27;P1 从运行变为就绪，因为它的时间片用完了。&#x27;],
+  [&#x27;P2 被调度&#x27;,&#x27;P2 现在在就绪队列队首，调度程序把 CPU 交给它。&#x27;,&#x27;P2 从就绪变为运行，因为轮到它使用处理器。&#x27;],
+  [&#x27;P2 请求读取文件&#x27;,&#x27;P2 需要磁盘上的数据。&#x27;,&#x27;P2 从运行变为阻塞，因为它请求了 I/O 操作。&#x27;],
+  [&#x27;P3 被调度&#x27;,&#x27;CPU 不等磁盘，交给下一个就绪进程 P3。&#x27;,&#x27;P3 从就绪变为运行。&#x27;],
+  [&#x27;磁盘读取完成&#x27;,&#x27;磁盘发来中断，P2 进入就绪队列。&#x27;,&#x27;P2 从阻塞变为就绪，因为它等待的 I/O 操作已完成。&#x27;],
+  [&#x27;P3 等待按键&#x27;,&#x27;P3 需要用户输入，进入阻塞状态。&#x27;,&#x27;P3 从运行变为阻塞，因为它在等待 I/O 事件。&#x27;],
+  [&#x27;P1 再次被调度&#x27;,&#x27;P1 在就绪队列队首。它的寄存器从 PCB 恢复，从第 2 步停下的地方继续执行。&#x27;,&#x27;P1 从就绪变为运行。&#x27;],
+  [&#x27;P1 完成&#x27;,&#x27;P1 已用完它需要的全部 CPU 时间，离开系统，PCB 被删除。&quot;完成&quot;不属于大纲中的三种状态。&#x27;,&#x27;P1 结束并离开系统。&#x27;],
+  [&#x27;P2 被调度&#x27;,&#x27;P2 是唯一的就绪进程，获得 CPU。&#x27;,&#x27;P2 从就绪变为运行。&#x27;],
+  [&#x27;用户按下一个键&#x27;,&#x27;键盘发来中断，P3 进入就绪队列。&#x27;,&#x27;P3 从阻塞变为就绪，因为它等待的事件已经发生。&#x27;],
+  [&#x27;P2 完成&#x27;,&#x27;P2 完成并离开系统。&#x27;,&#x27;P2 结束并离开系统。&#x27;],
+  [&#x27;P3 被调度&#x27;,&#x27;P3 是唯一的就绪进程，获得 CPU。&#x27;,&#x27;P3 从就绪变为运行。&#x27;],
+  [&#x27;全部完成&#x27;,&#x27;所有进程都完成了。看下面的状态历史：每个进程多次在就绪、运行和阻塞之间移动，但从来没有直接从就绪到阻塞，或从阻塞到运行。&#x27;,&#x27;写出状态和原因：&quot;因为请求 I/O，从运行变为阻塞&quot;，不要只写&quot;它在等待&quot;。&#x27;]
+ ],
+ pcbH:&#x27;进程控制块 (PCB)&#x27;,pcbN:&#x27;操作系统为每个进程保存一个 PCB。每次移动时状态字段都会改变。&#x27;,
+ pcbC:[&#x27;进程&#x27;,&#x27;状态&#x27;,&#x27;等待的是&#x27;],st:{ready:&#x27;就绪&#x27;,running:&#x27;运行中&#x27;,blocked:&#x27;阻塞&#x27;,done:&#x27;已完成&#x27;},
+ tH:&#x27;四种状态转换（表 16.3）&#x27;,tN:&#x27;高亮的一行是这一步的移动。&#x27;,
+ tC:[&#x27;移动&#x27;,&#x27;触发原因&#x27;,&#x27;次数&#x27;],
+ tr:{A:[&#x27;Ready → Running&#x27;,&#x27;轮到这个进程，调度程序分配 CPU。&#x27;],B:[&#x27;Running → Ready&#x27;,&#x27;时间片用完，定时器中断抢占它。&#x27;],C:[&#x27;Running → Blocked&#x27;,&#x27;它需要 I/O 操作或其他事件。&#x27;],D:[&#x27;Blocked → Ready&#x27;,&#x27;它等待的 I/O 或事件已完成。&#x27;]},
+ hH:&#x27;状态历史&#x27;,hN:&#x27;每一列是一步。观察每个进程的颜色变化。&#x27;,
+ leg:[&#x27;就绪&#x27;,&#x27;运行中&#x27;,&#x27;阻塞&#x27;,&#x27;已完成&#x27;],
+ nvH:&#x27;两种永远不会发生的移动&#x27;,
+ nv:[[&#x27;Ready → Blocked ✕&#x27;,&#x27;只有正在运行的进程才能请求 I/O。就绪的进程没有在执行指令，所以不能请求任何东西。&#x27;],
+     [&#x27;Blocked → Running ✕&#x27;,&#x27;I/O 完成后，进程进入就绪队列等待调度程序。CPU 可能正被别的进程使用。&#x27;]]
+},
+th:{test:&#x27;ทดสอบ B · ชื่องาน · 4 ภาษา&#x27;,
+ h1:&#x27;พร้อม ทำงาน ถูกบล็อก: โปรเซสเปลี่ยนสถานะอย่างไร&#x27;,
+ lede:&#x27;งานสามงานใช้ CPU ตัวเดียวกัน: การส่งออกวิดีโอ (คำนวณนาน) แอปรูปภาพ (ต้องอ่านรูปจากดิสก์) และโปรแกรมพิมพ์เอกสาร (รอการพิมพ์) ดูทีละขั้นว่าแต่ละโปรเซสย้ายระหว่างสามสถานะอย่างไร ลูกศรที่ใช้จะสว่างขึ้นพร้อมเหตุผล&#x27;,
+ back:&#x27;← ย้อน&#x27;,play:&#x27;▶ เล่น&#x27;,pause:&#x27;❚❚ หยุดชั่วคราว&#x27;,next:&#x27;ถัดไป →&#x27;,restart:&#x27;เริ่มใหม่&#x27;,
+ R:&#x27;Ready&#x27;,Rs:&#x27;พร้อม · หัวคิวก่อน&#x27;,Rw:&#x27;ทำงานได้ทันที กำลังรอให้ตัวจัดลำดับให้ CPU&#x27;,
+ U:&#x27;Running&#x27;,Uw:&#x27;กำลังใช้ CPU CPU หนึ่งตัวทำงานได้ทีละหนึ่งโปรเซส&#x27;,
+ B:&#x27;Blocked&#x27;,Bs:&#x27;ถูกบล็อก (รอเหตุการณ์)&#x27;,Bw:&#x27;ทำต่อไม่ได้จนกว่า I/O หรือเหตุการณ์จะเสร็จ&#x27;,
+ empty:&#x27;ว่าง&#x27;,idle:&#x27;CPU ว่างชั่วครู่&#x27;,
+ lab:{A:[&#x27;dispatch&#x27;,&#x27;ตัวจัดลำดับให้ CPU&#x27;],B:[&#x27;หมดช่วงเวลา&#x27;,&#x27;timer interrupt&#x27;],C:[&#x27;รอ I/O&#x27;,&#x27;ดิสก์ คีย์บอร์ด ฯลฯ&#x27;],D:[&#x27;I/O เสร็จ&#x27;,&#x27;อินเทอร์รัปต์จากอุปกรณ์&#x27;]},
+ times:n=&gt;n+&#x27; ครั้ง&#x27;,
+ wait:{disk:&#x27;⏳ ดิสก์: beach.jpg&#x27;,kbd:&#x27;⏳ ปุ่มถัดไป&#x27;},waitL:{disk:&#x27;beach.jpg จากดิสก์&#x27;,kbd:&#x27;การกดปุ่มครั้งถัดไป&#x27;},
+ front:&#x27;หัวคิว&#x27;,
+ finL:&#x27;เสร็จแล้ว (ออกจากระบบ ไม่ใช่หนึ่งในสามสถานะ)&#x27;,
+ exam:&#x27;วิธีเขียนในข้อสอบ&#x27;,
+ s:[
+  [&#x27;ทั้งสามโปรเซสพร้อม&#x27;,&#x27;ทั้งสามถูกโหลดในหน่วยความจำและทำงานได้ แต่มี CPU ตัวเดียว จึงรอในคิวพร้อมตามลำดับ P1, P2, P3&#x27;,&#x27;โปรเซสในสถานะพร้อมกำลังรอเวลา CPU เท่านั้น ไม่ได้รออย่างอื่น&#x27;],
+  [&#x27;P1 ถูก dispatch&#x27;,&#x27;ตัวจัดลำดับให้ CPU แก่โปรเซสที่หัวคิวพร้อม ค่ารีจิสเตอร์ของ P1 ที่เก็บใน PCB ถูกโหลดกลับ&#x27;,&#x27;P1 ย้ายจากพร้อมไปทำงาน เพราะตัวจัดลำดับจัดสรรโปรเซสเซอร์ให้&#x27;],
+  [&#x27;P1 หมดช่วงเวลา&#x27;,&#x27;เกิด timer interrupt P1 ยังไม่เสร็จแต่ใช้ควอนตัมหมดแล้ว รีจิสเตอร์ถูกบันทึกใน PCB และไปต่อท้ายคิวพร้อม&#x27;,&#x27;P1 ย้ายจากทำงานไปพร้อม เพราะช่วงเวลา (quantum) หมด&#x27;],
+  [&#x27;P2 ถูก dispatch&#x27;,&#x27;ตอนนี้ P2 อยู่หัวคิวพร้อม ตัวจัดลำดับจึงให้ CPU&#x27;,&#x27;P2 ย้ายจากพร้อมไปทำงาน เพราะถึงคิวใช้โปรเซสเซอร์&#x27;],
+  [&#x27;P2 ขออ่านไฟล์&#x27;,&#x27;P2 ต้องการข้อมูลจากดิสก์&#x27;,&#x27;P2 ย้ายจากทำงานไปถูกบล็อก เพราะร้องขอการทำงาน I/O&#x27;],
+  [&#x27;P3 ถูก dispatch&#x27;,&#x27;CPU ไม่รอดิสก์ ให้ P3 ซึ่งพร้อมเป็นลำดับถัดไป&#x27;,&#x27;P3 ย้ายจากพร้อมไปทำงาน&#x27;],
+  [&#x27;อ่านดิสก์เสร็จ&#x27;,&#x27;ดิสก์ส่งอินเทอร์รัปต์ P2 ไปที่คิวพร้อม&#x27;,&#x27;P2 ย้ายจากถูกบล็อกไปพร้อม เพราะ I/O ที่รอเสร็จแล้ว&#x27;],
+  [&#x27;P3 รอการกดปุ่ม&#x27;,&#x27;P3 ต้องการอินพุตจากผู้ใช้ จึงถูกบล็อก&#x27;,&#x27;P3 ย้ายจากทำงานไปถูกบล็อก เพราะรอเหตุการณ์ I/O&#x27;],
+  [&#x27;P1 ถูก dispatch อีกครั้ง&#x27;,&#x27;P1 อยู่หัวคิวพร้อม รีจิสเตอร์ถูกคืนค่าจาก PCB และทำต่อจากจุดที่หยุดในขั้นที่ 2&#x27;,&#x27;P1 ย้ายจากพร้อมไปทำงาน&#x27;],
+  [&#x27;P1 เสร็จ&#x27;,&#x27;P1 ใช้เวลา CPU ครบตามที่ต้องการแล้ว จึงออกจากระบบและ PCB ถูกลบ &quot;เสร็จ&quot; ไม่ใช่หนึ่งในสามสถานะของหลักสูตร&#x27;,&#x27;P1 สิ้นสุดและออกจากระบบ&#x27;],
+  [&#x27;P2 ถูก dispatch&#x27;,&#x27;P2 เป็นโปรเซสเดียวที่พร้อม จึงได้ CPU&#x27;,&#x27;P2 ย้ายจากพร้อมไปทำงาน&#x27;],
+  [&#x27;ผู้ใช้กดปุ่ม&#x27;,&#x27;คีย์บอร์ดส่งอินเทอร์รัปต์ P3 ไปที่คิวพร้อม&#x27;,&#x27;P3 ย้ายจากถูกบล็อกไปพร้อม เพราะเหตุการณ์ที่รอเกิดขึ้นแล้ว&#x27;],
+  [&#x27;P2 เสร็จ&#x27;,&#x27;P2 เสร็จและออกจากระบบ&#x27;,&#x27;P2 สิ้นสุดและออกจากระบบ&#x27;],
+  [&#x27;P3 ถูก dispatch&#x27;,&#x27;P3 เป็นโปรเซสเดียวที่พร้อม จึงได้ CPU&#x27;,&#x27;P3 ย้ายจากพร้อมไปทำงาน&#x27;],
+  [&#x27;เสร็จทั้งหมด&#x27;,&#x27;ทุกโปรเซสเสร็จแล้ว ดูประวัติสถานะด้านล่าง: แต่ละโปรเซสย้ายระหว่างพร้อม ทำงาน และถูกบล็อกหลายครั้ง แต่ไม่เคยย้ายจากพร้อมไปถูกบล็อก หรือจากถูกบล็อกไปทำงานโดยตรง&#x27;,&#x27;บอกสถานะและเหตุ: &quot;ย้ายจากทำงานไปถูกบล็อกเพราะร้องขอ I/O&quot; ไม่ใช่แค่ &quot;มันรอ&quot;&#x27;]
+ ],
+ pcbH:&#x27;Process control block (PCB)&#x27;,pcbN:&#x27;OS เก็บ PCB หนึ่งชุดต่อหนึ่งโปรเซส ช่องสถานะเปลี่ยนทุกครั้งที่ย้าย&#x27;,
+ pcbC:[&#x27;โปรเซส&#x27;,&#x27;สถานะ&#x27;,&#x27;กำลังรอ&#x27;],st:{ready:&#x27;พร้อม&#x27;,running:&#x27;ทำงาน&#x27;,blocked:&#x27;ถูกบล็อก&#x27;,done:&#x27;เสร็จ&#x27;},
+ tH:&#x27;การเปลี่ยนสถานะ 4 แบบ (ตาราง 16.3)&#x27;,tN:&#x27;แถวที่ไฮไลต์คือการย้ายในขั้นนี้&#x27;,
+ tC:[&#x27;การย้าย&#x27;,&#x27;สาเหตุ&#x27;,&#x27;จำนวน&#x27;],
+ tr:{A:[&#x27;Ready → Running&#x27;,&#x27;ถึงคิวของโปรเซสนี้ ตัวจัดลำดับจัดสรร CPU ให้&#x27;],B:[&#x27;Running → Ready&#x27;,&#x27;ช่วงเวลาหมด timer interrupt ขัดจังหวะ&#x27;],C:[&#x27;Running → Blocked&#x27;,&#x27;ต้องการ I/O หรือเหตุการณ์อื่น&#x27;],D:[&#x27;Blocked → Ready&#x27;,&#x27;I/O หรือเหตุการณ์ที่รอเสร็จแล้ว&#x27;]},
+ hH:&#x27;ประวัติสถานะ&#x27;,hN:&#x27;หนึ่งคอลัมน์คือหนึ่งขั้น ดูสีของแต่ละโปรเซสที่เปลี่ยนไป&#x27;,
+ leg:[&#x27;พร้อม&#x27;,&#x27;ทำงาน&#x27;,&#x27;ถูกบล็อก&#x27;,&#x27;เสร็จ&#x27;],
+ nvH:&#x27;การย้ายสองแบบที่ไม่มีวันเกิดขึ้น&#x27;,
+ nv:[[&#x27;Ready → Blocked ✕&#x27;,&#x27;มีแต่โปรเซสที่กำลังทำงานเท่านั้นที่ร้องขอ I/O ได้ โปรเซสที่พร้อมไม่ได้ประมวลผลคำสั่งอยู่ จึงร้องขออะไรไม่ได้&#x27;],
+     [&#x27;Blocked → Running ✕&#x27;,&#x27;เมื่อ I/O เสร็จ โปรเซสจะไปที่คิวพร้อมและรอตัวจัดลำดับ CPU อาจกำลังถูกโปรเซสอื่นใช้อยู่&#x27;]]
+}};
+let lang=&#x27;en&#x27;,k=0,timer=null,chips=[];
+const T=()=&gt;TX[lang];
+function stateOf(s,p){if(s.f.includes(p))return &#x27;done&#x27;;if(s.u===p)return &#x27;running&#x27;;if(s.b.some(x=&gt;x[0]===p))return &#x27;blocked&#x27;;return &#x27;ready&#x27;;}
+function counts(upto){const c={A:0,B:0,C:0,D:0};for(let i=1;i&lt;=upto;i++){const a=STEPS[i].a;if(c[a]!==undefined)c[a]++;}return c;}
+
+function makeChips(){chips=[0,1,2].map(i=&gt;{const d=document.createElement(&#x27;div&#x27;);d.className=&#x27;pc&#x27;;d.style.setProperty(&#x27;--c&#x27;,&#x27;var(&#x27;+COL[i]+&#x27;)&#x27;);
+  d.innerHTML=&#x27;&lt;span class=&quot;nm&quot;&gt;&lt;span class=&quot;shp&quot;&gt;&#x27;+SHP[i]+&#x27;&lt;/span&gt;&#x27;+nm(i)+&#x27;&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;&lt;/span&gt;&#x27;;return d;});}
+
+function staticText(){
+  const t=T();document.documentElement.lang=lang===&#x27;zh&#x27;?&#x27;zh-Hans&#x27;:lang;document.body.className=lang+(location.href===&#x27;about:srcdoc&#x27;?&#x27; emb&#x27;:&#x27;&#x27;);
+  $(&#x27;testTag&#x27;).textContent=t.test;$(&#x27;h1&#x27;).textContent=t.h1;$(&#x27;lede&#x27;).textContent=t.lede;
+  $(&#x27;back&#x27;).textContent=t.back;$(&#x27;next&#x27;).textContent=t.next;$(&#x27;restart&#x27;).textContent=t.restart;
+  $(&#x27;hR&#x27;).textContent=t.R;$(&#x27;hRs&#x27;).textContent=t.Rs;$(&#x27;wR&#x27;).textContent=t.Rw;
+  $(&#x27;hU&#x27;).textContent=t.U;$(&#x27;wU&#x27;).textContent=t.Uw;
+  $(&#x27;hB&#x27;).textContent=t.B;$(&#x27;hBs&#x27;).textContent=t.Bs;$(&#x27;wB&#x27;).textContent=t.Bw;
+  $(&#x27;finL&#x27;).textContent=t.finL;
+  $(&#x27;pcbH&#x27;).textContent=t.pcbH;$(&#x27;pcbN&#x27;).textContent=t.pcbN;$(&#x27;tH&#x27;).textContent=t.tH;$(&#x27;tN&#x27;).textContent=t.tN;
+  $(&#x27;hH&#x27;).textContent=t.hH;$(&#x27;hN&#x27;).textContent=t.hN;$(&#x27;nvH&#x27;).textContent=t.nvH;
+  $(&#x27;leg&#x27;).innerHTML=[&#x27;ready&#x27;,&#x27;running&#x27;,&#x27;blocked&#x27;,&#x27;done&#x27;].map((s,i)=&gt;&#x27;&lt;span&gt;&lt;i class=&quot;h-&#x27;+s+&#x27;&quot; style=&quot;&#x27;+({ready:&#x27;background:var(--rdy-s);border:1px solid var(--rdy)&#x27;,running:&#x27;background:var(--run)&#x27;,blocked:&#x27;background:var(--blk)&#x27;,done:&#x27;border:1px dashed var(--line)&#x27;}[s])+&#x27;&quot;&gt;&lt;/i&gt;&#x27;+t.leg[i]+&#x27;&lt;/span&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;never&#x27;).innerHTML=t.nv.map(n=&gt;&#x27;&lt;div&gt;&lt;b&gt;&#x27;+n[0]+&#x27;&lt;/b&gt;&lt;p style=&quot;margin-top:4px&quot;&gt;&#x27;+n[1]+&#x27;&lt;/p&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;steps&#x27;).innerHTML=STEPS.map((s,i)=&gt;&#x27;&lt;button data-i=&quot;&#x27;+i+&#x27;&quot;&gt;&#x27;+i+&#x27;&lt;/button&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;steps&#x27;).querySelectorAll(&#x27;button&#x27;).forEach(b=&gt;b.onclick=()=&gt;{stop();go(+b.dataset.i,true);});
+  [&#x27;en&#x27;,&#x27;ja&#x27;,&#x27;zh&#x27;,&#x27;th&#x27;].forEach(l=&gt;$(&#x27;lg-&#x27;+l).setAttribute(&#x27;aria-pressed&#x27;,lang===l));
+}
+
+/* Boxes grow with their contents: put Blocked under the taller top box and size the diagram to fit. */
+function layout(){
+  const R=$(&#x27;sReady&#x27;),U=$(&#x27;sRun&#x27;),B=$(&#x27;sBlk&#x27;),narrow=$(&#x27;dg&#x27;).clientWidth&lt;600;
+  const top=Math.max(R.offsetHeight,U.offsetHeight)+($(&#x27;dg&#x27;).clientWidth&lt;820?96:72);
+  B.style.top=top+&#x27;px&#x27;;$(&#x27;dg&#x27;).style.height=(top+B.offsetHeight)+&#x27;px&#x27;;
+}
+function arrows(){
+  layout();
+  const D=$(&#x27;dg&#x27;).getBoundingClientRect(),r=e=&gt;{const b=$(e).getBoundingClientRect();return {l:b.left-D.left,t:b.top-D.top,r:b.right-D.left,b:b.bottom-D.top,w:b.width,h:b.height};};
+  const R=r(&#x27;sReady&#x27;),U=r(&#x27;sRun&#x27;),B=r(&#x27;sBlk&#x27;),g=6;
+  const yA=R.t+R.h*.34,yB=R.t+R.h*.7;
+  const set=(id,d)=&gt;$(id).setAttribute(&#x27;d&#x27;,d);
+  set(&#x27;pA&#x27;,`M${R.r+g} ${yA} L${U.l-g} ${yA}`);
+  set(&#x27;pB&#x27;,`M${U.l-g} ${yB} L${R.r+g} ${yB}`);
+  const cx=U.l+U.w*.5,cy=B.t+B.h*.45;
+  set(&#x27;pC&#x27;,`M${cx} ${U.b+g} Q${cx} ${cy} ${B.r+g} ${cy}`);
+  const dx=R.l+R.w*.5;
+  set(&#x27;pD&#x27;,`M${B.l-g} ${cy} Q${dx} ${cy} ${dx} ${R.b+g}`);
+  const mid=(R.r+U.l)/2;
+  const pos=(id,x,y)=&gt;{$(id).style.left=x+&#x27;px&#x27;;$(id).style.top=y+&#x27;px&#x27;;};
+  $(&#x27;dg&#x27;).classList.toggle(&#x27;narrow&#x27;,D.width&lt;820);
+  if(D.width&lt;820){const cxm=D.width/2,cym=(R.b+B.t)/2;[&#x27;lA&#x27;,&#x27;lB&#x27;,&#x27;lC&#x27;,&#x27;lD&#x27;].forEach(id=&gt;pos(id,cxm,cym));return;}
+  pos(&#x27;lA&#x27;,mid,yA-26);pos(&#x27;lB&#x27;,mid,yB+28);
+  pos(&#x27;lC&#x27;,(cx+B.r)/2+18,(U.b+cy)/2+8);pos(&#x27;lD&#x27;,(dx+B.l)/2-18,(R.b+cy)/2+8);
+}
+
+
+/* What each I/O device is doing at every step */
+const DEV=[
+ {d:[&#x27;idle&#x27;],k:[&#x27;idle&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;idle&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;idle&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;idle&#x27;]},
+ {d:[&#x27;busy&#x27;,5],k:[&#x27;idle&#x27;]},{d:[&#x27;busy&#x27;,55],k:[&#x27;idle&#x27;]},{d:[&#x27;irq&#x27;,100],k:[&#x27;idle&#x27;]},
+ {d:[&#x27;idle&#x27;],k:[&#x27;wait&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;wait&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;wait&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;wait&#x27;]},
+ {d:[&#x27;idle&#x27;],k:[&#x27;irq&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;idle2&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;show&#x27;]},{d:[&#x27;idle&#x27;],k:[&#x27;idle2&#x27;]}];
+const DTX={
+ en:{devH:&#x27;I/O devices&#x27;,disk:&#x27;Disk (SSD)&#x27;,kbd:&#x27;Keyboard&#x27;,st:{idle:&#x27;idle&#x27;,busy:&#x27;busy&#x27;,irq:&#x27;interrupt!&#x27;,wait:&#x27;waiting for a key&#x27;},
+  dIdle:&#x27;Nothing to read or write.&#x27;,dBusy:p=&gt;&#x27;Copying beach.jpg (4 MB) into RAM for the Photo app: &#x27;+p+&#x27;% done&#x27;,dIrq:&#x27;Finished. The disk controller sends an interrupt: &quot;beach.jpg is in RAM&quot;.&#x27;,
+  kIdle:&#x27;No program is waiting for a key.&#x27;,kWait:&#x27;The Word processor is waiting for the next key press.&#x27;,kIrq:&#x27;Key &quot;d&quot; pressed. The keyboard controller puts it in the keyboard buffer and sends an interrupt.&#x27;,kShow:&#x27;The Word processor reads &quot;d&quot; from the keyboard buffer and shows it.&#x27;,
+  typed:&#x27;Dear Ana, see you on Fri&#x27;,file:&#x27;file: /Photos/beach.jpg · 4 MB&#x27;,
+  st2:{
+   4:[&#x27;Photo app asks the disk for beach.jpg&#x27;,&#x27;The user taps a thumbnail, so the Photo app needs the file beach.jpg (4 MB) from the SSD. Reading it takes about 10 ms. In 10 ms the CPU could run millions of instructions, so it makes no sense to keep the CPU waiting. The OS sends the read request to the disk controller, saves the Photo app\&#x27;s registers in its PCB and moves it to blocked. It is now waiting for the disk, not for the CPU.&#x27;,&#x27;The Photo app moves from running to blocked because it requests an I/O operation: reading beach.jpg from the disk.&#x27;],
+   5:[&#x27;Word processor is dispatched&#x27;,&#x27;The disk controller is still copying beach.jpg into RAM (about half done) without using the CPU. The CPU is free, so the scheduler gives it to the Word processor, which runs a spell check on the last sentence.&#x27;,&#x27;The Word processor moves from ready to running because the scheduler allocates the processor to it.&#x27;],
+   6:[&#x27;beach.jpg has arrived&#x27;,&#x27;The disk controller finishes copying the photo into a buffer in RAM and sends an interrupt. The OS changes the Photo app\&#x27;s PCB from blocked to ready. The Word processor is still using the CPU, so the Photo app joins the ready queue. It will show the photo the next time it gets the CPU.&#x27;,&#x27;The Photo app moves from blocked to ready because the I/O operation it was waiting for (reading beach.jpg) has completed.&#x27;],
+   7:[&#x27;Word processor waits for the next key&#x27;,&#x27;The spell check is done, and the Word processor now needs the user\&#x27;s next key press. A person types a few keys per second. For the CPU that is a very long time, so the Word processor is blocked until the keyboard sends a key.&#x27;,&#x27;The Word processor moves from running to blocked because it is waiting for an I/O event: the next key press.&#x27;],
+   10:[&#x27;Photo app is dispatched&#x27;,&#x27;The Photo app gets the CPU. beach.jpg is already in RAM, so it decodes the image and shows it on the screen. It does not need to wait for the disk again.&#x27;,&#x27;The Photo app moves from ready to running.&#x27;],
+   11:[&#x27;The user types &quot;d&quot;&#x27;,&#x27;The keyboard controller puts the key code for &quot;d&quot; into the keyboard buffer and sends an interrupt. The OS changes the Word processor\&#x27;s PCB from blocked to ready. The Photo app keeps the CPU. The letter appears on screen when the Word processor is next dispatched.&#x27;,&#x27;The Word processor moves from blocked to ready because the event it was waiting for (a key press) has happened.&#x27;],
+   13:[&#x27;Word processor is dispatched&#x27;,&#x27;The Word processor gets the CPU, reads &quot;d&quot; from the keyboard buffer and shows &quot;Frid&quot; on the screen.&#x27;,&#x27;The Word processor moves from ready to running.&#x27;]}},
+ ja:{devH:&#x27;I/O 装置&#x27;,disk:&#x27;ディスク (SSD)&#x27;,kbd:&#x27;キーボード&#x27;,st:{idle:&#x27;待機&#x27;,busy:&#x27;動作中&#x27;,irq:&#x27;割り込み！&#x27;,wait:&#x27;キー入力待ち&#x27;},
+  dIdle:&#x27;読み書きするものはない。&#x27;,dBusy:p=&gt;&#x27;写真アプリのために beach.jpg (4 MB) を RAM へコピー中：&#x27;+p+&#x27;%&#x27;,dIrq:&#x27;完了。ディスクコントローラが割り込みを送る：「beach.jpg が RAM に入った」。&#x27;,
+  kIdle:&#x27;キー入力を待っているプログラムはない。&#x27;,kWait:&#x27;ワープロが次のキー入力を待っている。&#x27;,kIrq:&#x27;「d」キーが押された。キーボードコントローラがキーボードバッファに入れ、割り込みを送る。&#x27;,kShow:&#x27;ワープロがキーボードバッファから「d」を読み、画面に表示する。&#x27;,
+  typed:&#x27;Dear Ana, see you on Fri&#x27;,file:&#x27;ファイル：/Photos/beach.jpg・4 MB&#x27;,
+  st2:{
+   4:[&#x27;写真アプリがディスクに beach.jpg を頼む&#x27;,&#x27;ユーザーがサムネイルをタップしたので、写真アプリは SSD のファイル beach.jpg (4 MB) が必要になりました。読み込みには約 10 ms かかります。10 ms あれば CPU は何百万もの命令を実行できるので、CPU を待たせておくのはもったいないことです。OS は読み込みの依頼をディスクコントローラに送り、写真アプリのレジスタを PCB に保存して、ブロック状態にします。写真アプリが待っているのは CPU ではなくディスクです。&#x27;,&#x27;写真アプリは I/O 操作（ディスクから beach.jpg を読み込む）を要求したので、実行からブロックに移る。&#x27;],
+   5:[&#x27;ワープロがディスパッチされる&#x27;,&#x27;ディスクコントローラは CPU を使わずに beach.jpg を RAM へコピーしている途中です（約半分）。CPU は空いているので、スケジューラはワープロに CPU を渡します。ワープロは最後の文のスペルチェックをします。&#x27;,&#x27;ワープロはスケジューラによってプロセッサを割り当てられたので、レディから実行に移る。&#x27;],
+   6:[&#x27;beach.jpg が届いた&#x27;,&#x27;ディスクコントローラが写真を RAM のバッファにコピーし終え、割り込みを送ります。OS は写真アプリの PCB をブロックからレディに書き換えます。CPU はまだワープロが使っているので、写真アプリはレディキューに入ります。次に CPU を得たときに写真を表示します。&#x27;,&#x27;写真アプリは待っていた I/O 操作（beach.jpg の読み込み）が完了したので、ブロックからレディに移る。&#x27;],
+   7:[&#x27;ワープロが次のキーを待つ&#x27;,&#x27;スペルチェックが終わり、ワープロはユーザーの次のキー入力が必要になりました。人がキーを打つのは 1 秒に数回です。CPU にとってはとても長い時間なので、ワープロはキーボードからキーが届くまでブロック状態になります。&#x27;,&#x27;ワープロは I/O イベント（次のキー入力）を待つので、実行からブロックに移る。&#x27;],
+   10:[&#x27;写真アプリがディスパッチされる&#x27;,&#x27;写真アプリが CPU を得ます。beach.jpg はもう RAM にあるので、画像をデコードして画面に表示します。もう一度ディスクを待つ必要はありません。&#x27;,&#x27;写真アプリはレディから実行に移る。&#x27;],
+   11:[&#x27;ユーザーが「d」を打つ&#x27;,&#x27;キーボードコントローラが「d」のキーコードをキーボードバッファに入れ、割り込みを送ります。OS はワープロの PCB をブロックからレディに書き換えます。CPU は写真アプリが使い続けます。文字が画面に出るのは、ワープロが次にディスパッチされたときです。&#x27;,&#x27;ワープロは待っていたイベント（キー入力）が起きたので、ブロックからレディに移る。&#x27;],
+   13:[&#x27;ワープロがディスパッチされる&#x27;,&#x27;ワープロが CPU を得て、キーボードバッファから「d」を読み、画面に「Frid」と表示します。&#x27;,&#x27;ワープロはレディから実行に移る。&#x27;]}},
+ zh:{devH:&#x27;I/O 设备&#x27;,disk:&#x27;磁盘 (SSD)&#x27;,kbd:&#x27;键盘&#x27;,st:{idle:&#x27;空闲&#x27;,busy:&#x27;工作中&#x27;,irq:&#x27;中断！&#x27;,wait:&#x27;等待按键&#x27;},
+  dIdle:&#x27;没有要读写的内容。&#x27;,dBusy:p=&gt;&#x27;正在为照片应用把 beach.jpg (4 MB) 复制到 RAM：&#x27;+p+&#x27;%&#x27;,dIrq:&#x27;完成。磁盘控制器发出中断：&quot;beach.jpg 已在 RAM 中&quot;。&#x27;,
+  kIdle:&#x27;没有程序在等待按键。&#x27;,kWait:&#x27;文字处理器正在等待下一次按键。&#x27;,kIrq:&#x27;按下了 &quot;d&quot; 键。键盘控制器把它放进键盘缓冲区，并发出中断。&#x27;,kShow:&#x27;文字处理器从键盘缓冲区读取 &quot;d&quot; 并显示出来。&#x27;,
+  typed:&#x27;Dear Ana, see you on Fri&#x27;,file:&#x27;文件：/Photos/beach.jpg · 4 MB&#x27;,
+  st2:{
+   4:[&#x27;照片应用向磁盘请求 beach.jpg&#x27;,&#x27;用户点了一张缩略图，照片应用需要 SSD 上的文件 beach.jpg (4 MB)。读取大约需要 10 ms。10 ms 内 CPU 可以执行几百万条指令，所以让 CPU 干等没有意义。操作系统把读取请求发给磁盘控制器，把照片应用的寄存器保存到 PCB，并把它移到阻塞状态。它现在等的是磁盘，不是 CPU。&#x27;,&#x27;照片应用从运行变为阻塞，因为它请求了 I/O 操作：从磁盘读取 beach.jpg。&#x27;],
+   5:[&#x27;文字处理器被调度&#x27;,&#x27;磁盘控制器正在不占用 CPU 的情况下把 beach.jpg 复制到 RAM（大约一半）。CPU 空闲，于是调度程序把它交给文字处理器，文字处理器检查最后一句的拼写。&#x27;,&#x27;文字处理器从就绪变为运行，因为调度程序把处理器分配给了它。&#x27;],
+   6:[&#x27;beach.jpg 到了&#x27;,&#x27;磁盘控制器把照片复制到 RAM 的缓冲区后发出中断。操作系统把照片应用的 PCB 从阻塞改为就绪。CPU 还在被文字处理器使用，所以照片应用进入就绪队列，下次得到 CPU 时再显示照片。&#x27;,&#x27;照片应用从阻塞变为就绪，因为它等待的 I/O 操作（读取 beach.jpg）已完成。&#x27;],
+   7:[&#x27;文字处理器等待下一个按键&#x27;,&#x27;拼写检查完成，文字处理器需要用户的下一次按键。人每秒只能按几个键，对 CPU 来说这是很长的时间，所以文字处理器被阻塞，直到键盘送来按键。&#x27;,&#x27;文字处理器从运行变为阻塞，因为它在等待 I/O 事件：下一次按键。&#x27;],
+   10:[&#x27;照片应用被调度&#x27;,&#x27;照片应用获得 CPU。beach.jpg 已经在 RAM 中，所以它解码图片并显示在屏幕上，不需要再等磁盘。&#x27;,&#x27;照片应用从就绪变为运行。&#x27;],
+   11:[&#x27;用户按下 &quot;d&quot;&#x27;,&#x27;键盘控制器把 &quot;d&quot; 的键码放进键盘缓冲区并发出中断。操作系统把文字处理器的 PCB 从阻塞改为就绪。照片应用继续使用 CPU。等文字处理器下次被调度时，字母才出现在屏幕上。&#x27;,&#x27;文字处理器从阻塞变为就绪，因为它等待的事件（按键）已经发生。&#x27;],
+   13:[&#x27;文字处理器被调度&#x27;,&#x27;文字处理器获得 CPU，从键盘缓冲区读取 &quot;d&quot;，在屏幕上显示 &quot;Frid&quot;。&#x27;,&#x27;文字处理器从就绪变为运行。&#x27;]}},
+ th:{devH:&#x27;อุปกรณ์ I/O&#x27;,disk:&#x27;ดิสก์ (SSD)&#x27;,kbd:&#x27;คีย์บอร์ด&#x27;,st:{idle:&#x27;ว่าง&#x27;,busy:&#x27;กำลังทำงาน&#x27;,irq:&#x27;อินเทอร์รัปต์!&#x27;,wait:&#x27;รอการกดปุ่ม&#x27;},
+  dIdle:&#x27;ไม่มีอะไรต้องอ่านหรือเขียน&#x27;,dBusy:p=&gt;&#x27;กำลังคัดลอก beach.jpg (4 MB) ลง RAM ให้แอปรูปภาพ: &#x27;+p+&#x27;%&#x27;,dIrq:&#x27;เสร็จแล้ว ตัวควบคุมดิสก์ส่งอินเทอร์รัปต์: &quot;beach.jpg อยู่ใน RAM แล้ว&quot;&#x27;,
+  kIdle:&#x27;ไม่มีโปรแกรมรอการกดปุ่ม&#x27;,kWait:&#x27;โปรแกรมพิมพ์เอกสารกำลังรอการกดปุ่มครั้งถัดไป&#x27;,kIrq:&#x27;กดปุ่ม &quot;d&quot; ตัวควบคุมคีย์บอร์ดใส่ไว้ในบัฟเฟอร์คีย์บอร์ดและส่งอินเทอร์รัปต์&#x27;,kShow:&#x27;โปรแกรมพิมพ์เอกสารอ่าน &quot;d&quot; จากบัฟเฟอร์คีย์บอร์ดแล้วแสดงผล&#x27;,
+  typed:&#x27;Dear Ana, see you on Fri&#x27;,file:&#x27;ไฟล์: /Photos/beach.jpg · 4 MB&#x27;,
+  st2:{
+   4:[&#x27;แอปรูปภาพขอ beach.jpg จากดิสก์&#x27;,&#x27;ผู้ใช้แตะรูปย่อ แอปรูปภาพจึงต้องการไฟล์ beach.jpg (4 MB) จาก SSD การอ่านใช้เวลาประมาณ 10 ms ใน 10 ms CPU ทำคำสั่งได้หลายล้านคำสั่ง จึงไม่ควรให้ CPU รอเปล่า ๆ OS ส่งคำขออ่านไปยังตัวควบคุมดิสก์ บันทึกรีจิสเตอร์ของแอปรูปภาพใน PCB แล้วย้ายไปสถานะถูกบล็อก ตอนนี้มันรอดิสก์ ไม่ได้รอ CPU&#x27;,&#x27;แอปรูปภาพย้ายจากทำงานไปถูกบล็อก เพราะร้องขอการทำงาน I/O: อ่าน beach.jpg จากดิสก์&#x27;],
+   5:[&#x27;โปรแกรมพิมพ์เอกสารถูก dispatch&#x27;,&#x27;ตัวควบคุมดิสก์กำลังคัดลอก beach.jpg ลง RAM (ประมาณครึ่งหนึ่ง) โดยไม่ใช้ CPU CPU จึงว่าง ตัวจัดลำดับให้ CPU แก่โปรแกรมพิมพ์เอกสาร ซึ่งตรวจคำสะกดของประโยคสุดท้าย&#x27;,&#x27;โปรแกรมพิมพ์เอกสารย้ายจากพร้อมไปทำงาน เพราะตัวจัดลำดับจัดสรรโปรเซสเซอร์ให้&#x27;],
+   6:[&#x27;beach.jpg มาถึงแล้ว&#x27;,&#x27;ตัวควบคุมดิสก์คัดลอกรูปลงบัฟเฟอร์ใน RAM เสร็จแล้วส่งอินเทอร์รัปต์ OS เปลี่ยน PCB ของแอปรูปภาพจากถูกบล็อกเป็นพร้อม CPU ยังถูกโปรแกรมพิมพ์เอกสารใช้อยู่ แอปรูปภาพจึงเข้าคิวพร้อม และจะแสดงรูปเมื่อได้ CPU ครั้งถัดไป&#x27;,&#x27;แอปรูปภาพย้ายจากถูกบล็อกไปพร้อม เพราะ I/O ที่รอ (อ่าน beach.jpg) เสร็จแล้ว&#x27;],
+   7:[&#x27;โปรแกรมพิมพ์เอกสารรอปุ่มถัดไป&#x27;,&#x27;ตรวจคำสะกดเสร็จแล้ว ตอนนี้ต้องการการกดปุ่มครั้งถัดไปจากผู้ใช้ คนกดปุ่มได้ไม่กี่ครั้งต่อวินาที สำหรับ CPU นั่นนานมาก โปรแกรมพิมพ์เอกสารจึงถูกบล็อกจนกว่าคีย์บอร์ดจะส่งปุ่มมา&#x27;,&#x27;โปรแกรมพิมพ์เอกสารย้ายจากทำงานไปถูกบล็อก เพราะรอเหตุการณ์ I/O: การกดปุ่มครั้งถัดไป&#x27;],
+   10:[&#x27;แอปรูปภาพถูก dispatch&#x27;,&#x27;แอปรูปภาพได้ CPU beach.jpg อยู่ใน RAM แล้ว จึงถอดรหัสภาพและแสดงบนหน้าจอ ไม่ต้องรอดิสก์อีก&#x27;,&#x27;แอปรูปภาพย้ายจากพร้อมไปทำงาน&#x27;],
+   11:[&#x27;ผู้ใช้พิมพ์ &quot;d&quot;&#x27;,&#x27;ตัวควบคุมคีย์บอร์ดใส่รหัสปุ่ม &quot;d&quot; ลงบัฟเฟอร์คีย์บอร์ดและส่งอินเทอร์รัปต์ OS เปลี่ยน PCB ของโปรแกรมพิมพ์เอกสารจากถูกบล็อกเป็นพร้อม แอปรูปภาพยังใช้ CPU ต่อ ตัวอักษรจะขึ้นจอเมื่อโปรแกรมพิมพ์เอกสารถูก dispatch ครั้งถัดไป&#x27;,&#x27;โปรแกรมพิมพ์เอกสารย้ายจากถูกบล็อกไปพร้อม เพราะเหตุการณ์ที่รอ (การกดปุ่ม) เกิดขึ้นแล้ว&#x27;],
+   13:[&#x27;โปรแกรมพิมพ์เอกสารถูก dispatch&#x27;,&#x27;โปรแกรมพิมพ์เอกสารได้ CPU อ่าน &quot;d&quot; จากบัฟเฟอร์คีย์บอร์ด และแสดง &quot;Frid&quot; บนหน้าจอ&#x27;,&#x27;โปรแกรมพิมพ์เอกสารย้ายจากพร้อมไปทำงาน&#x27;]}}};
+function devs(){
+  const u=DTX[lang],v=DEV[k],dd=v.d[0],kk=v.k[0];
+  const disk=&#x27;&lt;div class=&quot;dev &#x27;+(dd===&#x27;busy&#x27;?&#x27;busy&#x27;:dd===&#x27;irq&#x27;?&#x27;irq&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;h3&gt;&#x27;+u.disk+&#x27;&lt;small&gt;&#x27;+u.st[dd]+&#x27;&lt;/small&gt;&lt;/h3&gt;&#x27;+
+    &#x27;&lt;p class=&quot;who&quot;&gt;&#x27;+(dd===&#x27;busy&#x27;?u.dBusy(v.d[1]):dd===&#x27;irq&#x27;?u.dIrq:u.dIdle)+&#x27;&lt;/p&gt;&#x27;+
+    (dd!==&#x27;idle&#x27;?&#x27;&lt;p class=&quot;file&quot;&gt;&#x27;+u.file+&#x27;&lt;/p&gt;&lt;div class=&quot;pbar&quot;&gt;&lt;i style=&quot;width:&#x27;+v.d[1]+&#x27;%&quot;&gt;&lt;/i&gt;&lt;/div&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
+  const typed=kk===&#x27;show&#x27;||kk===&#x27;idle2&#x27;?u.typed+&#x27;d&#x27;:u.typed;
+  const kst=kk===&#x27;wait&#x27;?&#x27;wait&#x27;:kk===&#x27;irq&#x27;?&#x27;irq&#x27;:&#x27;idle&#x27;;
+  const kbd=&#x27;&lt;div class=&quot;dev &#x27;+(kk===&#x27;wait&#x27;?&#x27;busy&#x27;:kk===&#x27;irq&#x27;?&#x27;irq&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;h3&gt;&#x27;+u.kbd+&#x27;&lt;small&gt;&#x27;+u.st[kst]+&#x27;&lt;/small&gt;&lt;/h3&gt;&#x27;+
+    &#x27;&lt;p class=&quot;who&quot;&gt;&#x27;+(kk===&#x27;wait&#x27;?u.kWait:kk===&#x27;irq&#x27;?u.kIrq:kk===&#x27;show&#x27;?u.kShow:u.kIdle)+&#x27;&lt;/p&gt;&#x27;+
+    (k&gt;=7?&#x27;&lt;p class=&quot;typed&quot;&gt;&#x27;+typed+(kk===&#x27;irq&#x27;?&#x27;&lt;span class=&quot;k&quot;&gt;d&lt;/span&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;span class=&quot;cur&quot;&gt;&lt;/span&gt;&lt;/p&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
+  $(&#x27;devH&#x27;).textContent=u.devH;$(&#x27;devs&#x27;).innerHTML=disk+kbd;
+}
+function go(n,anim){
+  k=Math.max(0,Math.min(STEPS.length-1,n));
+  const t=T(),s=STEPS[k];
+  const first=chips.map(c=&gt;c.getBoundingClientRect());
+  [&#x27;bR&#x27;,&#x27;bU&#x27;,&#x27;bB&#x27;,&#x27;bF&#x27;].forEach(id=&gt;$(id).innerHTML=&#x27;&#x27;);
+  chips.forEach((c,i)=&gt;c.querySelector(&#x27;.nm&#x27;).innerHTML=&#x27;&lt;span class=&quot;shp&quot;&gt;&#x27;+SHP[i]+&#x27;&lt;/span&gt;&lt;span class=&quot;pid&quot;&gt;P&#x27;+(i+1)+&#x27;&lt;/span&gt;&#x27;+nm(i));
+  s.r.forEach((p,i)=&gt;{const c=chips[p];c.querySelector(&#x27;.sub&#x27;).textContent=i===0?t.front:&#x27;#&#x27;+(i+1);$(&#x27;bR&#x27;).appendChild(c);});
+  if(s.u!==null){const c=chips[s.u];c.querySelector(&#x27;.sub&#x27;).textContent=t.st.running;$(&#x27;bU&#x27;).appendChild(c);}
+  s.b.forEach(([p,w])=&gt;{const c=chips[p];c.querySelector(&#x27;.sub&#x27;).textContent=t.wait[w];$(&#x27;bB&#x27;).appendChild(c);});
+  s.f.forEach(p=&gt;{const c=chips[p];c.querySelector(&#x27;.sub&#x27;).textContent=&#x27;✓&#x27;;$(&#x27;bF&#x27;).appendChild(c);});
+  if(!s.r.length)$(&#x27;bR&#x27;).innerHTML=&#x27;&lt;span class=&quot;empty&quot;&gt;&#x27;+t.empty+&#x27;&lt;/span&gt;&#x27;;
+  if(s.u===null)$(&#x27;bU&#x27;).innerHTML=&#x27;&lt;span class=&quot;empty&quot;&gt;&#x27;+(k===STEPS.length-1?t.empty:t.idle)+&#x27;&lt;/span&gt;&#x27;;
+  if(!s.b.length)$(&#x27;bB&#x27;).innerHTML=&#x27;&lt;span class=&quot;empty&quot;&gt;&#x27;+t.empty+&#x27;&lt;/span&gt;&#x27;;
+  chips.forEach((c,i)=&gt;c.classList.toggle(&#x27;mv&#x27;,i===s.m));
+  layout();
+  // FLIP
+  if(anim&amp;&amp;!matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches)chips.forEach((c,i)=&gt;{if(!c.isConnected)return;const l=c.getBoundingClientRect(),o=first[i];const dx=o.left-l.left,dy=o.top-l.top;
+    if(o.width&amp;&amp;(Math.abs(dx)&gt;1||Math.abs(dy)&gt;1))c.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:&#x27;none&#x27;}],{duration:700,easing:&#x27;cubic-bezier(.3,.7,.2,1)&#x27;});});
+  // arrows + labels
+  const cnt=counts(k);
+  [&#x27;A&#x27;,&#x27;B&#x27;,&#x27;C&#x27;,&#x27;D&#x27;].forEach(a=&gt;{const on=s.a===a;$(&#x27;p&#x27;+a).classList.toggle(&#x27;on&#x27;,on);$(&#x27;p&#x27;+a).setAttribute(&#x27;marker-end&#x27;,on?&#x27;url(#hdOn)&#x27;:&#x27;url(#hd)&#x27;);
+    $(&#x27;l&#x27;+a).classList.toggle(&#x27;on&#x27;,on);$(&#x27;l&#x27;+a).innerHTML=&#x27;&lt;b&gt;&#x27;+t.lab[a][0]+&#x27;&lt;/b&gt;&#x27;+t.lab[a][1]+&#x27; &lt;span class=&quot;cnt&quot;&gt;&#x27;+t.times(cnt[a])+&#x27;&lt;/span&gt;&#x27;;});
+  const hot={A:&#x27;sRun&#x27;,B:&#x27;sReady&#x27;,C:&#x27;sBlk&#x27;,D:&#x27;sReady&#x27;}[s.a];
+  [&#x27;sReady&#x27;,&#x27;sRun&#x27;,&#x27;sBlk&#x27;].forEach(id=&gt;$(id).classList.toggle(&#x27;hot&#x27;,id===hot));
+  $(&#x27;fin&#x27;).classList.toggle(&#x27;hot&#x27;,s.a===&#x27;E&#x27;);
+  // message
+  const m=(DTX[lang].st2[k])||t.s[k];
+  $(&#x27;mTag&#x27;).textContent=&#x27;STEP &#x27;+k+(s.a&amp;&amp;s.a!==&#x27;E&#x27;?&#x27; · &#x27;+t.tr[s.a][0]:&#x27;&#x27;);
+  $(&#x27;mT&#x27;).textContent=sub(m[0]);$(&#x27;mD&#x27;).textContent=sub(m[1]);
+  $(&#x27;mX&#x27;).innerHTML=&#x27;&lt;b&gt;&#x27;+t.exam+&#x27;&lt;/b&gt;&#x27;+sub(m[2]);
+  // PCB
+  $(&#x27;pcb&#x27;).innerHTML=&#x27;&lt;tr&gt;&#x27;+t.pcbC.map(c=&gt;&#x27;&lt;th&gt;&#x27;+c+&#x27;&lt;/th&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/tr&gt;&#x27;+[0,1,2].map(p=&gt;{const st=stateOf(s,p),w=s.b.find(x=&gt;x[0]===p);
+    return &#x27;&lt;tr&gt;&lt;td class=&quot;mono&quot;&gt;&lt;span style=&quot;color:color-mix(in srgb,var(&#x27;+COL[p]+&#x27;) 65%,#1F2A3C)&quot;&gt;&#x27;+SHP[p]+&#x27;&lt;/span&gt; &lt;span class=&quot;pid&quot;&gt;P&#x27;+(p+1)+&#x27;&lt;/span&gt;&#x27;+nm(p)+&#x27;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;pill &#x27;+st+&#x27;&quot;&gt;&#x27;+t.st[st]+&#x27;&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&#x27;+(w?t.waitL[w[1]]:&#x27;–&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&#x27;;}).join(&#x27;&#x27;);
+  // transitions table
+  $(&#x27;tt&#x27;).innerHTML=&#x27;&lt;tr&gt;&#x27;+t.tC.map(c=&gt;&#x27;&lt;th&gt;&#x27;+c+&#x27;&lt;/th&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/tr&gt;&#x27;+[&#x27;A&#x27;,&#x27;B&#x27;,&#x27;C&#x27;,&#x27;D&#x27;].map(a=&gt;&#x27;&lt;tr class=&quot;&#x27;+(s.a===a?&#x27;on&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;td class=&quot;mono&quot; style=&quot;white-space:nowrap&quot;&gt;&#x27;+t.tr[a][0]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+t.tr[a][1]+&#x27;&lt;/td&gt;&lt;td class=&quot;mono&quot;&gt;&#x27;+cnt[a]+&#x27;&lt;/td&gt;&lt;/tr&gt;&#x27;).join(&#x27;&#x27;);
+  // history
+  $(&#x27;hist&#x27;).innerHTML=[0,1,2].map(p=&gt;&#x27;&lt;div class=&quot;hrow&quot;&gt;&lt;span class=&quot;who&quot;&gt;&#x27;+SHP[p]+&#x27; &lt;span class=&quot;pid&quot;&gt;P&#x27;+(p+1)+&#x27;&lt;/span&gt;&#x27;+nm(p)+&#x27;&lt;/span&gt;&#x27;+STEPS.map((st,i)=&gt;{const v=i&lt;=k?stateOf(st,p):&#x27;fut&#x27;;
+    return &#x27;&lt;span class=&quot;h-&#x27;+v+(i===k?&#x27; h-now&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+(i&lt;=k&amp;&amp;v===&#x27;running&#x27;?&#x27;▶&#x27;:&#x27;&#x27;)+&#x27;&lt;/span&gt;&#x27;;}).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;).join(&#x27;&#x27;);
+  // controls
+  $(&#x27;back&#x27;).disabled=k===0;$(&#x27;next&#x27;).disabled=k===STEPS.length-1;
+  $(&#x27;steps&#x27;).querySelectorAll(&#x27;button&#x27;).forEach((b,i)=&gt;{b.classList.toggle(&#x27;now&#x27;,i===k);b.classList.toggle(&#x27;seen&#x27;,i&lt;k);});
+  $(&#x27;play&#x27;).textContent=timer?t.pause:t.play;
+  devs();
+  arrows();
+}
+function stop(){if(timer){clearInterval(timer);timer=null;}$(&#x27;play&#x27;).textContent=T().play;}
+$(&#x27;back&#x27;).onclick=()=&gt;{stop();go(k-1,true);};
+$(&#x27;next&#x27;).onclick=()=&gt;{stop();go(k+1,true);};
+$(&#x27;restart&#x27;).onclick=()=&gt;{stop();go(0,true);};
+$(&#x27;play&#x27;).onclick=()=&gt;{if(timer){stop();return;}if(k&gt;=STEPS.length-1)go(0,false);timer=setInterval(()=&gt;{if(k&gt;=STEPS.length-1){stop();return;}go(k+1,true);},2600);$(&#x27;play&#x27;).textContent=T().pause;};
+document.addEventListener(&#x27;keydown&#x27;,e=&gt;{if(e.target.tagName===&#x27;SELECT&#x27;)return;if(e.key===&#x27;ArrowRight&#x27;){stop();go(k+1,true);}if(e.key===&#x27;ArrowLeft&#x27;){stop();go(k-1,true);}});
+[&#x27;en&#x27;,&#x27;ja&#x27;,&#x27;zh&#x27;,&#x27;th&#x27;].forEach(l=&gt;$(&#x27;lg-&#x27;+l).onclick=()=&gt;{lang=l;staticText();go(k,false);try{localStorage.setItem(&#x27;lang4&#x27;,l)}catch(e){}});
+addEventListener(&#x27;resize&#x27;,arrows);
+try{const s=localStorage.getItem(&#x27;lang4&#x27;);if(TX[s])lang=s}catch(e){}
+const h=location.hash.slice(1);if(TX[h])lang=h;
+const EMB=location.href===&#x27;about:srcdoc&#x27;;
+const setLang=l=&gt;{if(!TX[l]||l===lang)return;lang=l;const cls=document.body.classList.contains(&#x27;emb&#x27;);staticText();if(cls)document.body.classList.add(&#x27;emb&#x27;);go(k,false);};
+window.addEventListener(&#x27;message&#x27;,e=&gt;{const d=(e.data||{}).states;if(!d)return;if(d.lang)setLang(d.lang);if(d.hide)stop();
+  if(d.key===&#x27;next&#x27;){stop();go(k+1,true);}if(d.key===&#x27;prev&#x27;){stop();go(k-1,true);}});
+makeChips();staticText();go(0,false);
+if(EMB){document.body.classList.add(&#x27;emb&#x27;);const h=()=&gt;parent.postMessage({h:document.documentElement.scrollHeight},&#x27;*&#x27;);addEventListener(&#x27;load&#x27;,h);new ResizeObserver(h).observe(document.body);setInterval(h,800);setTimeout(arrows,300);}
+if(document.fonts)document.fonts.ready.then(arrows);
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <div id="schedwrap" hidden><iframe id="schedframe" title="Preemptive vs Non-preemptive scheduling" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
 &lt;title&gt;Preemptive vs Non-preemptive&lt;/title&gt;
 &lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
@@ -4247,8 +4846,8 @@ root.addEventListener('langhide',()=>stop());
 <script>
 (function(){
   const g=id=>document.getElementById(id);
-  const intro=g('intro'),sw=g('schedwrap'),mw=g('memwrap'),sf=g('schedframe'),mf=g('memframe'),aw=g('algowrap'),af=g('algoframe');
-  const bi=g('tp-intr'),bs=g('tp-sched'),bm=g('tp-mem'),ba=g('tp-algo');const AL=['fcfs','sjf','srtf','rr'];let pendingAlg=null,algNow='fcfs';
+  const intro=g('intro'),sw=g('schedwrap'),mw=g('memwrap'),sf=g('schedframe'),mf=g('memframe'),aw=g('algowrap'),af=g('algoframe'),tw=g('stateswrap'),tf=g('statesframe');
+  const bi=g('tp-intr'),bs=g('tp-sched'),bm=g('tp-mem'),ba=g('tp-algo'),bt=g('tp-states');const toStates=d=>tf.contentWindow&&tf.contentWindow.postMessage({states:d},'*');const AL=['fcfs','sjf','srtf','rr'];let pendingAlg=null,algNow='fcfs';
   const toAlgo=d=>af.contentWindow&&af.contentWindow.postMessage({algo:d},'*');
   const LS=['en','ja','zh','th'],SC=['page','virt','seg','int','ext'];
   const curLang=()=>(document.documentElement.lang||'en').slice(0,2);
@@ -4257,32 +4856,34 @@ root.addEventListener('langhide',()=>stop());
   let cur='intr',pendingSc=null;
   const memHash=()=>'#mem-'+curLang();
   function topic(t,pick){
-    const s=t==='sched',m=t==='mem',a=t==='algo';
+    const s=t==='sched',m=t==='mem',a=t==='algo',st=t==='states';
     if(t!=='intr')document.querySelectorAll('#intro > div:not([hidden])').forEach(v=>v.dispatchEvent(new Event('langhide')));
-    if(cur==='mem'&&!m)toMem({hide:true});if(cur==='sched'&&!s)toSched({hide:true});if(s)toSched({lang:curLang()});if(cur==='algo'&&!a)toAlgo({hide:true});
+    if(cur==='mem'&&!m)toMem({hide:true});if(cur==='sched'&&!s)toSched({hide:true});if(s)toSched({lang:curLang()});if(cur==='algo'&&!a)toAlgo({hide:true});if(cur==='states'&&!st)toStates({hide:true});if(st)toStates({lang:curLang()});
     cur=t;
-    intro.hidden=t!=='intr';sw.hidden=!s;mw.hidden=!m;aw.hidden=!a;document.body.classList.toggle('t-sched',s);
-    bi.setAttribute('aria-pressed',t==='intr');bs.setAttribute('aria-pressed',s);bm.setAttribute('aria-pressed',m);ba.setAttribute('aria-pressed',a);
+    intro.hidden=t!=='intr';sw.hidden=!s;mw.hidden=!m;aw.hidden=!a;tw.hidden=!st;document.body.classList.toggle('t-sched',s);
+    bi.setAttribute('aria-pressed',t==='intr');bs.setAttribute('aria-pressed',s);bm.setAttribute('aria-pressed',m);ba.setAttribute('aria-pressed',a);bt.setAttribute('aria-pressed',st);
     document.querySelectorAll('.flyer').forEach(x=>x.remove());
     if(t==='intr'&&pick){const v=document.querySelector('#intro > div:not([hidden])');const b=v&&v.querySelector('.src[data-k="'+pick+'"]');if(b)b.click();}
     if(m){toMem({lang:curLang(),sc:pendingSc,show:true});pendingSc=null;}
     if(a){if(pendingAlg)algNow=pendingAlg;toAlgo({lang:curLang(),alg:pendingAlg});pendingAlg=null;}
-    try{history.replaceState(null,'',s?'#sched-'+curLang():m?memHash():a?'#algo-'+curLang()+'-'+algNow:'#'+curLang());}catch(e){}
+    try{history.replaceState(null,'',st?'#states-'+curLang():s?'#sched-'+curLang():m?memHash():a?'#algo-'+curLang()+'-'+algNow:'#'+curLang());}catch(e){}
     window.scrollTo(0,0);
   }
-  bi.onclick=()=>topic('intr');ba.onclick=()=>topic('algo');bs.onclick=()=>topic('sched');bm.onclick=()=>topic('mem');
+  bi.onclick=()=>topic('intr');ba.onclick=()=>topic('algo');bt.onclick=()=>topic('states');bs.onclick=()=>topic('sched');bm.onclick=()=>topic('mem');
   window.addEventListener('message',e=>{const d=e.data||{};
-    if(typeof d.h==='number'){const f=[sf,mf,af].find(x=>x.contentWindow===e.source);if(f)f.style.height=Math.max(600,d.h)+'px';}
+    if(typeof d.h==='number'){const f=[sf,mf,af,tf].find(x=>x.contentWindow===e.source);if(f)f.style.height=Math.max(600,d.h)+'px';}
     if(d.go==='intr')topic('intr',d.pick);if(d.go==='algo')topic('algo');
     if(d.algoHash&&cur==='algo'){algNow=d.algoHash.split('-')[1]||algNow;try{history.replaceState(null,'','#algo-'+d.algoHash)}catch(err){}}
     if(d.algoTop)af.scrollIntoView({behavior:'smooth',block:'start'})});
-  LS.forEach(l=>g('lg-'+l).addEventListener('click',()=>{toSched({lang:l});if(cur==='sched'){try{history.replaceState(null,'','#sched-'+l)}catch(e){}return;}if(cur==='algo'){toAlgo({lang:l});try{history.replaceState(null,'','#algo-'+l+'-'+algNow)}catch(e){}return;}if(cur!=='mem')return;toMem({lang:l});try{history.replaceState(null,'',memHash())}catch(e){}}));
+  LS.forEach(l=>g('lg-'+l).addEventListener('click',()=>{toSched({lang:l});toStates({lang:l});if(cur==='states'){try{history.replaceState(null,'','#states-'+l)}catch(e){}return;}if(cur==='sched'){try{history.replaceState(null,'','#sched-'+l)}catch(e){}return;}if(cur==='algo'){toAlgo({lang:l});try{history.replaceState(null,'','#algo-'+l+'-'+algNow)}catch(e){}return;}if(cur!=='mem')return;toMem({lang:l});try{history.replaceState(null,'',memHash())}catch(e){}}));
   document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;
+    if(cur==='states'){if(e.key==='ArrowRight')toStates({key:'next'});if(e.key==='ArrowLeft')toStates({key:'prev'});return;}
     if(cur==='algo'){if(e.key==='ArrowRight')toAlgo({key:'next'});if(e.key==='ArrowLeft')toAlgo({key:'prev'});return;}
     if(cur!=='mem')return;
     if(e.key==='ArrowRight')toMem({key:'next'});if(e.key==='ArrowLeft')toMem({key:'prev'})});
   function fromHash(){
     const h=location.hash.slice(1);
+    if(h==='states'||h.startsWith('states-')){const l=h.split('-')[1];if(l&&LS.includes(l)&&l!==curLang())g('lg-'+l).click();topic('states');return}
     if(h==='sched'||h.startsWith('sched-')){const l=h.split('-')[1];if(l&&LS.includes(l)&&l!==curLang())g('lg-'+l).click();topic('sched');return}
     if(h==='algo'||h.startsWith('algo-')){const p=h.split('-'),l=p.find(x=>LS.includes(x));pendingAlg=p.find(x=>AL.includes(x))||null;if(l&&l!==curLang())g('lg-'+l).click();topic('algo');return}
     if(h==='mem'||h.startsWith('mem-')){
@@ -4292,6 +4893,7 @@ root.addEventListener('langhide',()=>stop());
     if(LS.includes(h)&&cur!=='intr')topic('intr');
   }
   sf.addEventListener('load',()=>toSched({lang:curLang()}));
+  tf.addEventListener('load',()=>toStates({lang:curLang()}));
   af.addEventListener('load',()=>{toAlgo({lang:curLang(),alg:cur==='algo'?pendingAlg||algNow:null})});
   mf.addEventListener('load',()=>{if(cur==='mem')toMem({lang:curLang(),sc:pendingSc,show:true}),pendingSc=null;else toMem({lang:curLang()})});
   fromHash();
