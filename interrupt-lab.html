@@ -15,11 +15,11 @@
   --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme="light"]){
   --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
   --prog:#8AB0FF; --prog-soft:#1B2B4F; --isra:#6BD893; --isra-soft:#14351F; --isrb:#C9A2FF; --isrb-soft:#2E2147;
   --sig:#FF5A52; --sig-soft:#401A17; --on-solid:#0F1318; color-scheme:dark}}
-:root[data-theme="dark"]{
+:root[data-theme="dark-off"]{
   --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
   --prog:#8AB0FF; --prog-soft:#1B2B4F; --isra:#6BD893; --isra-soft:#14351F; --isrb:#C9A2FF; --isrb-soft:#2E2147;
   --sig:#FF5A52; --sig-soft:#401A17; --on-solid:#0F1318; color-scheme:dark}
@@ -254,8 +254,8 @@ body.t-sched .langin .seg[aria-label="Language"]{display:none}
 </style>
 <style id="calm">
 :root{--bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;--accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;--edge:#6B86B3;--disk:#DDE8F7;--disk-top:#C2D5EE;--pa:#5F7090;}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}}
-:root[data-theme="dark"]{--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}
+@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme="light"]){--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}}
+:root[data-theme="dark-off"]{--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}
 /* Calm palette: blue accent for selected states, frames and highlights. --ink is for text only. */
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
 .src:hover,.tstep:hover,.btn:hover,.opt:hover{border-color:var(--accent)}
@@ -274,7 +274,7 @@ body.t-sched .langin .seg[aria-label="Language"]{display:none}
 .pill{border:1px solid var(--edge)} .pill.solid{background:var(--accent);color:var(--on-accent)}
 button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
-<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-sched" aria-pressed="false">Scheduling</button><button id="tp-mem" aria-pressed="false">Memory</button></div>
+<div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-sched" aria-pressed="false">Scheduling</button><button id="tp-algo" aria-pressed="false">Algorithms</button><button id="tp-mem" aria-pressed="false">Memory</button></div>
 <div class="seg" role="group" aria-label="Language"><span class="cap">Language</span><button id="lg-en" data-l="en" aria-pressed="true">English</button><button id="lg-ja" data-l="ja" aria-pressed="false">日本語</button><button id="lg-zh" data-l="zh" aria-pressed="false">中文</button><button id="lg-th" data-l="th" aria-pressed="false">ไทย</button></div></div></div>
 <div id="intro">
 <div class="v-en" id="ven" lang="en">
@@ -868,13 +868,13 @@ button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outlin
   --font-body:&quot;IBM Plex Sans&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
   --font-mono:&quot;IBM Plex Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){
+@media (prefers-color-scheme: dark) and (max-width: 0px){
   :root:not([data-theme=&quot;light&quot;]){
     --bg:#0E151C; --surface:#16202A; --surface-2:#1E2A36; --ink:#E7EDF2; --ink-2:#9DAEBD; --line:#2B3A48;
     --accent:#7DB0F5; --accent-bg:#1B3350; --ok:#5FD08F; color-scheme:dark;
   }
 }
-:root[data-theme=&quot;dark&quot;]{
+:root[data-theme=&quot;dark-off&quot;]{
   --bg:#0E151C; --surface:#16202A; --surface-2:#1E2A36; --ink:#E7EDF2; --ink-2:#9DAEBD; --line:#2B3A48;
   --accent:#7DB0F5; --accent-bg:#1B3350; --ok:#5FD08F; color-scheme:dark;
 }
@@ -914,8 +914,8 @@ button:hover,select:hover{border-color:var(--ink-2)}
 button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button[aria-pressed=&quot;true&quot;]{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
 button.go{background:var(--accent);border-color:var(--accent);color:#fff}
-@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]) button.go{color:#0E151C}}
-:root[data-theme=&quot;dark&quot;] button.go{color:#0E151C}
+@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]) button.go{color:#0E151C}}
+:root[data-theme=&quot;dark-off&quot;] button.go{color:#0E151C}
 .spacer{flex:1}
 .clock{font-family:var(--font-mono);font-size:.95rem;color:var(--ink-2)}
 .clock b{font-size:1.5rem;color:var(--ink);font-weight:500}
@@ -1050,6 +1050,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
   &lt;div id=&quot;glance&quot; class=&quot;glance&quot;&gt;&lt;/div&gt;
 &lt;/section&gt;
 
+&lt;div style=&quot;max-width:960px;margin:0 auto;padding-top:18px&quot;&gt;&lt;button class=&quot;go&quot; id=&quot;goalgo&quot;&gt;Step through FCFS, SJF, SRTF and Round Robin →&lt;/button&gt;&lt;/div&gt;
 &lt;section id=&quot;compare&quot;&gt;
   &lt;h2&gt;The difference, side by side&lt;/h2&gt;
   &lt;div class=&quot;tablewrap&quot;&gt;
@@ -1237,7 +1238,763 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 })();
 &lt;/script&gt;
 
-&lt;script&gt;document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+&lt;script&gt;document.getElementById(&quot;goalgo&quot;).onclick=function(){parent.postMessage({go:&quot;algo&quot;},&quot;*&quot;)};document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark-off&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+<div id="algowrap" hidden><iframe id="algoframe" title="Scheduling algorithms: FCFS, SJF, SRTF, round robin" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;title&gt;Scheduling Algorithms Lab&lt;/title&gt;
+&lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+&lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=JetBrains+Mono:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;700&amp;family=Noto+Sans+SC:wght@400;700&amp;family=Sarabun:wght@400;700&amp;display=swap&quot;&gt;
+&lt;style&gt;
+/* Light theme only (teacher asked for a bright page on every device). Layout: the same calm lab notebook as the Memory tab. One stage (not arrived → ready queue → CPU → finished) and a textbook-style Gantt chart under it. Colour = which process. */
+:root{
+  --bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;
+  --accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;--edge:#6B86B3;
+  --warn:#B4461B;--warn-soft:#FBEDE6;
+  --p1:#C2410C;--p2:#0F766E;--p3:#6D28D9;--p4:#BE185D;--p5:#4D7C0F;--p6:#0E6AA8;--on-p:#FFFFFF;
+  --f-display:&quot;Bricolage Grotesque&quot;,&quot;Zen Kaku Gothic New&quot;,&quot;Noto Sans SC&quot;,&quot;Sarabun&quot;,system-ui,sans-serif;
+  --f-body:&quot;Atkinson Hyperlegible&quot;,&quot;Zen Kaku Gothic New&quot;,&quot;Noto Sans SC&quot;,&quot;Sarabun&quot;,system-ui,sans-serif;
+  --f-mono:&quot;JetBrains Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-block:0 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:lang(ja) body,body:lang(ja){font-family:&quot;Zen Kaku Gothic New&quot;,&quot;Atkinson Hyperlegible&quot;,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:18px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.9rem,4.6vw,2.8rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.3rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.lede{color:var(--muted);max-width:68ch}
+header{padding-block:28px 0;display:grid;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.lab{font-size:.8rem;color:var(--muted);letter-spacing:.02em}
+.mono{font-family:var(--f-mono)}
+button,select,input{font:inherit;font-size:.92rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px}
+button,select{padding:7px 12px;min-height:38px;cursor:pointer}
+button:hover,select:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+
+.langbar{display:flex;justify-content:flex-end;gap:6px;padding-top:14px;flex-wrap:wrap}
+.langbar button[aria-pressed=&quot;true&quot;]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+/* algorithm picker */
+.algos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.algos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.algo{display:grid;gap:2px;text-align:left;padding:12px 14px;border-radius:10px;border:2px solid var(--line);background:var(--panel)}
+.algo b{font-family:var(--f-display);font-size:1.35rem;font-weight:800;line-height:1.1}
+.algo span{font-size:.82rem;color:var(--muted);line-height:1.3}
+.algo .tag{justify-self:start;margin-top:6px;font-family:var(--f-mono);font-size:.7rem;padding:2px 7px;border-radius:999px;border:1px solid var(--edge);color:var(--accent-ink)}
+.algo .tag.pre{background:var(--accent-soft)}
+.algo[aria-pressed=&quot;true&quot;]{border-color:var(--accent);background:var(--accent-soft)}
+.algo[aria-pressed=&quot;true&quot;] b{color:var(--accent-ink)}
+
+.rule{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+@media (max-width:720px){.rule{grid-template-columns:minmax(0,1fr)}}
+.rule p{max-width:62ch}
+.when{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.when b{display:block;font-size:.78rem;color:var(--muted);font-weight:700;letter-spacing:.03em}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.spacer{flex:1}
+.clock{font-family:var(--f-mono);color:var(--muted);font-size:.95rem}
+.clock b{font-size:1.7rem;color:var(--ink);font-weight:600}
+
+/* stage */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1.05fr) minmax(0,1fr);gap:10px;margin-top:14px}
+@media (max-width:820px){.stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.zone{border:2px dashed var(--line);border-radius:10px;padding:10px;min-height:150px;display:grid;grid-template-rows:auto 1fr;gap:8px;min-width:0}
+.zone h3{font-size:.86rem;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.zone h3 small{font-family:var(--f-mono);font-weight:400;font-size:.7rem;color:var(--muted)}
+.zone .bin{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;min-height:62px}
+.zone.ready{border-color:var(--edge);background:var(--soft)}
+.zone.ready .bin{flex-wrap:wrap}
+.zone.cpu{border:3px solid var(--accent);background:var(--accent-soft)}
+.zone.cpu .bin{justify-content:center;align-content:center;min-height:80px}
+.zone.cpu .idle{font-family:var(--f-mono);color:var(--muted);font-size:.9rem}
+.zone.done .bin{opacity:.92}
+.qbar{display:flex;gap:3px}
+.qbar i{flex:1;height:10px;border-radius:3px;border:1px solid var(--edge);background:var(--panel)}
+.qbar i.on{background:var(--accent);border-color:var(--accent)}
+.qbar i.now{background:repeating-linear-gradient(45deg,var(--accent) 0 3px,transparent 3px 6px);border-color:var(--accent)}
+.qtxt{font-size:.78rem;color:var(--muted);min-height:1.3em}
+
+.pc{position:relative;display:inline-grid;gap:3px;min-width:70px;padding:6px 9px 7px;border-radius:9px;background:var(--c);color:var(--on-p);
+  border:2px solid color-mix(in srgb,var(--c) 60%,#0B1220);will-change:transform}
+.shp{font-family:system-ui,sans-serif;margin-right:4px;font-size:.9em}
+.pc .nm{font-family:var(--f-mono);font-weight:600;font-size:1rem;line-height:1.1}
+.pc .sub{font-size:.72rem;line-height:1.2;opacity:.95;white-space:nowrap}
+.pc .bar{height:5px;border-radius:3px;background:rgba(255,255,255,.3);overflow:hidden}
+.pc .bar i{display:block;height:100%;background:#fff;transition:width .3s}
+.zone.cpu .pc{min-width:110px;padding:10px 14px}
+.zone.cpu .shp{font-family:system-ui,sans-serif;margin-right:4px;font-size:.9em}
+.pc .nm{font-size:1.4rem}
+.zone.done .pc{opacity:.55}
+.pc.pick{box-shadow:0 0 0 3px var(--panel),0 0 0 6px var(--accent)}
+.pc.kick{box-shadow:0 0 0 3px var(--panel),0 0 0 6px var(--warn)}
+.pc .key{position:absolute;top:-9px;right:-6px;font-family:var(--f-mono);font-size:.66rem;padding:1px 5px;border-radius:999px;background:var(--panel);color:var(--accent-ink);border:1px solid var(--accent)}
+
+.msg{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--soft);border-left:4px solid var(--accent);min-height:3.4em}
+.msg p+p{margin-top:4px}
+.msg .t{font-family:var(--f-mono);font-size:.78rem;color:var(--accent-ink);font-weight:600}
+.msg .warn{color:var(--warn);font-weight:700}
+
+/* gantt */
+.gscroll{overflow-x:auto;padding-bottom:4px}
+.gantt{position:relative;min-width:560px;padding:4px 16px 0}
+.gantt&gt;div{position:relative}
+.gtrack{position:relative;height:44px;border:1px solid var(--edge);border-radius:4px;background:var(--soft)}
+.gseg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;background:var(--c);color:var(--on-p);
+  font-family:var(--f-mono);font-weight:600;font-size:.82rem;border-right:2px solid var(--panel);overflow:hidden;white-space:nowrap}
+.gseg.idle{background:repeating-linear-gradient(45deg,var(--line) 0 4px,transparent 4px 8px);color:var(--muted)}
+.gnow{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px solid var(--ink)}
+.gaxis{position:relative;height:20px}
+.gaxis span{position:absolute;transform:translateX(-50%);font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.garr{position:relative;height:30px;border-top:1px dashed var(--line);margin-top:2px}
+.garr span{position:absolute;top:2px;transform:translateX(-50%);font-family:var(--f-mono);font-size:.68rem;color:var(--muted);text-align:center;line-height:1.1}
+.garr span::before{content:&quot;▲&quot;;display:block;color:var(--c);font-size:.7rem}
+
+/* data + results */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:.76rem;color:var(--muted);font-weight:700;text-align:right;vertical-align:bottom;white-space:normal}
+th:first-child,td:first-child{text-align:left}
+td .shp{color:var(--c);font-size:1.05em}
+td .dot{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--c);margin-right:6px;vertical-align:-1px}
+td input{width:4.2em;padding:4px 6px;text-align:right;font-family:var(--f-mono)}
+td button{min-height:30px;padding:2px 9px}
+tfoot td{border-bottom:0;font-weight:700}
+.pending{color:var(--muted)}
+.calc{margin-top:10px;font-family:var(--f-mono);font-size:.82rem;color:var(--muted);line-height:1.5}
+.calc b{color:var(--ink)}
+
+/* compare */
+.cmp{display:grid;gap:10px}
+.crow{display:grid;grid-template-columns:7.5rem minmax(0,1fr) 8.5rem;gap:12px;align-items:center;text-align:left;padding:8px 10px;border-radius:10px;border:2px solid transparent;background:transparent}
+.crow[aria-pressed=&quot;true&quot;]{border-color:var(--accent);background:var(--accent-soft)}
+.crow b{font-family:var(--f-display);font-size:1.05rem}
+.crow small{display:block;font-size:.72rem;color:var(--muted);line-height:1.2}
+.mini{position:relative;height:22px;border-radius:3px;background:var(--soft);border:1px solid var(--line);overflow:hidden}
+.mini i{position:absolute;top:0;bottom:0;background:var(--c);border-right:1px solid var(--panel)}
+.mini i.idle{background:transparent}
+.crow .avg{font-family:var(--f-mono);font-size:.86rem;text-align:right}
+.crow .avg strong{font-size:1.15rem}
+.crow .avg.best strong{color:var(--accent-ink)}
+@media (max-width:560px){.crow{grid-template-columns:minmax(0,1fr) auto}.crow .mini{grid-column:1/-1;grid-row:2}}
+
+/* exam + notes */
+.exam{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.exam{grid-template-columns:minmax(0,1fr)}}
+.exam ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:4px}
+.say{border-left:3px solid var(--accent);padding:2px 0 2px 14px}
+.pm{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:.92rem;margin-top:8px}
+.pm b{font-family:var(--f-mono);font-size:.8rem;padding-top:2px}
+.pm .plus{color:var(--accent-ink)} .pm .minus{color:var(--warn)}
+.note{font-size:.88rem;color:var(--muted);max-width:75ch}
+.tbk{background:var(--warn-soft);border:1px solid var(--warn);border-radius:10px;padding:12px 14px;font-size:.92rem}
+.tbk b{color:var(--warn)}
+.hint{font-size:.86rem;color:var(--accent-ink);background:var(--accent-soft);border-radius:8px;padding:8px 12px}
+.hint button{margin-left:8px;min-height:30px;padding:2px 10px}
+@media (prefers-reduced-motion:reduce){.pc .bar i{transition:none}}
+&lt;/style&gt;
+
+&lt;div class=&quot;wrap&quot;&gt;
+  &lt;div class=&quot;langbar&quot; id=&quot;langbar&quot; role=&quot;group&quot; aria-label=&quot;Language&quot;&gt;
+    &lt;button id=&quot;lg-en&quot; aria-pressed=&quot;true&quot;&gt;English&lt;/button&gt;&lt;button id=&quot;lg-ja&quot; aria-pressed=&quot;false&quot;&gt;日本語&lt;/button&gt;&lt;button id=&quot;lg-zh&quot; aria-pressed=&quot;false&quot;&gt;中文&lt;/button&gt;&lt;button id=&quot;lg-th&quot; aria-pressed=&quot;false&quot;&gt;ไทย&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;header&gt;
+    &lt;p class=&quot;eyebrow&quot;&gt;Cambridge 9618 · 16.1 Process management&lt;/p&gt;
+    &lt;h1 id=&quot;h1&quot;&gt;&lt;/h1&gt;
+    &lt;p class=&quot;lede&quot; id=&quot;lede&quot;&gt;&lt;/p&gt;
+  &lt;/header&gt;
+
+  &lt;div class=&quot;algos&quot; id=&quot;algos&quot; role=&quot;group&quot; aria-label=&quot;Algorithm&quot;&gt;&lt;/div&gt;
+
+  &lt;div class=&quot;panel rule&quot;&gt;
+    &lt;div&gt;&lt;h2 id=&quot;ruleH&quot;&gt;&lt;/h2&gt;&lt;p id=&quot;ruleP&quot; style=&quot;margin-top:6px&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;when&quot;&gt;&lt;b id=&quot;whenH&quot;&gt;&lt;/b&gt;&lt;span id=&quot;whenP&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;panel&quot;&gt;
+    &lt;div class=&quot;controls&quot;&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;play&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;back&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;step&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;reset&quot;&gt;&lt;/button&gt;
+      &lt;label class=&quot;lab&quot; for=&quot;speed&quot; id=&quot;speedL&quot;&gt;&lt;/label&gt;
+      &lt;select id=&quot;speed&quot;&gt;&lt;/select&gt;
+      &lt;label class=&quot;lab&quot; for=&quot;qsel&quot; id=&quot;qL&quot;&gt;&lt;/label&gt;
+      &lt;select id=&quot;qsel&quot;&gt;&lt;option&gt;1&lt;/option&gt;&lt;option&gt;2&lt;/option&gt;&lt;option&gt;3&lt;/option&gt;&lt;option&gt;4&lt;/option&gt;&lt;option selected&gt;5&lt;/option&gt;&lt;option&gt;8&lt;/option&gt;&lt;option&gt;10&lt;/option&gt;&lt;/select&gt;
+      &lt;span class=&quot;spacer&quot;&gt;&lt;/span&gt;
+      &lt;span class=&quot;clock&quot;&gt;t = &lt;b id=&quot;clock&quot;&gt;0&lt;/b&gt; ms&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;hint&quot; class=&quot;hint&quot; hidden style=&quot;margin-top:12px&quot;&gt;&lt;/div&gt;
+    &lt;div class=&quot;stage&quot;&gt;
+      &lt;div class=&quot;zone&quot; id=&quot;zNotW&quot;&gt;&lt;h3&gt;&lt;span id=&quot;zNotH&quot;&gt;&lt;/span&gt;&lt;small&gt;t &amp;lt; arrival&lt;/small&gt;&lt;/h3&gt;&lt;div class=&quot;bin&quot; id=&quot;zNot&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;zone ready&quot;&gt;&lt;h3&gt;&lt;span id=&quot;zReadyH&quot;&gt;&lt;/span&gt;&lt;small id=&quot;zReadyS&quot;&gt;&lt;/small&gt;&lt;/h3&gt;&lt;div class=&quot;bin&quot; id=&quot;zReady&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;zone cpu&quot;&gt;&lt;h3&gt;&lt;span&gt;CPU&lt;/span&gt;&lt;small id=&quot;zCpuS&quot;&gt;&lt;/small&gt;&lt;/h3&gt;&lt;div class=&quot;bin&quot; id=&quot;zCpu&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div class=&quot;qbar&quot; id=&quot;qbar&quot;&gt;&lt;/div&gt;&lt;div class=&quot;qtxt&quot; id=&quot;qtxt&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;zone done&quot;&gt;&lt;h3&gt;&lt;span id=&quot;zDoneH&quot;&gt;&lt;/span&gt;&lt;/h3&gt;&lt;div class=&quot;bin&quot; id=&quot;zDone&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;msg&quot; id=&quot;msg&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;panel&quot;&gt;
+    &lt;h2 id=&quot;gH&quot;&gt;&lt;/h2&gt;
+    &lt;p class=&quot;note&quot; id=&quot;gN&quot; style=&quot;margin:4px 0 10px&quot;&gt;&lt;/p&gt;
+    &lt;div class=&quot;gscroll&quot;&gt;&lt;div class=&quot;gantt&quot; id=&quot;gantt&quot;&gt;&lt;div class=&quot;gtrack&quot; id=&quot;gtrack&quot;&gt;&lt;/div&gt;&lt;div class=&quot;gaxis&quot; id=&quot;gaxis&quot;&gt;&lt;/div&gt;&lt;div class=&quot;garr&quot; id=&quot;garr&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;two&quot;&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h2 id=&quot;dH&quot;&gt;&lt;/h2&gt;
+      &lt;div class=&quot;controls&quot; style=&quot;margin:8px 0 10px&quot;&gt;&lt;select id=&quot;preset&quot; aria-label=&quot;Example data&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+      &lt;div class=&quot;tscroll&quot;&gt;&lt;table id=&quot;dtab&quot;&gt;&lt;/table&gt;&lt;/div&gt;
+      &lt;div class=&quot;controls&quot; style=&quot;margin-top:10px&quot;&gt;&lt;button id=&quot;addp&quot;&gt;&lt;/button&gt;&lt;/div&gt;
+      &lt;p class=&quot;note&quot; id=&quot;dN&quot; style=&quot;margin-top:10px&quot;&gt;&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;panel&quot;&gt;
+      &lt;h2 id=&quot;rH&quot;&gt;&lt;/h2&gt;
+      &lt;div class=&quot;tscroll&quot;&gt;&lt;table id=&quot;rtab&quot;&gt;&lt;/table&gt;&lt;/div&gt;
+      &lt;div class=&quot;calc&quot; id=&quot;calc&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;panel&quot;&gt;
+    &lt;h2 id=&quot;cH&quot;&gt;&lt;/h2&gt;
+    &lt;p class=&quot;note&quot; id=&quot;cN&quot; style=&quot;margin:4px 0 10px&quot;&gt;&lt;/p&gt;
+    &lt;div class=&quot;cmp&quot; id=&quot;cmp&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;tbk&quot; class=&quot;tbk&quot; hidden&gt;&lt;/div&gt;
+
+  &lt;section class=&quot;panel&quot; style=&quot;display:grid;gap:12px&quot;&gt;
+    &lt;h2 id=&quot;eH&quot;&gt;&lt;/h2&gt;
+    &lt;div class=&quot;exam&quot; id=&quot;exam&quot;&gt;&lt;/div&gt;
+    &lt;p class=&quot;note&quot; id=&quot;eN&quot;&gt;&lt;/p&gt;
+  &lt;/section&gt;
+
+  &lt;p class=&quot;note&quot; id=&quot;foot&quot;&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+(function(){
+const $=id=&gt;document.getElementById(id);
+const ALG=[&#x27;fcfs&#x27;,&#x27;sjf&#x27;,&#x27;srtf&#x27;,&#x27;rr&#x27;];
+const COLORS=[&#x27;--p1&#x27;,&#x27;--p2&#x27;,&#x27;--p3&#x27;,&#x27;--p4&#x27;,&#x27;--p5&#x27;,&#x27;--p6&#x27;];
+const SHAPE=[&#x27;●&#x27;,&#x27;▲&#x27;,&#x27;■&#x27;,&#x27;◆&#x27;,&#x27;★&#x27;,&#x27;⬢&#x27;];
+const PRESETS={
+  tbA:{p:[[0,23],[0,4],[0,9],[0,3]]},
+  tbB:{p:[[0,23],[1,4],[2,9],[3,3]]},
+  small:{p:[[0,7],[2,4],[4,1],[5,4]]}
+};
+const FIG={fcfs:&#x27;tbA&#x27;,sjf:&#x27;tbA&#x27;,srtf:&#x27;tbB&#x27;,rr:&#x27;tbA&#x27;};
+
+/* ---------- text ---------- */
+const TX={
+en:{
+  h1:&#x27;Four scheduling routines, one millisecond at a time&#x27;,
+  lede:&#x27;The same processes go through first come first served, shortest job first, shortest remaining time first and round robin. Watch where each process is at every moment, and how the waiting times change.&#x27;,
+  name:{fcfs:&#x27;First come first served&#x27;,sjf:&#x27;Shortest job first&#x27;,srtf:&#x27;Shortest remaining time first&#x27;,rr:&#x27;Round robin&#x27;},
+  pre:&#x27;preemptive&#x27;,non:&#x27;non-preemptive&#x27;,
+  rule:{
+    fcfs:&#x27;Processes run in the order they arrive, like a FIFO queue. Burst time is ignored. Once a process has the CPU, it keeps it until its burst is finished.&#x27;,
+    sjf:&#x27;When the CPU is free, the process in the ready queue with the shortest burst time runs next. Once it starts, it runs to the end. Burst times must be known, or estimated, in advance.&#x27;,
+    srtf:&#x27;The preemptive version of SJF. When a new process arrives, its burst time is compared with the remaining time of the running process. If the new one is shorter, the running process is pre-empted and goes back to the ready queue.&#x27;,
+    rr:&#x27;Every process gets the CPU in turn for a fixed time slice, the quantum. When the quantum runs out, a timer interrupt pre-empts the process, its state is saved in its PCB, and it goes to the back of the ready queue.&#x27;},
+  whenH:&#x27;When does the scheduler choose?&#x27;,
+  when:{fcfs:&#x27;Only when the running process finishes.&#x27;,sjf:&#x27;Only when the running process finishes.&#x27;,srtf:&#x27;When a process finishes, and every time a new process arrives.&#x27;,rr:&#x27;When a process finishes, and when the quantum runs out.&#x27;},
+  play:&#x27;Play&#x27;,pause:&#x27;Pause&#x27;,back:&#x27;◀ Back 1 ms&#x27;,step:&#x27;Step 1 ms ▶&#x27;,reset:&#x27;Reset&#x27;,speed:&#x27;Speed&#x27;,sp:[&#x27;Slow&#x27;,&#x27;Normal&#x27;,&#x27;Fast&#x27;],quant:&#x27;Quantum (RR)&#x27;,
+  zNot:&#x27;Not arrived yet&#x27;,zReady:&#x27;Ready queue&#x27;,zDone:&#x27;Finished&#x27;,
+  rdyBy:{fcfs:&#x27;front = first to arrive&#x27;,sjf:&#x27;shortest burst runs next&#x27;,srtf:&#x27;shortest remaining runs next&#x27;,rr:&#x27;front runs next&#x27;},
+  cpuS:{fcfs:&#x27;runs to the end&#x27;,sjf:&#x27;runs to the end&#x27;,srtf:&#x27;can be pre-empted&#x27;,rr:&#x27;max one quantum&#x27;},
+  idle:&#x27;idle&#x27;,allDone:&#x27;all done&#x27;,
+  arrSub:a=&gt;&#x27;arrives t=&#x27;+a,burstSub:b=&gt;&#x27;burst &#x27;+b,remSub:r=&gt;r+&#x27; ms left&#x27;,doneSub:f=&gt;&#x27;done t=&#x27;+f,
+  qtxt:(u,q)=&gt;&#x27;quantum used: &#x27;+u+&#x27; of &#x27;+q+&#x27; ms&#x27;,
+  gH:&#x27;Gantt chart&#x27;,gN:&#x27;Each block is one stretch of CPU time. The numbers under the bar are the times when the CPU changes hands. ▲ marks when each process arrives.&#x27;,
+  dH:&#x27;Processes&#x27;,pr:{tbA:&#x27;Textbook example: all arrive at t = 0&#x27;,tbB:&#x27;Textbook SRTF example: arrive at 0, 1, 2, 3&#x27;,small:&#x27;Short example: 4 processes, 16 ms&#x27;,custom:&#x27;Your own data&#x27;},
+  col:{p:&#x27;Process&#x27;,a:&#x27;Arrival (ms)&#x27;,b:&#x27;Burst (ms)&#x27;,f:&#x27;Finish&#x27;,ta:&#x27;Turnaround&#x27;,w:&#x27;Waiting&#x27;},
+  add:&#x27;+ Add a process&#x27;,del:&#x27;Remove&#x27;,
+  dN:&#x27;Change any arrival or burst time and every chart updates. Up to 6 processes.&#x27;,
+  rH:&#x27;Waiting time&#x27;,avg:&#x27;Average&#x27;,
+  calcIntro:&#x27;Turnaround = finish − arrival. Waiting = turnaround − burst.&#x27;,
+  avgLine:(sum,n,v)=&gt;&#x27;Average waiting time = (&#x27;+sum+&#x27;) ÷ &#x27;+n+&#x27; = &#x27;+v+&#x27; ms&#x27;,
+  notYet:&#x27;Fills in when each process finishes.&#x27;,
+  cH:&#x27;All four on the same data&#x27;,cN:&#x27;Same processes, same quantum. Click a row to watch that routine. The switch count is how many times the CPU changes from one process to another.&#x27;,
+  sw:n=&gt;n+&#x27; switches&#x27;,avgW:&#x27;avg wait&#x27;,
+  hint:&#x27;All processes arrive at t = 0 here, so SRTF can never pre-empt and gives the same order as SJF.&#x27;,hintBtn:&#x27;Use arrivals 0, 1, 2, 3&#x27;,
+  changed:(f)=&gt;&#x27;Data switched to the textbook example for this routine (&#x27;+f+&#x27;).&#x27;,
+  tbk:&#x27;&lt;b&gt;Textbook Figure 16.7 differs from this simulation.&lt;/b&gt; The figure pre-empts P2 at t = 3 because P4\&#x27;s burst (3 ms) is shorter than P2\&#x27;s original burst (4 ms). SRTF compares with the &lt;i&gt;remaining&lt;/i&gt; time: P2 has only 2 ms left at t = 3, so P2 keeps the CPU. The correct average waiting time is 6 ms, not 6.25 ms.&#x27;,
+  eH:&#x27;How to describe each routine in an exam&#x27;,
+  ex:{
+    fcfs:[&#x27;Processes are executed in the order they arrive in the ready queue (FIFO).&#x27;,&#x27;Non-preemptive: a process keeps the CPU until it finishes its burst time.&#x27;],
+    sjf:[&#x27;The process with the shortest burst time in the ready queue is executed next.&#x27;,&#x27;Non-preemptive: once started, it runs until it finishes.&#x27;,&#x27;Burst time must be known or estimated in advance.&#x27;],
+    srtf:[&#x27;The process with the shortest remaining time is executed next.&#x27;,&#x27;Preemptive: when a new process arrives with a shorter burst time than the remaining time of the running process, the running process is pre-empted and returned to the ready queue.&#x27;],
+    rr:[&#x27;Each process is given a fixed time slice (quantum) in turn.&#x27;,&#x27;When the quantum ends, the process is pre-empted, its state is saved, and it goes to the back of the ready queue.&#x27;]},
+  plus:{fcfs:&#x27;Simple, and fair in order of arrival.&#x27;,sjf:&#x27;Lowest average waiting time of the non-preemptive routines.&#x27;,srtf:&#x27;Short new jobs finish quickly. Lowest average waiting time.&#x27;,rr:&#x27;Fair: every process gets regular CPU time, so none is starved.&#x27;},
+  minus:{fcfs:&#x27;A long job at the front makes short jobs wait a long time.&#x27;,sjf:&#x27;Long jobs can be starved if short jobs keep arriving.&#x27;,srtf:&#x27;More context switches. Long jobs can be starved.&#x27;,rr:&#x27;Many context switches if the quantum is small. Behaves like FCFS if it is large.&#x27;},
+  eN:&#x27;The 2022 examiner report warns that writing only &quot;the shortest job is processed first&quot; does not say enough. Say what is compared, when the decision is made, and whether the process can be pre-empted.&#x27;,
+  foot:&#x27;Tie rules used here: equal values are taken in arrival order. In SRTF, a new process must be strictly shorter to pre-empt. In round robin, a process that arrives at the same moment a quantum ends joins the queue before the pre-empted process. Context-switch time is taken as zero.&#x27;,
+  ev:{
+    arr:p=&gt;p+&#x27; arrives and joins the ready queue.&#x27;,
+    fin:p=&gt;p+&#x27; finishes its burst and leaves the CPU.&#x27;,
+    selF:p=&gt;p+&#x27; is at the front of the ready queue, so it gets the CPU.&#x27;,
+    selR:(p,q)=&gt;p+&#x27; is at the front of the ready queue. It gets the CPU for up to &#x27;+q+&#x27; ms.&#x27;,
+    selS:(p,v,list)=&gt;&#x27;Shortest burst in the ready queue: &#x27;+p+&#x27; (&#x27;+v+&#x27; ms). Compared: &#x27;+list+&#x27;. &#x27;+p+&#x27; gets the CPU.&#x27;,
+    selT:(p,v,list)=&gt;&#x27;Shortest remaining time: &#x27;+p+&#x27; (&#x27;+v+&#x27; ms). Compared: &#x27;+list+&#x27;. &#x27;+p+&#x27; gets the CPU.&#x27;,
+    pre:(n,nv,c,cv)=&gt;n+&#x27; needs &#x27;+nv+&#x27; ms, less than &#x27;+c+&#x27;\&#x27;s remaining &#x27;+cv+&#x27; ms. &#x27;+c+&#x27; is pre-empted and goes back to the ready queue. &#x27;+n+&#x27; gets the CPU.&#x27;,
+    keep:(n,nv,c,cv)=&gt;n+&#x27; needs &#x27;+nv+&#x27; ms, which is not less than &#x27;+c+&#x27;\&#x27;s remaining &#x27;+cv+&#x27; ms. &#x27;+c+&#x27; keeps the CPU.&#x27;,
+    wait:(c)=&gt;c+&#x27; is running and cannot be interrupted, so the new process waits.&#x27;,
+    rrWait:(c)=&gt;c+&#x27; carries on until its quantum ends.&#x27;,
+    qexp:(c,q,l)=&gt;c+&#x27; has used its full &#x27;+q+&#x27; ms quantum and still needs &#x27;+l+&#x27; ms. Timer interrupt: it is pre-empted and goes to the back of the queue.&#x27;,
+    run:(c,l)=&gt;c+&#x27; is running (&#x27;+l+&#x27; ms left).&#x27;,
+    idle:&#x27;No process is in the ready queue. The CPU is idle.&#x27;,
+    start:&#x27;Press Play or Step to start.&#x27;,
+    done:&#x27;Every process has finished. Check the waiting times below.&#x27;}
+},
+ja:{
+  h1:&#x27;4つのスケジューリング方式を 1 ms ずつ見る&#x27;,
+  lede:&#x27;同じプロセスを FCFS、SJF、SRTF、ラウンドロビンで動かします。各プロセスがいまどこにいるか、待ち時間がどう変わるかを見比べましょう。&#x27;,
+  name:{fcfs:&#x27;先着順 (First come first served)&#x27;,sjf:&#x27;最短ジョブ優先 (Shortest job first)&#x27;,srtf:&#x27;最短残り時間優先 (Shortest remaining time first)&#x27;,rr:&#x27;ラウンドロビン (Round robin)&#x27;},
+  pre:&#x27;プリエンプティブ&#x27;,non:&#x27;ノンプリエンプティブ&#x27;,
+  rule:{
+    fcfs:&#x27;到着した順に実行します（FIFO キューと同じ）。バースト時間は見ません。CPU を得たプロセスは、バーストが終わるまで CPU を手放しません。&#x27;,
+    sjf:&#x27;CPU が空いたとき、レディキューの中でバースト時間が最も短いプロセスを次に実行します。一度始まったら最後まで実行します。バースト時間を前もって知っている（推定できる）必要があります。&#x27;,
+    srtf:&#x27;SJF のプリエンプティブ版です。新しいプロセスが到着すると、そのバースト時間と、実行中のプロセスの残り時間を比べます。新しい方が短ければ、実行中のプロセスは中断（プリエンプト）され、レディキューに戻ります。&#x27;,
+    rr:&#x27;各プロセスに、順番に一定の時間（タイムクォンタム）だけ CPU を与えます。クォンタムが切れるとタイマー割り込みでプロセスを中断し、状態を PCB に保存して、レディキューの最後に並ばせます。&#x27;},
+  whenH:&#x27;スケジューラが次を選ぶタイミング&#x27;,
+  when:{fcfs:&#x27;実行中のプロセスが終わったときだけ。&#x27;,sjf:&#x27;実行中のプロセスが終わったときだけ。&#x27;,srtf:&#x27;プロセスが終わったとき、そして新しいプロセスが到着するたび。&#x27;,rr:&#x27;プロセスが終わったとき、そしてクォンタムが切れたとき。&#x27;},
+  play:&#x27;再生&#x27;,pause:&#x27;一時停止&#x27;,back:&#x27;◀ 1 ms 戻る&#x27;,step:&#x27;1 ms 進む ▶&#x27;,reset:&#x27;リセット&#x27;,speed:&#x27;速さ&#x27;,sp:[&#x27;ゆっくり&#x27;,&#x27;ふつう&#x27;,&#x27;速い&#x27;],quant:&#x27;クォンタム (RR)&#x27;,
+  zNot:&#x27;まだ到着していない&#x27;,zReady:&#x27;レディキュー&#x27;,zDone:&#x27;終了&#x27;,
+  rdyBy:{fcfs:&#x27;先頭 = 先に着いた順&#x27;,sjf:&#x27;バーストが最短のものが次&#x27;,srtf:&#x27;残り時間が最短のものが次&#x27;,rr:&#x27;先頭が次&#x27;},
+  cpuS:{fcfs:&#x27;最後まで実行&#x27;,sjf:&#x27;最後まで実行&#x27;,srtf:&#x27;中断されることがある&#x27;,rr:&#x27;最大 1 クォンタム&#x27;},
+  idle:&#x27;アイドル&#x27;,allDone:&#x27;すべて終了&#x27;,
+  arrSub:a=&gt;&#x27;到着 t=&#x27;+a,burstSub:b=&gt;&#x27;バースト &#x27;+b,remSub:r=&gt;&#x27;残り &#x27;+r+&#x27; ms&#x27;,doneSub:f=&gt;&#x27;終了 t=&#x27;+f,
+  qtxt:(u,q)=&gt;&#x27;クォンタム使用: &#x27;+u+&#x27; / &#x27;+q+&#x27; ms&#x27;,
+  gH:&#x27;ガントチャート&#x27;,gN:&#x27;1 つのブロックが、CPU を続けて使った 1 区間です。バーの下の数字は CPU の持ち主が変わる時刻です。▲ は各プロセスの到着時刻です。&#x27;,
+  dH:&#x27;プロセス&#x27;,pr:{tbA:&#x27;教科書の例：全員 t = 0 に到着&#x27;,tbB:&#x27;教科書の SRTF の例：0, 1, 2, 3 に到着&#x27;,small:&#x27;短い例：4 プロセス、16 ms&#x27;,custom:&#x27;自分で入力したデータ&#x27;},
+  col:{p:&#x27;プロセス&#x27;,a:&#x27;到着 (ms)&#x27;,b:&#x27;バースト (ms)&#x27;,f:&#x27;終了&#x27;,ta:&#x27;ターンアラウンド&#x27;,w:&#x27;待ち時間&#x27;},
+  add:&#x27;+ プロセスを追加&#x27;,del:&#x27;削除&#x27;,
+  dN:&#x27;到着時刻やバースト時間を変えると、すべての図が更新されます。最大 6 プロセス。&#x27;,
+  rH:&#x27;待ち時間&#x27;,avg:&#x27;平均&#x27;,
+  calcIntro:&#x27;ターンアラウンド時間 = 終了 − 到着。待ち時間 = ターンアラウンド時間 − バースト。&#x27;,
+  avgLine:(sum,n,v)=&gt;&#x27;平均待ち時間 = (&#x27;+sum+&#x27;) ÷ &#x27;+n+&#x27; = &#x27;+v+&#x27; ms&#x27;,
+  notYet:&#x27;各プロセスが終わると埋まります。&#x27;,
+  cH:&#x27;同じデータで 4 方式を比べる&#x27;,cN:&#x27;同じプロセス、同じクォンタムです。行をクリックすると、その方式のアニメーションに切り替わります。切り替え回数は、CPU が別のプロセスに渡った回数です。&#x27;,
+  sw:n=&gt;&#x27;切り替え &#x27;+n+&#x27; 回&#x27;,avgW:&#x27;平均待ち&#x27;,
+  hint:&#x27;このデータでは全員が t = 0 に到着するので、SRTF は一度もプリエンプトできず、SJF と同じ順番になります。&#x27;,hintBtn:&#x27;到着を 0, 1, 2, 3 にする&#x27;,
+  changed:(f)=&gt;&#x27;この方式の教科書の例（&#x27;+f+&#x27;）のデータに切り替えました。&#x27;,
+  tbk:&#x27;&lt;b&gt;教科書の図 16.7 は、このシミュレーションと違います。&lt;/b&gt;図では t = 3 で P2 が中断されています。P4 のバースト (3 ms) が P2 の元のバースト (4 ms) より短いからです。しかし SRTF が比べるのは&lt;i&gt;残り時間&lt;/i&gt;です。t = 3 の時点で P2 の残りは 2 ms なので、P2 が CPU を使い続けます。正しい平均待ち時間は 6.25 ms ではなく 6 ms です。&#x27;,
+  eH:&#x27;試験での説明の仕方&#x27;,
+  ex:{
+    fcfs:[&#x27;レディキューに到着した順にプロセスを実行する (FIFO)。&#x27;,&#x27;ノンプリエンプティブ：プロセスはバースト時間が終わるまで CPU を持ち続ける。&#x27;],
+    sjf:[&#x27;レディキューの中でバースト時間が最も短いプロセスを次に実行する。&#x27;,&#x27;ノンプリエンプティブ：一度始まったら終わるまで実行する。&#x27;,&#x27;バースト時間を前もって知っている（推定する）必要がある。&#x27;],
+    srtf:[&#x27;残り時間が最も短いプロセスを次に実行する。&#x27;,&#x27;プリエンプティブ：実行中のプロセスの残り時間より短いバースト時間のプロセスが到着すると、実行中のプロセスは中断され、レディキューに戻される。&#x27;],
+    rr:[&#x27;各プロセスに順番に一定のタイムスライス（クォンタム）を与える。&#x27;,&#x27;クォンタムが終わるとプロセスは中断され、状態が保存され、レディキューの最後に戻る。&#x27;]},
+  plus:{fcfs:&#x27;仕組みが単純で、到着順という意味で公平。&#x27;,sjf:&#x27;ノンプリエンプティブの方式の中で平均待ち時間が最も短い。&#x27;,srtf:&#x27;新しく来た短い仕事がすぐ終わる。平均待ち時間が最も短い。&#x27;,rr:&#x27;公平：どのプロセスも定期的に CPU を使えるので、飢餓状態にならない。&#x27;},
+  minus:{fcfs:&#x27;長い仕事が先頭にあると、短い仕事が長く待たされる。&#x27;,sjf:&#x27;短い仕事が来続けると、長い仕事が飢餓状態になる。&#x27;,srtf:&#x27;コンテキストスイッチが多い。長い仕事が飢餓状態になりうる。&#x27;,rr:&#x27;クォンタムが小さいとコンテキストスイッチが多い。大きいと FCFS と同じ動きになる。&#x27;},
+  eN:&#x27;2022 年の試験官レポートには「最短のジョブを先に処理する」と書くだけでは不十分、とあります。何と何を比べるのか、いつ決めるのか、中断されるのかどうかを書きましょう。&#x27;,
+  foot:&#x27;ここでの同点のルール：値が同じなら到着順。SRTF では、新しいプロセスが「より短い」ときだけ中断します（同じなら中断しない）。ラウンドロビンでは、クォンタムが切れたのと同時に到着したプロセスが、中断されたプロセスより先にキューに入ります。コンテキストスイッチの時間は 0 としています。&#x27;,
+  ev:{
+    arr:p=&gt;p+&#x27; が到着し、レディキューに入ります。&#x27;,
+    fin:p=&gt;p+&#x27; はバーストを終え、CPU を離れます。&#x27;,
+    selF:p=&gt;p+&#x27; がレディキューの先頭なので、CPU を得ます。&#x27;,
+    selR:(p,q)=&gt;p+&#x27; がレディキューの先頭です。最大 &#x27;+q+&#x27; ms だけ CPU を得ます。&#x27;,
+    selS:(p,v,list)=&gt;&#x27;レディキューの中でバーストが最短なのは &#x27;+p+&#x27;（&#x27;+v+&#x27; ms）。比べた値：&#x27;+list+&#x27;。&#x27;+p+&#x27; が CPU を得ます。&#x27;,
+    selT:(p,v,list)=&gt;&#x27;残り時間が最短なのは &#x27;+p+&#x27;（&#x27;+v+&#x27; ms）。比べた値：&#x27;+list+&#x27;。&#x27;+p+&#x27; が CPU を得ます。&#x27;,
+    pre:(n,nv,c,cv)=&gt;n+&#x27; は &#x27;+nv+&#x27; ms 必要で、&#x27;+c+&#x27; の残り &#x27;+cv+&#x27; ms より短い。&#x27;+c+&#x27; は中断されてレディキューに戻り、&#x27;+n+&#x27; が CPU を得ます。&#x27;,
+    keep:(n,nv,c,cv)=&gt;n+&#x27; は &#x27;+nv+&#x27; ms 必要で、&#x27;+c+&#x27; の残り &#x27;+cv+&#x27; ms より短くない。&#x27;+c+&#x27; がそのまま CPU を使います。&#x27;,
+    wait:(c)=&gt;c+&#x27; が実行中で中断できないので、新しいプロセスは待ちます。&#x27;,
+    rrWait:(c)=&gt;c+&#x27; はクォンタムが終わるまで実行を続けます。&#x27;,
+    qexp:(c,q,l)=&gt;c+&#x27; は &#x27;+q+&#x27; ms のクォンタムを使い切り、まだ &#x27;+l+&#x27; ms 残っています。タイマー割り込みで中断され、キューの最後に戻ります。&#x27;,
+    run:(c,l)=&gt;c+&#x27; が実行中（残り &#x27;+l+&#x27; ms）。&#x27;,
+    idle:&#x27;レディキューにプロセスがいません。CPU はアイドルです。&#x27;,
+    start:&#x27;「再生」か「1 ms 進む」を押してください。&#x27;,
+    done:&#x27;すべてのプロセスが終わりました。下の待ち時間を確認しましょう。&#x27;}
+},
+zh:{
+  h1:&#x27;四种调度算法，一毫秒一毫秒地看&#x27;,
+  lede:&#x27;同一组进程分别用先来先服务、短作业优先、最短剩余时间优先和时间片轮转来运行。观察每个进程每一刻所在的位置，以及等待时间怎样变化。&#x27;,
+  name:{fcfs:&#x27;先来先服务 (First come first served)&#x27;,sjf:&#x27;短作业优先 (Shortest job first)&#x27;,srtf:&#x27;最短剩余时间优先 (Shortest remaining time first)&#x27;,rr:&#x27;时间片轮转 (Round robin)&#x27;},
+  pre:&#x27;抢占式&#x27;,non:&#x27;非抢占式&#x27;,
+  rule:{
+    fcfs:&#x27;按到达顺序执行进程，就像 FIFO 队列。不考虑突发时间 (burst time)。进程一旦得到 CPU，就一直用到它的突发时间结束。&#x27;,
+    sjf:&#x27;CPU 空闲时，在就绪队列中选择突发时间最短的进程执行。一旦开始，就运行到结束。需要事先知道（或估计）突发时间。&#x27;,
+    srtf:&#x27;SJF 的抢占式版本。新进程到达时，把它的突发时间与正在运行进程的剩余时间比较。如果新进程更短，正在运行的进程被抢占，回到就绪队列。&#x27;,
+    rr:&#x27;每个进程轮流获得固定长度的时间片 (quantum)。时间片用完时，定时器中断抢占该进程，把它的状态保存到 PCB，并把它放到就绪队列末尾。&#x27;},
+  whenH:&#x27;调度程序什么时候做选择？&#x27;,
+  when:{fcfs:&#x27;只在正在运行的进程结束时。&#x27;,sjf:&#x27;只在正在运行的进程结束时。&#x27;,srtf:&#x27;进程结束时，以及每次有新进程到达时。&#x27;,rr:&#x27;进程结束时，以及时间片用完时。&#x27;},
+  play:&#x27;播放&#x27;,pause:&#x27;暂停&#x27;,back:&#x27;◀ 后退 1 ms&#x27;,step:&#x27;前进 1 ms ▶&#x27;,reset:&#x27;重置&#x27;,speed:&#x27;速度&#x27;,sp:[&#x27;慢&#x27;,&#x27;正常&#x27;,&#x27;快&#x27;],quant:&#x27;时间片 (RR)&#x27;,
+  zNot:&#x27;尚未到达&#x27;,zReady:&#x27;就绪队列&#x27;,zDone:&#x27;已完成&#x27;,
+  rdyBy:{fcfs:&#x27;队首 = 最先到达&#x27;,sjf:&#x27;突发时间最短的先运行&#x27;,srtf:&#x27;剩余时间最短的先运行&#x27;,rr:&#x27;队首先运行&#x27;},
+  cpuS:{fcfs:&#x27;运行到结束&#x27;,sjf:&#x27;运行到结束&#x27;,srtf:&#x27;可能被抢占&#x27;,rr:&#x27;最多一个时间片&#x27;},
+  idle:&#x27;空闲&#x27;,allDone:&#x27;全部完成&#x27;,
+  arrSub:a=&gt;&#x27;到达 t=&#x27;+a,burstSub:b=&gt;&#x27;突发 &#x27;+b,remSub:r=&gt;&#x27;剩余 &#x27;+r+&#x27; ms&#x27;,doneSub:f=&gt;&#x27;完成 t=&#x27;+f,
+  qtxt:(u,q)=&gt;&#x27;已用时间片：&#x27;+u+&#x27; / &#x27;+q+&#x27; ms&#x27;,
+  gH:&#x27;甘特图&#x27;,gN:&#x27;每一块是一段连续使用 CPU 的时间。条下方的数字是 CPU 换手的时刻。▲ 表示各进程的到达时刻。&#x27;,
+  dH:&#x27;进程&#x27;,pr:{tbA:&#x27;课本例子：全部在 t = 0 到达&#x27;,tbB:&#x27;课本 SRTF 例子：在 0、1、2、3 到达&#x27;,small:&#x27;简短例子：4 个进程，16 ms&#x27;,custom:&#x27;自己输入的数据&#x27;},
+  col:{p:&#x27;进程&#x27;,a:&#x27;到达 (ms)&#x27;,b:&#x27;突发 (ms)&#x27;,f:&#x27;完成&#x27;,ta:&#x27;周转时间&#x27;,w:&#x27;等待时间&#x27;},
+  add:&#x27;+ 添加进程&#x27;,del:&#x27;删除&#x27;,
+  dN:&#x27;修改到达时间或突发时间，所有图表都会更新。最多 6 个进程。&#x27;,
+  rH:&#x27;等待时间&#x27;,avg:&#x27;平均&#x27;,
+  calcIntro:&#x27;周转时间 = 完成 − 到达。等待时间 = 周转时间 − 突发时间。&#x27;,
+  avgLine:(sum,n,v)=&gt;&#x27;平均等待时间 = (&#x27;+sum+&#x27;) ÷ &#x27;+n+&#x27; = &#x27;+v+&#x27; ms&#x27;,
+  notYet:&#x27;每个进程完成后填入。&#x27;,
+  cH:&#x27;同一组数据比较四种算法&#x27;,cN:&#x27;相同的进程，相同的时间片。点击一行即可观看该算法。切换次数是 CPU 从一个进程转到另一个进程的次数。&#x27;,
+  sw:n=&gt;&#x27;切换 &#x27;+n+&#x27; 次&#x27;,avgW:&#x27;平均等待&#x27;,
+  hint:&#x27;这组数据中所有进程都在 t = 0 到达，所以 SRTF 无法抢占，顺序与 SJF 相同。&#x27;,hintBtn:&#x27;改为在 0、1、2、3 到达&#x27;,
+  changed:(f)=&gt;&#x27;已切换为该算法的课本例子数据（&#x27;+f+&#x27;）。&#x27;,
+  tbk:&#x27;&lt;b&gt;课本图 16.7 与这个模拟不同。&lt;/b&gt;图中在 t = 3 抢占了 P2，因为 P4 的突发时间 (3 ms) 比 P2 原来的突发时间 (4 ms) 短。但 SRTF 比较的是&lt;i&gt;剩余&lt;/i&gt;时间：t = 3 时 P2 只剩 2 ms，所以 P2 继续使用 CPU。正确的平均等待时间是 6 ms，而不是 6.25 ms。&#x27;,
+  eH:&#x27;考试中怎样描述每种算法&#x27;,
+  ex:{
+    fcfs:[&#x27;按进程到达就绪队列的顺序执行 (FIFO)。&#x27;,&#x27;非抢占式：进程一直占用 CPU，直到它的突发时间结束。&#x27;],
+    sjf:[&#x27;在就绪队列中选择突发时间最短的进程下一个执行。&#x27;,&#x27;非抢占式：一旦开始，就运行到结束。&#x27;,&#x27;需要事先知道或估计突发时间。&#x27;],
+    srtf:[&#x27;剩余时间最短的进程下一个执行。&#x27;,&#x27;抢占式：如果新到达的进程的突发时间比正在运行进程的剩余时间短，正在运行的进程被抢占并回到就绪队列。&#x27;],
+    rr:[&#x27;每个进程轮流获得一个固定的时间片 (quantum)。&#x27;,&#x27;时间片结束时，进程被抢占，保存其状态，并回到就绪队列末尾。&#x27;]},
+  plus:{fcfs:&#x27;简单，按到达顺序公平。&#x27;,sjf:&#x27;在非抢占式算法中平均等待时间最短。&#x27;,srtf:&#x27;新到的短作业能很快完成。平均等待时间最短。&#x27;,rr:&#x27;公平：每个进程都能定期得到 CPU，不会饥饿。&#x27;},
+  minus:{fcfs:&#x27;队首的长作业会让短作业等很久。&#x27;,sjf:&#x27;如果短作业不断到达，长作业可能饥饿。&#x27;,srtf:&#x27;上下文切换多。长作业可能饥饿。&#x27;,rr:&#x27;时间片小则上下文切换多；时间片大则和 FCFS 一样。&#x27;},
+  eN:&#x27;2022 年考官报告指出，只写&quot;最短的作业先处理&quot;是不够的。要写出比较什么、什么时候做决定、进程能否被抢占。&#x27;,
+  foot:&#x27;这里使用的平局规则：数值相同时按到达顺序。在 SRTF 中，新进程必须严格更短才会抢占。在时间片轮转中，与时间片结束同时到达的进程，排在被抢占的进程前面。上下文切换时间设为 0。&#x27;,
+  ev:{
+    arr:p=&gt;p+&#x27; 到达，进入就绪队列。&#x27;,
+    fin:p=&gt;p+&#x27; 完成突发时间，离开 CPU。&#x27;,
+    selF:p=&gt;p+&#x27; 在就绪队列队首，所以得到 CPU。&#x27;,
+    selR:(p,q)=&gt;p+&#x27; 在就绪队列队首，得到 CPU，最多 &#x27;+q+&#x27; ms。&#x27;,
+    selS:(p,v,list)=&gt;&#x27;就绪队列中突发时间最短的是 &#x27;+p+&#x27;（&#x27;+v+&#x27; ms）。比较：&#x27;+list+&#x27;。&#x27;+p+&#x27; 得到 CPU。&#x27;,
+    selT:(p,v,list)=&gt;&#x27;剩余时间最短的是 &#x27;+p+&#x27;（&#x27;+v+&#x27; ms）。比较：&#x27;+list+&#x27;。&#x27;+p+&#x27; 得到 CPU。&#x27;,
+    pre:(n,nv,c,cv)=&gt;n+&#x27; 需要 &#x27;+nv+&#x27; ms，比 &#x27;+c+&#x27; 剩余的 &#x27;+cv+&#x27; ms 短。&#x27;+c+&#x27; 被抢占，回到就绪队列，&#x27;+n+&#x27; 得到 CPU。&#x27;,
+    keep:(n,nv,c,cv)=&gt;n+&#x27; 需要 &#x27;+nv+&#x27; ms，不比 &#x27;+c+&#x27; 剩余的 &#x27;+cv+&#x27; ms 短。&#x27;+c+&#x27; 继续使用 CPU。&#x27;,
+    wait:(c)=&gt;c+&#x27; 正在运行且不能被中断，所以新进程要等待。&#x27;,
+    rrWait:(c)=&gt;c+&#x27; 继续运行，直到时间片结束。&#x27;,
+    qexp:(c,q,l)=&gt;c+&#x27; 已用完 &#x27;+q+&#x27; ms 时间片，还需要 &#x27;+l+&#x27; ms。定时器中断：它被抢占，回到队列末尾。&#x27;,
+    run:(c,l)=&gt;c+&#x27; 正在运行（剩余 &#x27;+l+&#x27; ms）。&#x27;,
+    idle:&#x27;就绪队列中没有进程。CPU 空闲。&#x27;,
+    start:&#x27;按&quot;播放&quot;或&quot;前进 1 ms&quot;开始。&#x27;,
+    done:&#x27;所有进程都已完成。请看下方的等待时间。&#x27;}
+},
+th:{
+  h1:&#x27;อัลกอริทึมจัดลำดับงาน 4 แบบ ทีละ 1 มิลลิวินาที&#x27;,
+  lede:&#x27;โปรเซสชุดเดียวกันถูกจัดลำดับด้วย FCFS, SJF, SRTF และ Round robin ดูว่าแต่ละโปรเซสอยู่ที่ไหนในแต่ละช่วงเวลา และเวลารอเปลี่ยนไปอย่างไร&#x27;,
+  name:{fcfs:&#x27;มาก่อนได้ก่อน (First come first served)&#x27;,sjf:&#x27;งานสั้นที่สุดก่อน (Shortest job first)&#x27;,srtf:&#x27;เวลาที่เหลือน้อยที่สุดก่อน (Shortest remaining time first)&#x27;,rr:&#x27;วนรอบ (Round robin)&#x27;},
+  pre:&#x27;preemptive&#x27;,non:&#x27;non-preemptive&#x27;,
+  rule:{
+    fcfs:&#x27;ทำงานตามลำดับที่มาถึง เหมือนคิว FIFO ไม่สนใจเวลาเบิร์สต์ (burst time) เมื่อโปรเซสได้ CPU แล้ว จะใช้ไปจนจบเบิร์สต์&#x27;,
+    sjf:&#x27;เมื่อ CPU ว่าง จะเลือกโปรเซสในคิวพร้อม (ready queue) ที่มีเวลาเบิร์สต์สั้นที่สุด เมื่อเริ่มแล้วจะทำจนจบ ต้องรู้หรือประมาณเวลาเบิร์สต์ไว้ล่วงหน้า&#x27;,
+    srtf:&#x27;SJF แบบ preemptive เมื่อมีโปรเซสใหม่มาถึง จะเทียบเวลาเบิร์สต์ของมันกับเวลาที่เหลือของโปรเซสที่กำลังทำงาน ถ้าโปรเซสใหม่สั้นกว่า โปรเซสที่กำลังทำงานจะถูกขัดจังหวะ (pre-empted) และกลับไปที่คิวพร้อม&#x27;,
+    rr:&#x27;แต่ละโปรเซสได้ใช้ CPU ตามลำดับเป็นช่วงเวลาคงที่ เรียกว่าควอนตัม (quantum) เมื่อควอนตัมหมด timer interrupt จะขัดจังหวะโปรเซส บันทึกสถานะไว้ใน PCB แล้วส่งไปต่อท้ายคิวพร้อม&#x27;},
+  whenH:&#x27;ตัวจัดลำดับเลือกโปรเซสใหม่เมื่อไร&#x27;,
+  when:{fcfs:&#x27;เฉพาะเมื่อโปรเซสที่กำลังทำงานเสร็จ&#x27;,sjf:&#x27;เฉพาะเมื่อโปรเซสที่กำลังทำงานเสร็จ&#x27;,srtf:&#x27;เมื่อโปรเซสเสร็จ และทุกครั้งที่มีโปรเซสใหม่มาถึง&#x27;,rr:&#x27;เมื่อโปรเซสเสร็จ และเมื่อควอนตัมหมด&#x27;},
+  play:&#x27;เล่น&#x27;,pause:&#x27;หยุดชั่วคราว&#x27;,back:&#x27;◀ ย้อน 1 ms&#x27;,step:&#x27;ไปต่อ 1 ms ▶&#x27;,reset:&#x27;เริ่มใหม่&#x27;,speed:&#x27;ความเร็ว&#x27;,sp:[&#x27;ช้า&#x27;,&#x27;ปกติ&#x27;,&#x27;เร็ว&#x27;],quant:&#x27;ควอนตัม (RR)&#x27;,
+  zNot:&#x27;ยังไม่มาถึง&#x27;,zReady:&#x27;คิวพร้อม&#x27;,zDone:&#x27;เสร็จแล้ว&#x27;,
+  rdyBy:{fcfs:&#x27;หัวคิว = มาถึงก่อน&#x27;,sjf:&#x27;เบิร์สต์สั้นสุดได้ก่อน&#x27;,srtf:&#x27;เวลาเหลือน้อยสุดได้ก่อน&#x27;,rr:&#x27;หัวคิวได้ก่อน&#x27;},
+  cpuS:{fcfs:&#x27;ทำจนจบ&#x27;,sjf:&#x27;ทำจนจบ&#x27;,srtf:&#x27;อาจถูกขัดจังหวะ&#x27;,rr:&#x27;ไม่เกิน 1 ควอนตัม&#x27;},
+  idle:&#x27;ว่าง&#x27;,allDone:&#x27;เสร็จทั้งหมด&#x27;,
+  arrSub:a=&gt;&#x27;มาถึง t=&#x27;+a,burstSub:b=&gt;&#x27;เบิร์สต์ &#x27;+b,remSub:r=&gt;&#x27;เหลือ &#x27;+r+&#x27; ms&#x27;,doneSub:f=&gt;&#x27;เสร็จ t=&#x27;+f,
+  qtxt:(u,q)=&gt;&#x27;ใช้ควอนตัมไป: &#x27;+u+&#x27; / &#x27;+q+&#x27; ms&#x27;,
+  gH:&#x27;แผนภูมิแกนต์ (Gantt chart)&#x27;,gN:&#x27;แต่ละบล็อกคือช่วงที่ใช้ CPU ต่อเนื่อง ตัวเลขใต้แถบคือเวลาที่ CPU เปลี่ยนมือ ▲ คือเวลาที่แต่ละโปรเซสมาถึง&#x27;,
+  dH:&#x27;โปรเซส&#x27;,pr:{tbA:&#x27;ตัวอย่างในตำรา: มาถึงพร้อมกันที่ t = 0&#x27;,tbB:&#x27;ตัวอย่าง SRTF ในตำรา: มาถึงที่ 0, 1, 2, 3&#x27;,small:&#x27;ตัวอย่างสั้น: 4 โปรเซส 16 ms&#x27;,custom:&#x27;ข้อมูลที่ป้อนเอง&#x27;},
+  col:{p:&#x27;โปรเซส&#x27;,a:&#x27;มาถึง (ms)&#x27;,b:&#x27;เบิร์สต์ (ms)&#x27;,f:&#x27;เสร็จ&#x27;,ta:&#x27;เวลาครบรอบ&#x27;,w:&#x27;เวลารอ&#x27;},
+  add:&#x27;+ เพิ่มโปรเซส&#x27;,del:&#x27;ลบ&#x27;,
+  dN:&#x27;แก้เวลามาถึงหรือเวลาเบิร์สต์ แล้วแผนภูมิทั้งหมดจะอัปเดต ได้สูงสุด 6 โปรเซส&#x27;,
+  rH:&#x27;เวลารอ&#x27;,avg:&#x27;เฉลี่ย&#x27;,
+  calcIntro:&#x27;เวลาครบรอบ (turnaround) = เสร็จ − มาถึง  เวลารอ = เวลาครบรอบ − เบิร์สต์&#x27;,
+  avgLine:(sum,n,v)=&gt;&#x27;เวลารอเฉลี่ย = (&#x27;+sum+&#x27;) ÷ &#x27;+n+&#x27; = &#x27;+v+&#x27; ms&#x27;,
+  notYet:&#x27;จะเติมเมื่อแต่ละโปรเซสเสร็จ&#x27;,
+  cH:&#x27;เทียบทั้ง 4 แบบด้วยข้อมูลเดียวกัน&#x27;,cN:&#x27;โปรเซสเดียวกัน ควอนตัมเดียวกัน คลิกแถวเพื่อดูแบบนั้น จำนวนการสลับคือจำนวนครั้งที่ CPU เปลี่ยนจากโปรเซสหนึ่งไปอีกโปรเซสหนึ่ง&#x27;,
+  sw:n=&gt;&#x27;สลับ &#x27;+n+&#x27; ครั้ง&#x27;,avgW:&#x27;รอเฉลี่ย&#x27;,
+  hint:&#x27;ข้อมูลนี้ทุกโปรเซสมาถึงที่ t = 0 จึงไม่มีการขัดจังหวะใน SRTF และลำดับเหมือน SJF&#x27;,hintBtn:&#x27;ใช้เวลามาถึง 0, 1, 2, 3&#x27;,
+  changed:(f)=&gt;&#x27;เปลี่ยนเป็นข้อมูลตัวอย่างในตำราของแบบนี้ (&#x27;+f+&#x27;) แล้ว&#x27;,
+  tbk:&#x27;&lt;b&gt;รูปที่ 16.7 ในตำราต่างจากการจำลองนี้&lt;/b&gt; ในรูป P2 ถูกขัดจังหวะที่ t = 3 เพราะเบิร์สต์ของ P4 (3 ms) สั้นกว่าเบิร์สต์เดิมของ P2 (4 ms) แต่ SRTF เทียบกับเวลาที่&lt;i&gt;เหลือ&lt;/i&gt; ที่ t = 3 P2 เหลือเพียง 2 ms จึงได้ใช้ CPU ต่อ เวลารอเฉลี่ยที่ถูกต้องคือ 6 ms ไม่ใช่ 6.25 ms&#x27;,
+  eH:&#x27;วิธีอธิบายแต่ละแบบในข้อสอบ&#x27;,
+  ex:{
+    fcfs:[&#x27;ทำงานโปรเซสตามลำดับที่มาถึงคิวพร้อม (FIFO)&#x27;,&#x27;Non-preemptive: โปรเซสใช้ CPU จนจบเวลาเบิร์สต์&#x27;],
+    sjf:[&#x27;เลือกโปรเซสในคิวพร้อมที่มีเวลาเบิร์สต์สั้นที่สุดเป็นลำดับถัดไป&#x27;,&#x27;Non-preemptive: เมื่อเริ่มแล้วจะทำจนเสร็จ&#x27;,&#x27;ต้องรู้หรือประมาณเวลาเบิร์สต์ล่วงหน้า&#x27;],
+    srtf:[&#x27;เลือกโปรเซสที่มีเวลาที่เหลือน้อยที่สุดเป็นลำดับถัดไป&#x27;,&#x27;Preemptive: เมื่อโปรเซสใหม่ที่มีเบิร์สต์สั้นกว่าเวลาที่เหลือของโปรเซสที่กำลังทำงานมาถึง โปรเซสที่กำลังทำงานจะถูกขัดจังหวะและกลับไปที่คิวพร้อม&#x27;],
+    rr:[&#x27;แต่ละโปรเซสได้ช่วงเวลาคงที่ (quantum) ตามลำดับ&#x27;,&#x27;เมื่อควอนตัมหมด โปรเซสจะถูกขัดจังหวะ บันทึกสถานะ แล้วไปต่อท้ายคิวพร้อม&#x27;]},
+  plus:{fcfs:&#x27;ง่าย และยุติธรรมตามลำดับการมาถึง&#x27;,sjf:&#x27;เวลารอเฉลี่ยต่ำที่สุดในกลุ่ม non-preemptive&#x27;,srtf:&#x27;งานสั้นที่มาใหม่เสร็จเร็ว เวลารอเฉลี่ยต่ำที่สุด&#x27;,rr:&#x27;ยุติธรรม: ทุกโปรเซสได้ CPU เป็นระยะ จึงไม่มีโปรเซสอดอยาก (starved)&#x27;},
+  minus:{fcfs:&#x27;งานยาวที่อยู่หัวคิวทำให้งานสั้นต้องรอนาน&#x27;,sjf:&#x27;ถ้างานสั้นมาเรื่อย ๆ งานยาวอาจอดอยาก&#x27;,srtf:&#x27;สลับบริบท (context switch) บ่อย งานยาวอาจอดอยาก&#x27;,rr:&#x27;ควอนตัมเล็กทำให้สลับบริบทบ่อย ควอนตัมใหญ่จะเหมือน FCFS&#x27;},
+  eN:&#x27;รายงานผู้ตรวจข้อสอบปี 2022 เตือนว่าการเขียนเพียง &quot;งานที่สั้นที่สุดทำก่อน&quot; ไม่เพียงพอ ให้บอกว่าเทียบอะไร ตัดสินใจเมื่อไร และโปรเซสถูกขัดจังหวะได้หรือไม่&#x27;,
+  foot:&#x27;กติกาเมื่อค่าเท่ากัน: ใช้ลำดับการมาถึง ใน SRTF โปรเซสใหม่ต้องสั้นกว่าจริง ๆ จึงจะขัดจังหวะได้ ใน Round robin โปรเซสที่มาถึงพร้อมกับตอนที่ควอนตัมหมด จะเข้าคิวก่อนโปรเซสที่ถูกขัดจังหวะ เวลาสลับบริบทถือเป็นศูนย์&#x27;,
+  ev:{
+    arr:p=&gt;p+&#x27; มาถึงและเข้าคิวพร้อม&#x27;,
+    fin:p=&gt;p+&#x27; ทำเบิร์สต์เสร็จและออกจาก CPU&#x27;,
+    selF:p=&gt;p+&#x27; อยู่หัวคิวพร้อม จึงได้ CPU&#x27;,
+    selR:(p,q)=&gt;p+&#x27; อยู่หัวคิวพร้อม ได้ CPU ไม่เกิน &#x27;+q+&#x27; ms&#x27;,
+    selS:(p,v,list)=&gt;&#x27;เบิร์สต์สั้นที่สุดในคิวพร้อมคือ &#x27;+p+&#x27; (&#x27;+v+&#x27; ms) ค่าที่เทียบ: &#x27;+list+&#x27; &#x27;+p+&#x27; ได้ CPU&#x27;,
+    selT:(p,v,list)=&gt;&#x27;เวลาเหลือน้อยที่สุดคือ &#x27;+p+&#x27; (&#x27;+v+&#x27; ms) ค่าที่เทียบ: &#x27;+list+&#x27; &#x27;+p+&#x27; ได้ CPU&#x27;,
+    pre:(n,nv,c,cv)=&gt;n+&#x27; ต้องการ &#x27;+nv+&#x27; ms น้อยกว่าเวลาที่เหลือของ &#x27;+c+&#x27; (&#x27;+cv+&#x27; ms) &#x27;+c+&#x27; ถูกขัดจังหวะและกลับไปที่คิวพร้อม &#x27;+n+&#x27; ได้ CPU&#x27;,
+    keep:(n,nv,c,cv)=&gt;n+&#x27; ต้องการ &#x27;+nv+&#x27; ms ไม่น้อยกว่าเวลาที่เหลือของ &#x27;+c+&#x27; (&#x27;+cv+&#x27; ms) &#x27;+c+&#x27; ได้ใช้ CPU ต่อ&#x27;,
+    wait:(c)=&gt;c+&#x27; กำลังทำงานและขัดจังหวะไม่ได้ โปรเซสใหม่จึงต้องรอ&#x27;,
+    rrWait:(c)=&gt;c+&#x27; ทำงานต่อจนกว่าควอนตัมจะหมด&#x27;,
+    qexp:(c,q,l)=&gt;c+&#x27; ใช้ควอนตัม &#x27;+q+&#x27; ms ครบแล้ว แต่ยังเหลือ &#x27;+l+&#x27; ms timer interrupt ขัดจังหวะ แล้วไปต่อท้ายคิว&#x27;,
+    run:(c,l)=&gt;c+&#x27; กำลังทำงาน (เหลือ &#x27;+l+&#x27; ms)&#x27;,
+    idle:&#x27;ไม่มีโปรเซสในคิวพร้อม CPU ว่าง&#x27;,
+    start:&#x27;กด &quot;เล่น&quot; หรือ &quot;ไปต่อ 1 ms&quot; เพื่อเริ่ม&#x27;,
+    done:&#x27;ทุกโปรเซสเสร็จแล้ว ดูเวลารอด้านล่าง&#x27;}
+}};
+const FIGNAME={fcfs:&#x27;Fig. 16.5&#x27;,sjf:&#x27;Fig. 16.6&#x27;,srtf:&#x27;Fig. 16.7&#x27;,rr:&#x27;Fig. 16.8&#x27;};
+
+/* ---------- state ---------- */
+let lang=&#x27;en&#x27;,alg=&#x27;fcfs&#x27;,preset=&#x27;tbA&#x27;,q=5,procs=[],sim=null,k=0,timer=null,speed=900,chips=[],flash=&#x27;&#x27;;
+const EMB=location.href===&#x27;about:srcdoc&#x27;;
+if(EMB)$(&#x27;langbar&#x27;).hidden=true;
+const T=()=&gt;TX[lang];
+const nm=i=&gt;&#x27;P&#x27;+(i+1);
+const tagP=i=&gt;&#x27;&lt;span class=&quot;shp&quot;&gt;&#x27;+SHAPE[i]+&#x27;&lt;/span&gt;&#x27;+nm(i);
+function loadPreset(id){procs=PRESETS[id].p.map(x=&gt;({a:x[0],b:x[1]}));preset=id;}
+
+/* ---------- simulation ---------- */
+function simulate(al,P,qq){
+  const n=P.length,rem=P.map(p=&gt;p.b),fin=Array(n).fill(null),fr=[];let ready=[],cur=-1,qu=0,t=0;
+  const byVal=(arr,val)=&gt;{let best=arr[0];for(const x of arr)if(val(x)&lt;val(best))best=x;return best;};
+  while(t&lt;1000){
+    const ev=[];
+    if(cur&gt;=0&amp;&amp;rem[cur]===0){fin[cur]=t;ev.push({k:&#x27;fin&#x27;,p:cur});cur=-1;}
+    const arr=[];for(let i=0;i&lt;n;i++)if(P[i].a===t){ready.push(i);arr.push(i);ev.push({k:&#x27;arr&#x27;,p:i});}
+    if(fin.every(x=&gt;x!==null)){fr.push({t,run:-1,ready:[],rem:rem.slice(),fin:fin.slice(),ev,qu:0});break;}
+    if(cur&gt;=0){
+      if(al===&#x27;rr&#x27;&amp;&amp;qu===qq){ev.push({k:&#x27;qexp&#x27;,p:cur,l:rem[cur]});ready.push(cur);cur=-1;}
+      else if(al===&#x27;srtf&#x27;&amp;&amp;arr.length){
+        const best=byVal(ready,x=&gt;rem[x]);
+        if(rem[best]&lt;rem[cur]){ev.push({k:&#x27;pre&#x27;,p:best,v:rem[best],c:cur,cv:rem[cur]});ready=ready.filter(x=&gt;x!==best);ready.push(cur);cur=best;qu=0;}
+        else{const na=byVal(arr,x=&gt;rem[x]);ev.push({k:&#x27;keep&#x27;,p:na,v:rem[na],c:cur,cv:rem[cur]});}
+      }else if(arr.length)ev.push({k:al===&#x27;rr&#x27;?&#x27;rrWait&#x27;:&#x27;wait&#x27;,c:cur});
+    }
+    if(cur&lt;0&amp;&amp;ready.length){
+      let p;
+      if(al===&#x27;fcfs&#x27;||al===&#x27;rr&#x27;)p=ready[0];
+      else if(al===&#x27;sjf&#x27;)p=byVal(ready,x=&gt;P[x].b);
+      else p=byVal(ready,x=&gt;rem[x]);
+      const cand=ready.map(x=&gt;[x,al===&#x27;sjf&#x27;?P[x].b:rem[x]]);
+      ev.push({k:&#x27;sel&#x27;,p,cand,v:al===&#x27;sjf&#x27;?P[p].b:rem[p]});ready=ready.filter(x=&gt;x!==p);cur=p;qu=0;
+    }else if(cur&lt;0)ev.push({k:&#x27;idle&#x27;});
+    fr.push({t,run:cur,ready:ready.slice(),rem:rem.slice(),fin:fin.slice(),ev,qu});
+    if(cur&gt;=0){rem[cur]--;qu++;}
+    t++;
+  }
+  const end=fr.length-1;
+  const segs=[];for(let i=0;i&lt;end;i++){const r=fr[i].run;const L=segs[segs.length-1];if(L&amp;&amp;L.p===r)L.e=i+1;else segs.push({p:r,s:i,e:i+1});}
+  const ff=fr[end].fin,wait=P.map((p,i)=&gt;ff[i]-p.a-p.b);
+  let sw=0;for(let i=1;i&lt;segs.length;i++)if(segs[i].p&gt;=0&amp;&amp;segs[i-1].p&gt;=0)sw++;
+  return {fr,end,segs,fin:ff,wait,sw,avg:wait.reduce((a,b)=&gt;a+b,0)/P.length};
+}
+const fmt=v=&gt;String(Math.round(v*100)/100);
+
+/* ---------- static text ---------- */
+function staticText(){
+  const t=T();document.documentElement.lang=lang===&#x27;zh&#x27;?&#x27;zh-Hans&#x27;:lang;
+  $(&#x27;h1&#x27;).textContent=t.h1;$(&#x27;lede&#x27;).textContent=t.lede;
+  $(&#x27;algos&#x27;).innerHTML=ALG.map(a=&gt;&#x27;&lt;button class=&quot;algo&quot; data-a=&quot;&#x27;+a+&#x27;&quot; aria-pressed=&quot;&#x27;+(a===alg)+&#x27;&quot;&gt;&lt;b&gt;&#x27;+a.toUpperCase()+&#x27;&lt;/b&gt;&lt;span&gt;&#x27;+t.name[a]+&#x27;&lt;/span&gt;&lt;span class=&quot;tag&#x27;+(a===&#x27;srtf&#x27;||a===&#x27;rr&#x27;?&#x27; pre&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+(a===&#x27;srtf&#x27;||a===&#x27;rr&#x27;?t.pre:t.non)+&#x27;&lt;/span&gt;&lt;/button&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;algos&#x27;).querySelectorAll(&#x27;.algo&#x27;).forEach(b=&gt;b.onclick=()=&gt;setAlg(b.dataset.a,true));
+  $(&#x27;ruleH&#x27;).textContent=t.name[alg];$(&#x27;ruleP&#x27;).textContent=t.rule[alg];
+  $(&#x27;whenH&#x27;).textContent=t.whenH;$(&#x27;whenP&#x27;).textContent=t.when[alg];
+  $(&#x27;back&#x27;).textContent=t.back;$(&#x27;step&#x27;).textContent=t.step;$(&#x27;reset&#x27;).textContent=t.reset;
+  $(&#x27;speedL&#x27;).textContent=t.speed;$(&#x27;qL&#x27;).textContent=t.quant;
+  const sv=[1400,900,420];$(&#x27;speed&#x27;).innerHTML=sv.map((v,i)=&gt;&#x27;&lt;option value=&quot;&#x27;+v+&#x27;&quot;&#x27;+(v===speed?&#x27; selected&#x27;:&#x27;&#x27;)+&#x27;&gt;&#x27;+t.sp[i]+&#x27;&lt;/option&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;zNotH&#x27;).textContent=t.zNot;$(&#x27;zReadyH&#x27;).textContent=t.zReady;$(&#x27;zDoneH&#x27;).textContent=t.zDone;
+  $(&#x27;zReadyS&#x27;).textContent=t.rdyBy[alg];$(&#x27;zCpuS&#x27;).textContent=t.cpuS[alg];
+  $(&#x27;gH&#x27;).textContent=t.gH;$(&#x27;gN&#x27;).textContent=t.gN;
+  $(&#x27;dH&#x27;).textContent=t.dH;$(&#x27;addp&#x27;).textContent=t.add;$(&#x27;dN&#x27;).textContent=t.dN;
+  $(&#x27;preset&#x27;).innerHTML=[&#x27;tbA&#x27;,&#x27;tbB&#x27;,&#x27;small&#x27;,&#x27;custom&#x27;].map(id=&gt;&#x27;&lt;option value=&quot;&#x27;+id+&#x27;&quot;&#x27;+(id===preset?&#x27; selected&#x27;:&#x27;&#x27;)+(id===&#x27;custom&#x27;&amp;&amp;preset!==&#x27;custom&#x27;?&#x27; disabled&#x27;:&#x27;&#x27;)+&#x27;&gt;&#x27;+t.pr[id]+&#x27;&lt;/option&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;rH&#x27;).textContent=t.rH;$(&#x27;cH&#x27;).textContent=t.cH;$(&#x27;cN&#x27;).textContent=t.cN;
+  $(&#x27;eH&#x27;).textContent=t.eH;$(&#x27;eN&#x27;).textContent=t.eN;$(&#x27;foot&#x27;).textContent=t.foot;
+  $(&#x27;exam&#x27;).innerHTML=ALG.map(a=&gt;&#x27;&lt;div class=&quot;say&quot;&gt;&lt;h3&gt;&#x27;+a.toUpperCase()+&#x27; · &#x27;+(a===&#x27;srtf&#x27;||a===&#x27;rr&#x27;?t.pre:t.non)+&#x27;&lt;/h3&gt;&lt;ul&gt;&#x27;+t.ex[a].map(s=&gt;&#x27;&lt;li&gt;&#x27;+s+&#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/ul&gt;&lt;div class=&quot;pm&quot;&gt;&lt;b class=&quot;plus&quot;&gt;+&lt;/b&gt;&lt;span&gt;&#x27;+t.plus[a]+&#x27;&lt;/span&gt;&lt;b class=&quot;minus&quot;&gt;−&lt;/b&gt;&lt;span&gt;&#x27;+t.minus[a]+&#x27;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;);
+  $(&#x27;qsel&#x27;).disabled=false;
+  dataTable();
+}
+function dataTable(){
+  const t=T();
+  let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;&#x27;+t.col.p+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.a+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.b+&#x27;&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;
+  procs.forEach((p,i)=&gt;{h+=&#x27;&lt;tr&gt;&lt;td style=&quot;--c:var(&#x27;+COLORS[i]+&#x27;)&quot;&gt;&lt;span class=&quot;mono&quot;&gt;&#x27;+tagP(i)+&#x27;&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;input id=&quot;ia&#x27;+i+&#x27;&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;40&quot; value=&quot;&#x27;+p.a+&#x27;&quot; aria-label=&quot;&#x27;+nm(i)+&#x27; &#x27;+t.col.a+&#x27;&quot;&gt;&lt;/td&gt;&lt;td&gt;&lt;input id=&quot;ib&#x27;+i+&#x27;&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;40&quot; value=&quot;&#x27;+p.b+&#x27;&quot; aria-label=&quot;&#x27;+nm(i)+&#x27; &#x27;+t.col.b+&#x27;&quot;&gt;&lt;/td&gt;&lt;td&gt;&lt;button data-del=&quot;&#x27;+i+&#x27;&quot;&#x27;+(procs.length&lt;=2?&#x27; disabled&#x27;:&#x27;&#x27;)+&#x27;&gt;&#x27;+t.del+&#x27;&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;&#x27;;});
+  $(&#x27;dtab&#x27;).innerHTML=h+&#x27;&lt;/tbody&gt;&#x27;;
+  $(&#x27;addp&#x27;).disabled=procs.length&gt;=6;
+  procs.forEach((p,i)=&gt;{
+    const on=()=&gt;{const a=Math.max(0,Math.min(40,parseInt($(&#x27;ia&#x27;+i).value,10)||0)),b=Math.max(1,Math.min(40,parseInt($(&#x27;ib&#x27;+i).value,10)||1));
+      if(a===p.a&amp;&amp;b===p.b)return;p.a=a;p.b=b;preset=&#x27;custom&#x27;;rebuild(true);};
+    $(&#x27;ia&#x27;+i).onchange=on;$(&#x27;ib&#x27;+i).onchange=on;});
+  $(&#x27;dtab&#x27;).querySelectorAll(&#x27;[data-del]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{procs.splice(+b.dataset.del,1);preset=&#x27;custom&#x27;;rebuild(true);});
+}
+
+/* ---------- build ---------- */
+function makeChips(){
+  [&#x27;zNot&#x27;,&#x27;zReady&#x27;,&#x27;zCpu&#x27;,&#x27;zDone&#x27;].forEach(id=&gt;$(id).innerHTML=&#x27;&#x27;);
+  chips=procs.map((p,i)=&gt;{const d=document.createElement(&#x27;div&#x27;);d.className=&#x27;pc&#x27;;d.style.setProperty(&#x27;--c&#x27;,&#x27;var(&#x27;+COLORS[i]+&#x27;)&#x27;);
+    d.innerHTML=&#x27;&lt;span class=&quot;nm&quot;&gt;&#x27;+tagP(i)+&#x27;&lt;/span&gt;&lt;span class=&quot;sub&quot;&gt;&lt;/span&gt;&lt;span class=&quot;bar&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;/span&gt;&#x27;;$(&#x27;zNot&#x27;).appendChild(d);return d;});
+}
+function rebuild(keepText){
+  stop();sim=simulate(alg,procs,q);k=0;
+  if(keepText)staticText();
+  makeChips();drawCompare();drawGanttStatic();render(false);
+}
+function setAlg(a,user){
+  if(!ALG.includes(a))return;
+  alg=a;flash=&#x27;&#x27;;
+  if((preset===&#x27;tbA&#x27;||preset===&#x27;tbB&#x27;)&amp;&amp;FIG[a]!==preset&amp;&amp;user){loadPreset(FIG[a]);flash=T().changed(FIGNAME[a]);}
+  staticText();rebuild(false);
+  if(EMB)try{parent.postMessage({algoHash:lang+&#x27;-&#x27;+alg},&#x27;*&#x27;)}catch(e){}
+  else try{history.replaceState(null,&#x27;&#x27;,&#x27;#&#x27;+lang+&#x27;-&#x27;+alg)}catch(e){}
+}
+
+/* ---------- render one moment ---------- */
+function render(anim){
+  const t=T(),f=sim.fr[k],fin=k&gt;=sim.end;
+  $(&#x27;clock&#x27;).textContent=f.t;
+  $(&#x27;play&#x27;).textContent=timer?t.pause:t.play;
+  $(&#x27;back&#x27;).disabled=k===0;$(&#x27;step&#x27;).disabled=fin;
+  // where every chip goes
+  const first=chips.map(c=&gt;c.getBoundingClientRect());
+  const place={not:[],ready:[],cpu:[],done:[]};
+  procs.forEach((p,i)=&gt;{
+    if(f.fin[i]!==null)place.done.push(i);
+    else if(p.a&gt;f.t)place.not.push(i);
+    else if(f.run===i)place.cpu.push(i);
+  });
+  place.ready=f.ready.slice();
+  place.not.sort((x,y)=&gt;procs[x].a-procs[y].a||x-y);
+  place.done.sort((x,y)=&gt;f.fin[x]-f.fin[y]);
+  const picked=new Set(),kicked=new Set();
+  f.ev.forEach(e=&gt;{if(e.k===&#x27;sel&#x27;||e.k===&#x27;pre&#x27;)picked.add(e.p);if(e.k===&#x27;pre&#x27;)kicked.add(e.c);if(e.k===&#x27;qexp&#x27;)kicked.add(e.p);});
+  const bins={not:&#x27;zNot&#x27;,ready:&#x27;zReady&#x27;,cpu:&#x27;zCpu&#x27;,done:&#x27;zDone&#x27;};
+  $(&#x27;zCpu&#x27;).querySelectorAll(&#x27;.idle&#x27;).forEach(x=&gt;x.remove());
+  Object.keys(place).forEach(z=&gt;place[z].forEach(i=&gt;{
+    const c=chips[i],p=procs[i];$(bins[z]).appendChild(c);
+    const rem=f.rem[i];let sub;
+    if(z===&#x27;not&#x27;)sub=t.arrSub(p.a);
+    else if(z===&#x27;done&#x27;)sub=t.doneSub(f.fin[i]);
+    else if(alg===&#x27;sjf&#x27;&amp;&amp;z===&#x27;ready&#x27;)sub=t.burstSub(p.b)+&#x27; ms&#x27;;
+    else sub=t.remSub(rem);
+    c.querySelector(&#x27;.sub&#x27;).textContent=sub;
+    c.querySelector(&#x27;.bar i&#x27;).style.width=(rem/p.b*100)+&#x27;%&#x27;;
+    c.classList.toggle(&#x27;pick&#x27;,picked.has(i));c.classList.toggle(&#x27;kick&#x27;,kicked.has(i));
+    let key=c.querySelector(&#x27;.key&#x27;);
+    const showKey=z===&#x27;ready&#x27;&amp;&amp;(alg===&#x27;sjf&#x27;||alg===&#x27;srtf&#x27;);
+    if(showKey){if(!key){key=document.createElement(&#x27;span&#x27;);key.className=&#x27;key&#x27;;c.appendChild(key);}key.textContent=(alg===&#x27;sjf&#x27;?p.b:rem);}
+    else if(key)key.remove();
+  }));
+  if(!place.cpu.length){const s=document.createElement(&#x27;span&#x27;);s.className=&#x27;idle&#x27;;s.textContent=fin?t.allDone:t.idle;$(&#x27;zCpu&#x27;).appendChild(s);}
+  // quantum
+  if(alg===&#x27;rr&#x27;&amp;&amp;f.run&gt;=0&amp;&amp;!fin){let h=&#x27;&#x27;;for(let i=0;i&lt;q;i++)h+=&#x27;&lt;i class=&quot;&#x27;+(i&lt;f.qu?&#x27;on&#x27;:i===f.qu?&#x27;now&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;;$(&#x27;qbar&#x27;).innerHTML=h;$(&#x27;qtxt&#x27;).textContent=t.qtxt(f.qu,q);}
+  else{$(&#x27;qbar&#x27;).innerHTML=&#x27;&#x27;;$(&#x27;qtxt&#x27;).textContent=&#x27;&#x27;;}
+  // FLIP
+  const reduce=matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
+  if(anim&amp;&amp;!reduce)chips.forEach((c,i)=&gt;{const l=c.getBoundingClientRect(),o=first[i];const dx=o.left-l.left,dy=o.top-l.top;
+    if(Math.abs(dx)&gt;1||Math.abs(dy)&gt;1)c.animate([{transform:&#x27;translate(&#x27;+dx+&#x27;px,&#x27;+dy+&#x27;px)&#x27;},{transform:&#x27;none&#x27;}],{duration:520,easing:&#x27;cubic-bezier(.3,.7,.2,1)&#x27;});});
+  // message
+  const E=t.ev,lines=[];
+  f.ev.forEach(e=&gt;{
+    if(e.k===&#x27;arr&#x27;)lines.push(E.arr(nm(e.p)));
+    else if(e.k===&#x27;fin&#x27;)lines.push(E.fin(nm(e.p)));
+    else if(e.k===&#x27;sel&#x27;){
+      const list=e.cand.map(x=&gt;nm(x[0])+&#x27; &#x27;+x[1]).join(&#x27;, &#x27;);
+      if(alg===&#x27;fcfs&#x27;)lines.push(E.selF(nm(e.p)));
+      else if(alg===&#x27;rr&#x27;)lines.push(E.selR(nm(e.p),q));
+      else if(e.cand.length===1)lines.push(E.selF(nm(e.p)));
+      else lines.push((alg===&#x27;sjf&#x27;?E.selS:E.selT)(nm(e.p),e.v,list));
+    }
+    else if(e.k===&#x27;pre&#x27;)lines.push(&#x27;&lt;span class=&quot;warn&quot;&gt;&#x27;+E.pre(nm(e.p),e.v,nm(e.c),e.cv)+&#x27;&lt;/span&gt;&#x27;);
+    else if(e.k===&#x27;keep&#x27;)lines.push(E.keep(nm(e.p),e.v,nm(e.c),e.cv));
+    else if(e.k===&#x27;wait&#x27;)lines.push(E.wait(nm(e.c)));
+    else if(e.k===&#x27;rrWait&#x27;)lines.push(E.rrWait(nm(e.c)));
+    else if(e.k===&#x27;qexp&#x27;)lines.push(&#x27;&lt;span class=&quot;warn&quot;&gt;&#x27;+E.qexp(nm(e.p),q,e.l)+&#x27;&lt;/span&gt;&#x27;);
+    else if(e.k===&#x27;idle&#x27;)lines.push(E.idle);
+  });
+  if(fin)lines.push(E.done);
+  else if(!f.ev.some(e=&gt;e.k===&#x27;sel&#x27;||e.k===&#x27;pre&#x27;||e.k===&#x27;idle&#x27;))lines.push(E.run(nm(f.run),f.rem[f.run]));
+  if(k===0)lines.push(E.start);
+  if(k===0&amp;&amp;flash)lines.unshift(&#x27;&lt;span class=&quot;t&quot;&gt;&#x27;+flash+&#x27;&lt;/span&gt;&#x27;);
+  $(&#x27;msg&#x27;).innerHTML=&#x27;&lt;p class=&quot;t&quot;&gt;t = &#x27;+f.t+&#x27; ms&lt;/p&gt;&#x27;+lines.map(s=&gt;&#x27;&lt;p&gt;&#x27;+s+&#x27;&lt;/p&gt;&#x27;).join(&#x27;&#x27;);
+  // hint for SRTF with simultaneous arrivals
+  const allZero=procs.every(p=&gt;p.a===procs[0].a);
+  $(&#x27;hint&#x27;).hidden=!(alg===&#x27;srtf&#x27;&amp;&amp;allZero);
+  if(!$(&#x27;hint&#x27;).hidden){$(&#x27;hint&#x27;).innerHTML=t.hint+&#x27;&lt;button id=&quot;hintgo&quot;&gt;&#x27;+t.hintBtn+&#x27;&lt;/button&gt;&#x27;;$(&#x27;hintgo&#x27;).onclick=()=&gt;{loadPreset(&#x27;tbB&#x27;);flash=&#x27;&#x27;;staticText();rebuild(false);};}
+  $(&#x27;tbk&#x27;).hidden=!(alg===&#x27;srtf&#x27;&amp;&amp;preset===&#x27;tbB&#x27;);if(!$(&#x27;tbk&#x27;).hidden)$(&#x27;tbk&#x27;).innerHTML=t.tbk;
+  drawGanttNow();drawResults();
+  $(&#x27;cmp&#x27;).querySelectorAll(&#x27;.crow&#x27;).forEach(r=&gt;r.setAttribute(&#x27;aria-pressed&#x27;,r.dataset.a===alg));
+}
+
+/* ---------- gantt ---------- */
+function drawGanttStatic(){
+  const Tt=sim.end;
+  // axis: every change point
+  const pts=new Set([0,Tt]);sim.segs.forEach(s=&gt;{pts.add(s.s);pts.add(s.e);});
+  $(&#x27;gaxis&#x27;).innerHTML=[...pts].sort((a,b)=&gt;a-b).map(v=&gt;&#x27;&lt;span style=&quot;left:&#x27;+(v/Tt*100)+&#x27;%&quot;&gt;&#x27;+v+&#x27;&lt;/span&gt;&#x27;).join(&#x27;&#x27;);
+  const groups={};procs.forEach((p,i)=&gt;{(groups[p.a]=groups[p.a]||[]).push(i);});
+  $(&#x27;garr&#x27;).innerHTML=Object.keys(groups).map(a=&gt;{const ids=groups[a];return &#x27;&lt;span style=&quot;left:&#x27;+(Math.min(a,Tt)/Tt*100)+&#x27;%;--c:var(&#x27;+COLORS[ids[0]]+&#x27;)&quot;&gt;&#x27;+ids.map(nm).join(&#x27; &#x27;)+&#x27;&lt;/span&gt;&#x27;;}).join(&#x27;&#x27;);
+  $(&#x27;gantt&#x27;).style.minWidth=Math.max(560,Tt*16)+&#x27;px&#x27;;
+}
+function drawGanttNow(){
+  const Tt=sim.end;let h=&#x27;&#x27;;
+  sim.segs.forEach(s=&gt;{if(s.s&gt;=k)return;const e=Math.min(s.e,k),w=(e-s.s)/Tt*100;
+    h+=&#x27;&lt;div class=&quot;gseg&#x27;+(s.p&lt;0?&#x27; idle&#x27;:&#x27;&#x27;)+&#x27;&quot; style=&quot;left:&#x27;+(s.s/Tt*100)+&#x27;%;width:&#x27;+w+&#x27;%;&#x27;+(s.p&gt;=0?&#x27;--c:var(&#x27;+COLORS[s.p]+&#x27;)&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+((e-s.s)/Tt*560&gt;=34?(s.p&gt;=0?tagP(s.p):&#x27;–&#x27;):&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;});
+  h+=&#x27;&lt;div class=&quot;gnow&quot; style=&quot;left:&#x27;+(k/Tt*100)+&#x27;%&quot;&gt;&lt;/div&gt;&#x27;;
+  $(&#x27;gtrack&#x27;).innerHTML=h;
+}
+
+/* ---------- results ---------- */
+function drawResults(){
+  const t=T(),f=sim.fr[k];
+  let h=&#x27;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;&#x27;+t.col.p+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.a+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.b+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.f+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.ta+&#x27;&lt;/th&gt;&lt;th&gt;&#x27;+t.col.w+&#x27;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;;
+  procs.forEach((p,i)=&gt;{const d=f.fin[i]!==null;const ta=d?f.fin[i]-p.a:null;
+    h+=&#x27;&lt;tr&gt;&lt;td style=&quot;--c:var(&#x27;+COLORS[i]+&#x27;)&quot;&gt;&lt;span class=&quot;mono&quot;&gt;&#x27;+tagP(i)+&#x27;&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&#x27;+p.a+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+p.b+&#x27;&lt;/td&gt;&#x27;+
+      (d?&#x27;&lt;td&gt;&#x27;+f.fin[i]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+ta+&#x27;&lt;/td&gt;&lt;td&gt;&lt;b&gt;&#x27;+(ta-p.b)+&#x27;&lt;/b&gt;&lt;/td&gt;&#x27;:&#x27;&lt;td class=&quot;pending&quot;&gt;–&lt;/td&gt;&lt;td class=&quot;pending&quot;&gt;–&lt;/td&gt;&lt;td class=&quot;pending&quot;&gt;–&lt;/td&gt;&#x27;)+&#x27;&lt;/tr&gt;&#x27;;});
+  const all=k&gt;=sim.end;
+  h+=&#x27;&lt;/tbody&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td colspan=&quot;5&quot;&gt;&#x27;+t.avg+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+(all?fmt(sim.avg)+&#x27; ms&#x27;:&#x27;–&#x27;)+&#x27;&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;&#x27;;
+  $(&#x27;rtab&#x27;).innerHTML=h;
+  $(&#x27;calc&#x27;).innerHTML=t.calcIntro+&#x27;&lt;br&gt;&#x27;+(all?&#x27;&lt;b&gt;&#x27;+t.avgLine(sim.wait.join(&#x27; + &#x27;),procs.length,fmt(sim.avg))+&#x27;&lt;/b&gt;&#x27;:t.notYet);
+}
+
+/* ---------- compare ---------- */
+function drawCompare(){
+  const t=T(),res=ALG.map(a=&gt;simulate(a,procs,q)),best=Math.min(...res.map(r=&gt;r.avg));
+  $(&#x27;cmp&#x27;).innerHTML=ALG.map((a,j)=&gt;{const r=res[j],Tt=r.end;
+    const bars=r.segs.map(s=&gt;&#x27;&lt;i class=&quot;&#x27;+(s.p&lt;0?&#x27;idle&#x27;:&#x27;&#x27;)+&#x27;&quot; style=&quot;left:&#x27;+(s.s/Tt*100)+&#x27;%;width:&#x27;+((s.e-s.s)/Tt*100)+&#x27;%;&#x27;+(s.p&gt;=0?&#x27;--c:var(&#x27;+COLORS[s.p]+&#x27;)&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;).join(&#x27;&#x27;);
+    return &#x27;&lt;button class=&quot;crow&quot; data-a=&quot;&#x27;+a+&#x27;&quot; aria-pressed=&quot;&#x27;+(a===alg)+&#x27;&quot;&gt;&lt;span&gt;&lt;b&gt;&#x27;+a.toUpperCase()+(a===&#x27;rr&#x27;?&#x27; &lt;small style=&quot;display:inline&quot;&gt;q=&#x27;+q+&#x27;&lt;/small&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/b&gt;&lt;small&gt;&#x27;+(a===&#x27;srtf&#x27;||a===&#x27;rr&#x27;?t.pre:t.non)+&#x27;&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;mini&quot;&gt;&#x27;+bars+&#x27;&lt;/span&gt;&lt;span class=&quot;avg&#x27;+(Math.abs(r.avg-best)&lt;1e-9?&#x27; best&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;small&gt;&#x27;+t.avgW+&#x27;&lt;/small&gt;&lt;strong&gt;&#x27;+fmt(r.avg)+&#x27;&lt;/strong&gt; ms&lt;small&gt;&#x27;+t.sw(r.sw)+&#x27;&lt;/small&gt;&lt;/span&gt;&lt;/button&gt;&#x27;;}).join(&#x27;&#x27;);
+  $(&#x27;cmp&#x27;).querySelectorAll(&#x27;.crow&#x27;).forEach(b=&gt;b.onclick=()=&gt;{setAlg(b.dataset.a,false);if(!EMB)document.querySelector(&#x27;.algos&#x27;).scrollIntoView({behavior:&#x27;smooth&#x27;,block:&#x27;start&#x27;});else parent.postMessage({algoTop:1},&#x27;*&#x27;);});
+}
+
+/* ---------- playback ---------- */
+function stop(){if(timer){clearInterval(timer);timer=null;}if(sim)$(&#x27;play&#x27;).textContent=T().play;}
+function next(){if(k&lt;sim.end){k++;render(true);}if(k&gt;=sim.end)stop(),render(false);}
+function prev(){if(k&gt;0){k--;render(true);}}
+$(&#x27;play&#x27;).onclick=()=&gt;{if(timer){stop();return;}if(k&gt;=sim.end)k=0,render(false);timer=setInterval(next,speed);$(&#x27;play&#x27;).textContent=T().pause;next();};
+$(&#x27;step&#x27;).onclick=()=&gt;{stop();next();};
+$(&#x27;back&#x27;).onclick=()=&gt;{stop();prev();};
+$(&#x27;reset&#x27;).onclick=()=&gt;{stop();k=0;render(true);};
+$(&#x27;speed&#x27;).onchange=function(){speed=+this.value;if(timer){clearInterval(timer);timer=setInterval(next,speed);}};
+$(&#x27;qsel&#x27;).onchange=function(){q=+this.value;rebuild(false);};
+$(&#x27;preset&#x27;).onchange=function(){if(this.value===&#x27;custom&#x27;)return;loadPreset(this.value);flash=&#x27;&#x27;;staticText();rebuild(false);};
+$(&#x27;addp&#x27;).onclick=()=&gt;{if(procs.length&gt;=6)return;const last=procs[procs.length-1];procs.push({a:last?last.a+1:0,b:3});preset=&#x27;custom&#x27;;rebuild(true);};
+document.addEventListener(&#x27;keydown&#x27;,e=&gt;{if(/INPUT|SELECT/.test(e.target.tagName))return;if(e.key===&#x27;ArrowRight&#x27;){stop();next();}if(e.key===&#x27;ArrowLeft&#x27;){stop();prev();}});
+
+function setLang(l){if(!TX[l])return;lang=l;[&#x27;en&#x27;,&#x27;ja&#x27;,&#x27;zh&#x27;,&#x27;th&#x27;].forEach(c=&gt;$(&#x27;lg-&#x27;+c).setAttribute(&#x27;aria-pressed&#x27;,c===l));staticText();drawCompare();render(false);try{localStorage.setItem(&#x27;lang4&#x27;,l)}catch(e){}}
+[&#x27;en&#x27;,&#x27;ja&#x27;,&#x27;zh&#x27;,&#x27;th&#x27;].forEach(c=&gt;$(&#x27;lg-&#x27;+c).onclick=()=&gt;{setLang(c);try{history.replaceState(null,&#x27;&#x27;,&#x27;#&#x27;+lang+&#x27;-&#x27;+alg)}catch(e){}});
+window.addEventListener(&#x27;message&#x27;,e=&gt;{const d=(e.data||{}).algo;if(!d)return;
+  if(d.lang&amp;&amp;d.lang!==lang)setLang(d.lang);
+  if(d.alg&amp;&amp;d.alg!==alg)setAlg(d.alg,true);
+  if(d.hide)stop();
+  if(d.key===&#x27;next&#x27;){stop();next();}if(d.key===&#x27;prev&#x27;){stop();prev();}});
+
+// start
+loadPreset(&#x27;tbA&#x27;);
+let l0=&#x27;en&#x27;,a0=&#x27;fcfs&#x27;;
+const hp=location.hash.slice(1).split(&#x27;-&#x27;);
+try{const s=localStorage.getItem(&#x27;lang4&#x27;);if(TX[s])l0=s}catch(e){}
+hp.forEach(x=&gt;{if(TX[x])l0=x;if(ALG.includes(x))a0=x;});
+lang=l0;alg=a0;if(FIG[alg]!==preset)loadPreset(FIG[alg]);
+[&#x27;en&#x27;,&#x27;ja&#x27;,&#x27;zh&#x27;,&#x27;th&#x27;].forEach(c=&gt;$(&#x27;lg-&#x27;+c).setAttribute(&#x27;aria-pressed&#x27;,c===lang));
+sim=simulate(alg,procs,q);staticText();rebuild(false);
+if(EMB){const h=()=&gt;parent.postMessage({h:document.documentElement.scrollHeight},&#x27;*&#x27;);addEventListener(&#x27;load&#x27;,h);new ResizeObserver(h).observe(document.body);setInterval(h,800);}
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <div id="memwrap" hidden><iframe id="memframe" title="Paging, virtual memory and segmentation" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;title&gt;ページとセグメントのラボ / Memory Lab&lt;/title&gt;
 &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=JetBrains+Mono:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;700;900&amp;family=Noto+Sans+SC:wght@400;700;900&amp;family=Prompt:wght@600;700&amp;family=Sarabun:wght@400;700&amp;display=swap&quot;&gt;
@@ -1252,12 +2009,12 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
   --f-body:&quot;Atkinson Hyperlegible&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
   --f-mono:&quot;JetBrains Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]){
+@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){
   --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
   --sheet:#8AB0FF; --on-sheet:#0F1318; --word:#6BD893; --on-word:#0F1318; --game:#F0C24B; --on-game:#0F1318;
   --browser:#F09A62; --on-browser:#0F1318; --os:#D58BB4; --on-os:#0F1318;
   --pa:#B4BDC8; --on-pa:#0F1318; --sig:#FF5A52; --sig-soft:#401A17; --ok:#6BD893; --ok-soft:#14351F; --disk:#1C2B3E; --disk-top:#2A4059; color-scheme:dark}}
-:root[data-theme=&quot;dark&quot;]{
+:root[data-theme=&quot;dark-off&quot;]{
   --bg:#0F1318; --panel:#181E26; --ink:#EEF1F5; --muted:#A2ACB8; --line:#2E3742; --soft:#222A34;
   --sheet:#8AB0FF; --on-sheet:#0F1318; --word:#6BD893; --on-word:#0F1318; --game:#F0C24B; --on-game:#0F1318;
   --browser:#F09A62; --on-browser:#0F1318; --os:#D58BB4; --on-os:#0F1318;
@@ -1569,8 +2326,8 @@ img{max-width:100%}
 #sim{scroll-margin-top:72px}
 &lt;/style&gt;&lt;style id=&quot;calm&quot;&gt;
 :root{--bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;--accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;--edge:#6B86B3;--disk:#DDE8F7;--disk-top:#C2D5EE;--pa:#5F7090;}
-@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}}
-:root[data-theme=&quot;dark&quot;]{--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}
+@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}}
+:root[data-theme=&quot;dark-off&quot;]{--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}
 /* Calm palette: blue accent for selected states, frames and highlights. --ink is for text only. */
 .seg button[aria-pressed=&quot;true&quot;]{background:var(--accent);color:var(--on-accent)}
 .src:hover,.tstep:hover,.btn:hover,.opt:hover{border-color:var(--accent)}
@@ -3310,42 +4067,50 @@ root.addEventListener('langhide',()=>stop());
 <script>
 (function(){
   const g=id=>document.getElementById(id);
-  const intro=g('intro'),sw=g('schedwrap'),mw=g('memwrap'),sf=g('schedframe'),mf=g('memframe');
-  const bi=g('tp-intr'),bs=g('tp-sched'),bm=g('tp-mem');
+  const intro=g('intro'),sw=g('schedwrap'),mw=g('memwrap'),sf=g('schedframe'),mf=g('memframe'),aw=g('algowrap'),af=g('algoframe');
+  const bi=g('tp-intr'),bs=g('tp-sched'),bm=g('tp-mem'),ba=g('tp-algo');const AL=['fcfs','sjf','srtf','rr'];let pendingAlg=null,algNow='fcfs';
+  const toAlgo=d=>af.contentWindow&&af.contentWindow.postMessage({algo:d},'*');
   const LS=['en','ja','zh','th'],SC=['page','virt','seg','int','ext'];
   const curLang=()=>(document.documentElement.lang||'en').slice(0,2);
   const toMem=d=>mf.contentWindow&&mf.contentWindow.postMessage({mem:d},'*');
   let cur='intr',pendingSc=null;
   const memHash=()=>'#mem-'+curLang();
   function topic(t,pick){
-    const s=t==='sched',m=t==='mem';
+    const s=t==='sched',m=t==='mem',a=t==='algo';
     if(t!=='intr')document.querySelectorAll('#intro > div:not([hidden])').forEach(v=>v.dispatchEvent(new Event('langhide')));
-    if(cur==='mem'&&!m)toMem({hide:true});
+    if(cur==='mem'&&!m)toMem({hide:true});if(cur==='algo'&&!a)toAlgo({hide:true});
     cur=t;
-    intro.hidden=t!=='intr';sw.hidden=!s;mw.hidden=!m;document.body.classList.toggle('t-sched',s);
-    bi.setAttribute('aria-pressed',t==='intr');bs.setAttribute('aria-pressed',s);bm.setAttribute('aria-pressed',m);
+    intro.hidden=t!=='intr';sw.hidden=!s;mw.hidden=!m;aw.hidden=!a;document.body.classList.toggle('t-sched',s);
+    bi.setAttribute('aria-pressed',t==='intr');bs.setAttribute('aria-pressed',s);bm.setAttribute('aria-pressed',m);ba.setAttribute('aria-pressed',a);
     document.querySelectorAll('.flyer').forEach(x=>x.remove());
     if(t==='intr'&&pick){const v=document.querySelector('#intro > div:not([hidden])');const b=v&&v.querySelector('.src[data-k="'+pick+'"]');if(b)b.click();}
     if(m){toMem({lang:curLang(),sc:pendingSc,show:true});pendingSc=null;}
-    try{history.replaceState(null,'',s?'#sched':m?memHash():'#'+curLang());}catch(e){}
+    if(a){if(pendingAlg)algNow=pendingAlg;toAlgo({lang:curLang(),alg:pendingAlg});pendingAlg=null;}
+    try{history.replaceState(null,'',s?'#sched':m?memHash():a?'#algo-'+curLang()+'-'+algNow:'#'+curLang());}catch(e){}
     window.scrollTo(0,0);
   }
-  bi.onclick=()=>topic('intr');bs.onclick=()=>topic('sched');bm.onclick=()=>topic('mem');
+  bi.onclick=()=>topic('intr');ba.onclick=()=>topic('algo');bs.onclick=()=>topic('sched');bm.onclick=()=>topic('mem');
   window.addEventListener('message',e=>{const d=e.data||{};
-    if(typeof d.h==='number'){const f=[sf,mf].find(x=>x.contentWindow===e.source);if(f)f.style.height=Math.max(600,d.h)+'px';}
-    if(d.go==='intr')topic('intr',d.pick)});
-  LS.forEach(l=>g('lg-'+l).addEventListener('click',()=>{if(cur!=='mem')return;toMem({lang:l});try{history.replaceState(null,'',memHash())}catch(e){}}));
-  document.addEventListener('keydown',e=>{if(cur!=='mem'||e.target.tagName==='SELECT')return;
+    if(typeof d.h==='number'){const f=[sf,mf,af].find(x=>x.contentWindow===e.source);if(f)f.style.height=Math.max(600,d.h)+'px';}
+    if(d.go==='intr')topic('intr',d.pick);if(d.go==='algo')topic('algo');
+    if(d.algoHash&&cur==='algo'){algNow=d.algoHash.split('-')[1]||algNow;try{history.replaceState(null,'','#algo-'+d.algoHash)}catch(err){}}
+    if(d.algoTop)af.scrollIntoView({behavior:'smooth',block:'start'})});
+  LS.forEach(l=>g('lg-'+l).addEventListener('click',()=>{if(cur==='algo'){toAlgo({lang:l});try{history.replaceState(null,'','#algo-'+l+'-'+algNow)}catch(e){}return;}if(cur!=='mem')return;toMem({lang:l});try{history.replaceState(null,'',memHash())}catch(e){}}));
+  document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;
+    if(cur==='algo'){if(e.key==='ArrowRight')toAlgo({key:'next'});if(e.key==='ArrowLeft')toAlgo({key:'prev'});return;}
+    if(cur!=='mem')return;
     if(e.key==='ArrowRight')toMem({key:'next'});if(e.key==='ArrowLeft')toMem({key:'prev'})});
   function fromHash(){
     const h=location.hash.slice(1);
     if(h==='sched'){topic('sched');return}
+    if(h==='algo'||h.startsWith('algo-')){const p=h.split('-'),l=p.find(x=>LS.includes(x));pendingAlg=p.find(x=>AL.includes(x))||null;if(l&&l!==curLang())g('lg-'+l).click();topic('algo');return}
     if(h==='mem'||h.startsWith('mem-')){
       const p=h.split('-'),l=p.find(x=>LS.includes(x));pendingSc=p.find(x=>SC.includes(x))||null;
       if(l&&l!==curLang())g('lg-'+l).click();
       topic('mem');return}
     if(LS.includes(h)&&cur!=='intr')topic('intr');
   }
+  af.addEventListener('load',()=>{toAlgo({lang:curLang(),alg:cur==='algo'?pendingAlg||algNow:null})});
   mf.addEventListener('load',()=>{if(cur==='mem')toMem({lang:curLang(),sc:pendingSc,show:true}),pendingSc=null;else toMem({lang:curLang()})});
   fromHash();
   window.addEventListener('hashchange',fromHash);
