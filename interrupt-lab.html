@@ -252,6 +252,28 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .langin .seg+.seg{margin-left:0}
 body.t-sched .langin .seg[aria-label="Language"]{display:none}
 </style>
+<style id="calm">
+:root{--bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;--accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;--edge:#6B86B3;--disk:#DDE8F7;--disk-top:#C2D5EE;--pa:#5F7090;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}}
+:root[data-theme="dark"]{--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}
+/* Calm palette: blue accent for selected states, frames and highlights. --ink is for text only. */
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.src:hover,.tstep:hover,.btn:hover,.opt:hover{border-color:var(--accent)}
+.tstep.now{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.figtag{background:var(--accent);color:var(--on-accent)}
+.figtag.extra{background:transparent;color:var(--accent-ink);border:2px dashed var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.newk,.reg .new,.frame .sp{background:var(--accent);color:var(--on-accent)}
+.ring{box-shadow:0 0 0 3px var(--accent)}
+.flowk{border:2px dashed var(--edge)}
+.box.hot{box-shadow:0 0 0 3px var(--accent)}
+.toggle.on{background:var(--accent)}
+.toggle.half{background:repeating-linear-gradient(45deg,var(--accent) 0 4px,var(--muted) 4px 8px)}
+.stackwrap{border-color:var(--edge)}
+.tyb{border:1px solid var(--edge)} .tyb.hw{background:var(--accent);color:var(--on-accent)}
+.pill{border:1px solid var(--edge)} .pill.solid{background:var(--accent);color:var(--on-accent)}
+button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
 <div class="langbar"><div class="langin"><span class="brand">CAMBRIDGE 9618 · TOPIC 16</span><div class="seg" role="group" aria-label="Topic"><span class="cap">Topic</span><button id="tp-intr" aria-pressed="true">Interrupts</button><button id="tp-sched" aria-pressed="false">Scheduling</button><button id="tp-mem" aria-pressed="false">Memory</button></div>
 <div class="seg" role="group" aria-label="Language"><span class="cap">Language</span><button id="lg-en" data-l="en" aria-pressed="true">English</button><button id="lg-ja" data-l="ja" aria-pressed="false">日本語</button><button id="lg-zh" data-l="zh" aria-pressed="false">中文</button><button id="lg-th" data-l="th" aria-pressed="false">ไทย</button></div></div></div>
 <div id="intro">
@@ -1215,7 +1237,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 })();
 &lt;/script&gt;
 
-&lt;script&gt;document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+&lt;script&gt;document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <div id="memwrap" hidden><iframe id="memframe" title="Paging, virtual memory and segmentation" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;title&gt;ページとセグメントのラボ / Memory Lab&lt;/title&gt;
 &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=JetBrains+Mono:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;700;900&amp;family=Noto+Sans+SC:wght@400;700;900&amp;family=Prompt:wght@600;700&amp;family=Sarabun:wght@400;700&amp;display=swap&quot;&gt;
@@ -1545,6 +1567,55 @@ img{max-width:100%}
 [hidden]{display:none!important}
 .langbar{display:none}
 #sim{scroll-margin-top:72px}
+&lt;/style&gt;&lt;style id=&quot;calm&quot;&gt;
+:root{--bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;--accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;--edge:#6B86B3;--disk:#DDE8F7;--disk-top:#C2D5EE;--pa:#5F7090;}
+@media (prefers-color-scheme: dark){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}}
+:root[data-theme=&quot;dark&quot;]{--bg:#1B2436;--panel:#25314B;--ink:#EAF0FA;--muted:#AEBBD1;--line:#3E4E6E;--soft:#2D3B58;--accent:#8AB0FF;--accent-soft:#2C426F;--accent-ink:#BCD1FF;--on-accent:#14284A;--edge:#8CA3CE;--disk:#2A3B5C;--disk-top:#3A5381;color-scheme:dark;}
+/* Calm palette: blue accent for selected states, frames and highlights. --ink is for text only. */
+.seg button[aria-pressed=&quot;true&quot;]{background:var(--accent);color:var(--on-accent)}
+.src:hover,.tstep:hover,.btn:hover,.opt:hover{border-color:var(--accent)}
+.tstep.now{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.figtag{background:var(--accent);color:var(--on-accent)}
+.figtag.extra{background:transparent;color:var(--accent-ink);border:2px dashed var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.newk,.reg .new,.frame .sp{background:var(--accent);color:var(--on-accent)}
+.ring{box-shadow:0 0 0 3px var(--accent)}
+.flowk{border:2px dashed var(--edge)}
+.box.hot{box-shadow:0 0 0 3px var(--accent)}
+.toggle.on{background:var(--accent)}
+.toggle.half{background:repeating-linear-gradient(45deg,var(--accent) 0 4px,var(--muted) 4px 8px)}
+.stackwrap{border-color:var(--edge)}
+.tyb{border:1px solid var(--edge)} .tyb.hw{background:var(--accent);color:var(--on-accent)}
+.pill{border:1px solid var(--edge)} .pill.solid{background:var(--accent);color:var(--on-accent)}
+button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.file:not(:disabled):hover{border-color:var(--accent)}
+.file.open .fs{color:var(--accent-ink)}
+.ztag{background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--edge)}
+.ztag.ghost{background:transparent;border:1px dashed var(--edge)}
+.ztagc.cpu{background:var(--accent);color:var(--on-accent)}
+.ztagc.ram{border:2px dashed var(--edge)} .ztagc.none{border:1px dotted var(--edge)}
+.zcpu{border:3px solid var(--accent)}
+.zone.hot,.tablebox.hot,.physbox.hot,.sw.ring{box-shadow:0 0 0 3px var(--accent)}
+#ov path{stroke:var(--accent-ink);stroke-width:2.5}
+#ov .head{fill:var(--accent-ink)}
+.ptb tr.hit td{background:var(--accent);color:var(--on-accent)}
+.pulse .slot{border-color:var(--accent)}
+.slot{border-color:var(--edge)}
+.swapfile{border:1px dashed var(--edge)}
+.sheet .cell,.slot .cell,.chips .cell,.sb .cell,.flyer{border:2px solid var(--edge);border:2px solid color-mix(in srgb,var(--c) 60%,#0B1220)}
+.fban{background:var(--accent-soft);color:var(--ink);border:3px solid var(--accent)}
+.fglyph i{background:var(--accent)}
+.bnT{color:var(--accent-ink)} .bnS{opacity:1;color:var(--muted)}
+.fmem{border:2px solid var(--edge)}
+.pgbox{border:3px solid var(--edge)}
+.fmem&gt;.fp{border:3px solid var(--edge);border:3px solid color-mix(in srgb,var(--c) 60%,#0B1220)}
+.fline{border-top:1px dashed var(--edge)}
+.fkey i{border:3px solid var(--edge)}
+.fkey i.dl{border:0;border-top:1px dashed var(--edge)}
+.model{border:2px solid var(--edge)}
+.exans{border-top:2px solid var(--edge)}
+.extb th,.extb td{border:1px solid var(--edge)}
 &lt;/style&gt;&lt;/head&gt;&lt;body&gt;
 
 &lt;div class=&quot;langbar&quot;&gt;&lt;div class=&quot;langin&quot;&gt;&lt;span class=&quot;brand&quot;&gt;CAMBRIDGE 9618 · 16.1 MEMORY&lt;/span&gt;
