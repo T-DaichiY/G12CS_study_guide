@@ -1,4 +1,4 @@
-<title>Interrupt, Scheduling &amp; Memory Lab</title>
+<title>Topic 16 OS Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Noto+Sans+SC:wght@400;700;900&family=Prompt:wght@600;700&family=Sarabun:wght@400;700&display=swap">
@@ -1159,14 +1159,14 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
       if(fin[p]!==null){st=&#x27;done&#x27;;cl=&#x27;done&#x27;;}
       else if(cur&amp;&amp;cur.p===p&amp;&amp;!finished){st=&#x27;running&#x27;;cl=&#x27;run&#x27;;}
       h+=&#x27;&lt;div class=&quot;proc&quot;&gt;&lt;span class=&quot;name&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;+
-        &#x27;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;outer&quot; style=&quot;width:&#x27;+(B[p]/8*100)+&#x27;%&quot;&gt;&lt;div class=&quot;inner p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(rem[p]/B[p]*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
-        &#x27;&lt;span class=&quot;info&quot;&gt;burst &#x27;+B[p]+&#x27; ms · &#x27;+rem[p]+&#x27; left&lt;/span&gt;&#x27;+
+        &#x27;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;outer &#x27;+&#x27;p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(B[p]/8*100)+&#x27;%;--n:&#x27;+B[p]+&#x27;;background-color:transparent&quot;&gt;&lt;div class=&quot;inner p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(rem[p]/B[p]*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
+        &#x27;&lt;span class=&quot;info&quot;&gt;&lt;b&gt;&#x27;+rem[p]+&#x27;&lt;/b&gt; / &#x27;+B[p]+&#x27; ms&lt;small&gt;left / burst&lt;/small&gt;&lt;/span&gt;&#x27;+
         &#x27;&lt;span class=&quot;state &#x27;+cl+&#x27;&quot;&gt;&#x27;+st+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;
     }
     $(&#x27;procs&#x27;).innerHTML=h;
 
     var cpu=$(&#x27;cpu&#x27;);
-    if(cur&amp;&amp;!finished){cpu.className=&#x27;cpu-box p&#x27;+(cur.p+1);cpu.textContent=N[cur.p];}
+    if(cur&amp;&amp;!finished){cpu.className=&#x27;cpu-box p&#x27;+(cur.p+1);cpu.innerHTML=N[cur.p]+&#x27;&lt;small&gt;&lt;b&gt;&#x27;+rem[cur.p]+&#x27;&lt;/b&gt; ms left&lt;/small&gt;&#x27;;}
     else{cpu.className=&#x27;cpu-box idle&#x27;;cpu.textContent=finished?&#x27;all done&#x27;:&#x27;idle&#x27;;}
 
     var qm=&#x27;&#x27;;
@@ -1238,7 +1238,24 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 })();
 &lt;/script&gt;
 
-&lt;script&gt;document.getElementById(&quot;goalgo&quot;).onclick=function(){parent.postMessage({go:&quot;algo&quot;},&quot;*&quot;)};document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark-off&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+&lt;script&gt;document.getElementById(&quot;goalgo&quot;).onclick=function(){parent.postMessage({go:&quot;algo&quot;},&quot;*&quot;)};document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark-off&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;style id=&quot;pastel&quot;&gt;
+:root{--p1:#F6A38E;--p2:#7ED3C3;--p3:#B8A7F3}
+*{--cd:color-mix(in srgb,var(--c,#8A94A6) 62%,#1F2A3C)}
+.p1{--c:var(--p1)} .p2{--c:var(--p2)} .p3{--c:var(--p3)}
+.chip,.burst-bar,.cell{color:#1F2A3C;font-weight:600}
+.chip,.burst-bar{border:2px solid var(--cd)}
+.cell.p1,.cell.p2,.cell.p3{box-shadow:inset 0 -3px 0 var(--cd)}
+.cell.sw{box-shadow:inset 3px 0 0 var(--ink),inset 0 -3px 0 var(--cd)}
+.cpu-box{color:#1F2A3C;flex-direction:column;line-height:1.1;border:2px solid var(--cd)}
+.cpu-box.idle{border:1px dashed var(--ink-2)}
+.cpu-box small{font-size:.85rem;font-weight:400}
+.cpu-box small b{font-size:1.3rem}
+.proc .outer{position:relative;height:24px;border:2px solid var(--cd);background:repeating-linear-gradient(45deg,var(--surface-2) 0 4px,var(--surface) 4px 8px)}
+.proc .outer::after{content:&quot;&quot;;position:absolute;inset:0;background:linear-gradient(90deg,transparent calc(100% - 1px),rgba(31,42,60,.28) 0) 0 0/calc(100% / var(--n)) 100%}
+.proc .info{font-family:var(--font-mono);min-width:11rem;color:var(--ink-2)}
+.proc .info b{font-size:1.25rem;color:var(--ink)}
+.proc .info small{font-family:var(--font-body);font-size:.75rem;margin-left:4px}
+&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <div id="algowrap" hidden><iframe id="algoframe" title="Scheduling algorithms: FCFS, SJF, SRTF, round robin" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
 &lt;title&gt;Scheduling Algorithms Lab&lt;/title&gt;
 &lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
@@ -1308,7 +1325,7 @@ button:disabled{opacity:.45;cursor:default}
 /* stage */
 .stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1.05fr) minmax(0,1fr);gap:10px;margin-top:14px}
 @media (max-width:820px){.stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
-.zone{border:2px dashed var(--line);border-radius:10px;padding:10px;min-height:150px;display:grid;grid-template-rows:auto 1fr;gap:8px;min-width:0}
+.zone{border:2px dashed var(--line);border-radius:10px;padding:10px;min-height:128px;display:grid;grid-template-rows:auto 1fr;gap:8px;min-width:0}
 .zone h3{font-size:.86rem;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
 .zone h3 small{font-family:var(--f-mono);font-weight:400;font-size:.7rem;color:var(--muted)}
 .zone .bin{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;min-height:62px}
@@ -1333,9 +1350,9 @@ button:disabled{opacity:.45;cursor:default}
 .zone.cpu .pc .big b{font-size:1.75rem}
 .rb{margin-top:16px;display:grid;gap:6px}
 .rb h3{font-size:.95rem}
-.rrow{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 8.6rem;gap:10px;align-items:center;padding:4px 8px;border-radius:8px}
+.rrow{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 7.6rem 9.4rem;gap:10px;align-items:center;padding:4px 8px;border-radius:8px}
 .rrow.run{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
-.rrow.done{opacity:.6}
+.rrow.done .nmc,.rrow.done .rtrack,.rrow.done .rval{opacity:.55}
 .rrow .nmc{font-family:var(--f-mono);font-weight:600;white-space:nowrap}
 .rrow .nmc .shp{color:color-mix(in srgb,var(--c) 70%,#1F2A3C)}
 .rout{position:relative;height:24px;border:2px solid color-mix(in srgb,var(--c) 62%,#1F2A3C);border-radius:5px;overflow:hidden;
@@ -1345,7 +1362,24 @@ button:disabled{opacity:.45;cursor:default}
 .rval{font-family:var(--f-mono);font-size:.86rem;text-align:right;white-space:nowrap;color:var(--muted)}
 .rval b{font-size:1.2rem;color:var(--ink)}
 .rval .tg{font-family:var(--f-body);font-size:.7rem;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--accent);color:var(--on-accent);margin-right:6px;vertical-align:2px}
-@media (max-width:520px){.rrow{grid-template-columns:3.4rem minmax(0,1fr);}.rval{grid-column:2;text-align:left}}
+.rhead{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 7.6rem 9.4rem;gap:10px;padding:0 8px;font-size:.74rem;color:var(--muted);font-weight:700}
+.rhead span:nth-child(n+3){text-align:right}
+.wv{justify-self:end;display:inline-flex;align-items:baseline;gap:4px;padding:3px 10px;border-radius:8px;border:2px solid var(--line);background:var(--panel);font-family:var(--f-mono);font-size:.85rem;color:var(--muted);min-width:7.4rem;justify-content:flex-end}
+.wv b{font-size:1.45rem;color:var(--ink);line-height:1.1}
+.wv.grow{border-color:#E0A32E;background:#FFF4DC}
+.wv.grow b{color:#8A5A00}
+.wv.grow::before{content:&quot;＋1&quot;;font-size:.7rem;color:#8A5A00;font-weight:700;margin-right:auto}
+.wv.fin{border-color:var(--accent);background:var(--accent-soft)}
+.wv.fin b{color:var(--accent-ink)}
+.wavg{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 18px;margin-top:6px;padding:12px 16px;border-radius:10px;border:3px solid var(--accent);background:var(--accent-soft)}
+.wavg .lbl{font-weight:700;font-size:1rem}
+.wavg .lbl small{display:block;font-weight:400;font-size:.78rem;color:var(--muted)}
+.wavg .sum{font-family:var(--f-mono);font-size:.95rem;color:var(--ink)}
+.wavg .big{font-family:var(--f-mono);font-size:2.2rem;font-weight:600;color:var(--accent-ink);line-height:1}
+.wavg .big small{font-size:1rem}
+.wavg.wip{border-style:dashed;background:var(--panel)}
+.wavg.wip .big{color:var(--muted)}
+@media (max-width:620px){.rhead{display:none}.rrow{grid-template-columns:3.4rem minmax(0,1fr)}.rval{grid-column:2;text-align:left}.wv{grid-column:2;justify-self:start}}
 @media (prefers-reduced-motion:reduce){.rin{transition:none}}
 .pc .sub{font-size:.72rem;line-height:1.2;opacity:.95;white-space:nowrap}
 .pc .bar{height:5px;border-radius:3px;background:rgba(31,42,60,.14);overflow:hidden}
@@ -1462,8 +1496,8 @@ tfoot td{border-bottom:0;font-weight:700}
       &lt;div class=&quot;zone cpu&quot;&gt;&lt;h3&gt;&lt;span&gt;CPU&lt;/span&gt;&lt;small id=&quot;zCpuS&quot;&gt;&lt;/small&gt;&lt;/h3&gt;&lt;div class=&quot;bin&quot; id=&quot;zCpu&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div class=&quot;qbar&quot; id=&quot;qbar&quot;&gt;&lt;/div&gt;&lt;div class=&quot;qtxt&quot; id=&quot;qtxt&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
       &lt;div class=&quot;zone done&quot;&gt;&lt;h3&gt;&lt;span id=&quot;zDoneH&quot;&gt;&lt;/span&gt;&lt;/h3&gt;&lt;div class=&quot;bin&quot; id=&quot;zDone&quot;&gt;&lt;/div&gt;&lt;/div&gt;
     &lt;/div&gt;
+    &lt;div class=&quot;rb&quot;&gt;&lt;h3 id=&quot;rbH&quot;&gt;&lt;/h3&gt;&lt;p class=&quot;note&quot; id=&quot;rbN&quot;&gt;&lt;/p&gt;&lt;div id=&quot;rbars&quot;&gt;&lt;/div&gt;&lt;div id=&quot;wavg&quot; class=&quot;wavg&quot;&gt;&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;msg&quot; id=&quot;msg&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
-    &lt;div class=&quot;rb&quot;&gt;&lt;h3 id=&quot;rbH&quot;&gt;&lt;/h3&gt;&lt;p class=&quot;note&quot; id=&quot;rbN&quot;&gt;&lt;/p&gt;&lt;div id=&quot;rbars&quot;&gt;&lt;/div&gt;&lt;/div&gt;
   &lt;/div&gt;
 
   &lt;div class=&quot;panel&quot;&gt;
@@ -1577,7 +1611,7 @@ en:{
     run:(c,l)=&gt;c+&#x27; is running (&#x27;+l+&#x27; ms left).&#x27;,
     idle:&#x27;No process is in the ready queue. The CPU is idle.&#x27;,
     start:&#x27;Press Play or Step to start.&#x27;,
-    done:&#x27;Every process has finished. Check the waiting times below.&#x27;}
+    done:&#x27;Every process has finished. The waiting times are in the boxes above.&#x27;}
 },
 ja:{
   h1:&#x27;4つのスケジューリング方式を 1 ms ずつ見る&#x27;,
@@ -1637,7 +1671,7 @@ ja:{
     run:(c,l)=&gt;c+&#x27; が実行中（残り &#x27;+l+&#x27; ms）。&#x27;,
     idle:&#x27;レディキューにプロセスがいません。CPU はアイドルです。&#x27;,
     start:&#x27;「再生」か「1 ms 進む」を押してください。&#x27;,
-    done:&#x27;すべてのプロセスが終わりました。下の待ち時間を確認しましょう。&#x27;}
+    done:&#x27;すべてのプロセスが終わりました。上の待ち時間を確認しましょう。&#x27;}
 },
 zh:{
   h1:&#x27;四种调度算法，一毫秒一毫秒地看&#x27;,
@@ -1697,7 +1731,7 @@ zh:{
     run:(c,l)=&gt;c+&#x27; 正在运行（剩余 &#x27;+l+&#x27; ms）。&#x27;,
     idle:&#x27;就绪队列中没有进程。CPU 空闲。&#x27;,
     start:&#x27;按&quot;播放&quot;或&quot;前进 1 ms&quot;开始。&#x27;,
-    done:&#x27;所有进程都已完成。请看下方的等待时间。&#x27;}
+    done:&#x27;所有进程都已完成。请看上方的等待时间。&#x27;}
 },
 th:{
   h1:&#x27;อัลกอริทึมจัดลำดับงาน 4 แบบ ทีละ 1 มิลลิวินาที&#x27;,
@@ -1757,17 +1791,17 @@ th:{
     run:(c,l)=&gt;c+&#x27; กำลังทำงาน (เหลือ &#x27;+l+&#x27; ms)&#x27;,
     idle:&#x27;ไม่มีโปรเซสในคิวพร้อม CPU ว่าง&#x27;,
     start:&#x27;กด &quot;เล่น&quot; หรือ &quot;ไปต่อ 1 ms&quot; เพื่อเริ่ม&#x27;,
-    done:&#x27;ทุกโปรเซสเสร็จแล้ว ดูเวลารอด้านล่าง&#x27;}
+    done:&#x27;ทุกโปรเซสเสร็จแล้ว ดูเวลารอด้านบน&#x27;}
 }};
 const TX2={
- en:{left:r=&gt;&#x27;&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt; ms left&#x27;,burst:b=&gt;&#x27;burst &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;burst &lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt; ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; done&#x27;,notArr:&#x27;not arrived&#x27;,
-   rbH:&#x27;Burst time and remaining time&#x27;,rbN:&#x27;The outline is the burst time, one tick per ms. The coloured part is the time still needed. The striped part has already run.&#x27;},
- ja:{left:r=&gt;&#x27;残り&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt;ms&#x27;,burst:b=&gt;&#x27;バースト &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;バースト&lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt;ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; 終了&#x27;,notArr:&#x27;未到着&#x27;,
-   rbH:&#x27;バースト時間と残り時間&#x27;,rbN:&#x27;枠の長さがバースト時間（目盛り 1 つ = 1 ms）。色のついた部分がまだ必要な時間、しま模様の部分はもう実行した時間です。&#x27;},
- zh:{left:r=&gt;&#x27;剩余&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt;ms&#x27;,burst:b=&gt;&#x27;突发 &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;突发&lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt;ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; 完成&#x27;,notArr:&#x27;未到达&#x27;,
-   rbH:&#x27;突发时间和剩余时间&#x27;,rbN:&#x27;框的长度是突发时间（每格 1 ms）。有颜色的部分是还需要的时间，条纹部分是已经运行过的时间。&#x27;},
- th:{left:r=&gt;&#x27;เหลือ&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt;ms&#x27;,burst:b=&gt;&#x27;เบิร์สต์ &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;เบิร์สต์&lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt;ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; เสร็จ&#x27;,notArr:&#x27;ยังไม่มา&#x27;,
-   rbH:&#x27;เวลาเบิร์สต์และเวลาที่เหลือ&#x27;,rbN:&#x27;ความยาวกรอบคือเวลาเบิร์สต์ (1 ช่อง = 1 ms) ส่วนที่มีสีคือเวลาที่ยังต้องใช้ ส่วนลายทางคือเวลาที่ทำไปแล้ว&#x27;}};
+ en:{colBar:&#x27;burst (outline) and remaining (colour)&#x27;,colRem:&#x27;left / burst&#x27;,avgH:&#x27;Average waiting time&#x27;,avgSub:&#x27;waiting = time in the ready queue&#x27;,wipSub:&#x27;so far (the yellow boxes are still counting up)&#x27;,left:r=&gt;&#x27;&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt; ms left&#x27;,burst:b=&gt;&#x27;burst &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;burst &lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt; ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; done&#x27;,notArr:&#x27;not arrived&#x27;,
+   rbH:&#x27;Remaining time and waiting time&#x27;,rbN:&#x27;Bar: the outline is the burst time (one tick per ms), the coloured part is the time still needed. Waiting time goes up by 1 every ms a process spends in the ready queue (yellow box).&#x27;},
+ ja:{colBar:&#x27;バースト（枠）と残り（色）&#x27;,colRem:&#x27;残り / バースト&#x27;,avgH:&#x27;平均待ち時間&#x27;,avgSub:&#x27;待ち時間 = レディキューにいた時間&#x27;,wipSub:&#x27;途中経過（黄色の枠はまだ増えています）&#x27;,left:r=&gt;&#x27;残り&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt;ms&#x27;,burst:b=&gt;&#x27;バースト &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;バースト&lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt;ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; 終了&#x27;,notArr:&#x27;未到着&#x27;,
+   rbH:&#x27;残り時間と待ち時間&#x27;,rbN:&#x27;バー：枠の長さがバースト時間（目盛り 1 つ = 1 ms）、色の部分がまだ必要な時間。待ち時間は、レディキューにいる間 1 ms ごとに 1 増えます（黄色の枠）。&#x27;},
+ zh:{colBar:&#x27;突发（框）和剩余（颜色）&#x27;,colRem:&#x27;剩余 / 突发&#x27;,avgH:&#x27;平均等待时间&#x27;,avgSub:&#x27;等待时间 = 在就绪队列中的时间&#x27;,wipSub:&#x27;目前为止（黄色框还在增加）&#x27;,left:r=&gt;&#x27;剩余&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt;ms&#x27;,burst:b=&gt;&#x27;突发 &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;突发&lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt;ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; 完成&#x27;,notArr:&#x27;未到达&#x27;,
+   rbH:&#x27;剩余时间和等待时间&#x27;,rbN:&#x27;条：框的长度是突发时间（每格 1 ms），有颜色的部分是还需要的时间。进程在就绪队列中每待 1 ms，等待时间加 1（黄色框）。&#x27;},
+ th:{colBar:&#x27;เบิร์สต์ (กรอบ) และที่เหลือ (สี)&#x27;,colRem:&#x27;เหลือ / เบิร์สต์&#x27;,avgH:&#x27;เวลารอเฉลี่ย&#x27;,avgSub:&#x27;เวลารอ = เวลาที่อยู่ในคิวพร้อม&#x27;,wipSub:&#x27;ระหว่างทาง (กรอบสีเหลืองยังเพิ่มขึ้นอยู่)&#x27;,left:r=&gt;&#x27;เหลือ&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt;ms&#x27;,burst:b=&gt;&#x27;เบิร์สต์ &#x27;+b+&#x27; ms&#x27;,burstBig:b=&gt;&#x27;เบิร์สต์&lt;b&gt;&#x27;+b+&#x27;&lt;/b&gt;ms&#x27;,done:&#x27;&lt;b&gt;✓&lt;/b&gt; เสร็จ&#x27;,notArr:&#x27;ยังไม่มา&#x27;,
+   rbH:&#x27;เวลาที่เหลือและเวลารอ&#x27;,rbN:&#x27;แถบ: ความยาวกรอบคือเวลาเบิร์สต์ (1 ช่อง = 1 ms) ส่วนที่มีสีคือเวลาที่ยังต้องใช้ เวลารอเพิ่มขึ้น 1 ทุก 1 ms ที่โปรเซสอยู่ในคิวพร้อม (กรอบสีเหลือง)&#x27;}};
 const U=()=&gt;TX2[lang];
 const FIGNAME={fcfs:&#x27;Fig. 16.5&#x27;,sjf:&#x27;Fig. 16.6&#x27;,srtf:&#x27;Fig. 16.7&#x27;,rr:&#x27;Fig. 16.8&#x27;};
 
@@ -1910,10 +1944,16 @@ function render(anim){
   // burst vs remaining bars
   {const u=U(),mx=Math.max(...procs.map(p=&gt;p.b));
    $(&#x27;rbH&#x27;).textContent=u.rbH;$(&#x27;rbN&#x27;).textContent=u.rbN;
-   $(&#x27;rbars&#x27;).innerHTML=procs.map((p,i)=&gt;{const r=f.rem[i],d=f.fin[i]!==null,run=f.run===i&amp;&amp;!fin,na=p.a&gt;f.t;
+   const W=procs.map((p,i)=&gt;p.a&gt;f.t?null:(f.fin[i]!==null?f.fin[i]-p.a-p.b:(f.t-p.a)-(p.b-f.rem[i])));
+   $(&#x27;rbars&#x27;).innerHTML=&#x27;&lt;div class=&quot;rhead&quot;&gt;&lt;span&gt;&#x27;+t.col.p+&#x27;&lt;/span&gt;&lt;span&gt;&#x27;+u.colBar+&#x27;&lt;/span&gt;&lt;span&gt;&#x27;+u.colRem+&#x27;&lt;/span&gt;&lt;span&gt;&#x27;+t.col.w+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;+procs.map((p,i)=&gt;{const r=f.rem[i],d=f.fin[i]!==null,run=f.run===i&amp;&amp;!fin,na=p.a&gt;f.t,inq=f.ready.includes(i)&amp;&amp;!fin;
      return &#x27;&lt;div class=&quot;rrow&#x27;+(run?&#x27; run&#x27;:&#x27;&#x27;)+(d?&#x27; done&#x27;:&#x27;&#x27;)+&#x27;&quot; style=&quot;--c:var(&#x27;+COLORS[i]+&#x27;)&quot;&gt;&lt;span class=&quot;nmc&quot;&gt;&#x27;+tagP(i)+&#x27;&lt;/span&gt;&#x27;+
        &#x27;&lt;div class=&quot;rtrack&quot;&gt;&lt;div class=&quot;rout&quot; style=&quot;width:&#x27;+(p.b/mx*100)+&#x27;%;--n:&#x27;+p.b+&#x27;&quot;&gt;&lt;div class=&quot;rin&quot; style=&quot;width:&#x27;+(r/p.b*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
-       &#x27;&lt;span class=&quot;rval&quot;&gt;&#x27;+(run?&#x27;&lt;span class=&quot;tg&quot;&gt;CPU&lt;/span&gt;&#x27;:&#x27;&#x27;)+(na?u.notArr+&#x27; · &#x27;:&#x27;&#x27;)+&#x27;&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt; / &#x27;+p.b+&#x27; ms&lt;/span&gt;&lt;/div&gt;&#x27;;}).join(&#x27;&#x27;);}
+       &#x27;&lt;span class=&quot;rval&quot;&gt;&#x27;+(run?&#x27;&lt;span class=&quot;tg&quot;&gt;CPU&lt;/span&gt;&#x27;:&#x27;&#x27;)+(na?u.notArr+&#x27; · &#x27;:&#x27;&#x27;)+&#x27;&lt;b&gt;&#x27;+r+&#x27;&lt;/b&gt; / &#x27;+p.b+&#x27; ms&lt;/span&gt;&#x27;+
+       &#x27;&lt;span class=&quot;wv&#x27;+(inq?&#x27; grow&#x27;:&#x27;&#x27;)+(d?&#x27; fin&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;b&gt;&#x27;+(W[i]===null?&#x27;–&#x27;:W[i])+&#x27;&lt;/b&gt; ms&lt;/span&gt;&lt;/div&gt;&#x27;;}).join(&#x27;&#x27;);
+   const n=procs.length,known=W.map(w=&gt;w===null?0:w),sum=known.reduce((a,b)=&gt;a+b,0),wa=$(&#x27;wavg&#x27;);
+   wa.className=&#x27;wavg&#x27;+(fin?&#x27;&#x27;:&#x27; wip&#x27;);
+   wa.innerHTML=fin?&#x27;&lt;span class=&quot;lbl&quot;&gt;&#x27;+u.avgH+&#x27;&lt;small&gt;&#x27;+u.avgSub+&#x27;&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sum&quot;&gt;(&#x27;+sim.wait.join(&#x27; + &#x27;)+&#x27;) ÷ &#x27;+n+&#x27;&lt;/span&gt;&lt;span class=&quot;big&quot;&gt;&#x27;+fmt(sim.avg)+&#x27; &lt;small&gt;ms&lt;/small&gt;&lt;/span&gt;&#x27;
+     :&#x27;&lt;span class=&quot;lbl&quot;&gt;&#x27;+u.avgH+&#x27;&lt;small&gt;&#x27;+u.wipSub+&#x27;&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sum&quot;&gt;(&#x27;+known.join(&#x27; + &#x27;)+&#x27;) ÷ &#x27;+n+&#x27; = &#x27;+fmt(sum/n)+&#x27; ms&lt;/span&gt;&lt;span class=&quot;big&quot;&gt;… &lt;small&gt;ms&lt;/small&gt;&lt;/span&gt;&#x27;;}
   // FLIP
   const reduce=matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
   if(anim&amp;&amp;!reduce)chips.forEach((c,i)=&gt;{const l=c.getBoundingClientRect(),o=first[i];const dx=o.left-l.left,dy=o.top-l.top;
@@ -3240,7 +3280,15 @@ addEventListener(&quot;message&quot;,e=&gt;{const d=e.data&amp;&amp;e.data.mem;i
 function send(){parent.postMessage({h:Math.ceil(document.body.getBoundingClientRect().height)},&quot;*&quot;)}
 addEventListener(&quot;load&quot;,send);addEventListener(&quot;resize&quot;,send);
 new ResizeObserver(send).observe(document.body);
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+&lt;/script&gt;&lt;style id=&quot;pastel&quot;&gt;
+:root{--sheet:#8DB4F2;--word:#8ED3A5;--game:#F5C76A;--browser:#F6A38E;--os:#D3A5CF;--pa:#C5CDD9;--on-sheet:#1F2A3C;--on-word:#1F2A3C;--on-game:#1F2A3C;--on-browser:#1F2A3C;--on-os:#1F2A3C;--on-pa:#1F2A3C}
+*{--cd:color-mix(in srgb,var(--c,#8A94A6) 62%,#1F2A3C)}
+h1 em{color:var(--accent-ink)}
+.cell.out{outline-color:var(--cd)}
+.cell.part{outline-color:var(--cd)}
+.sw.dash{outline-color:#4FA571}
+.sw.hatch{outline-color:#4FA571}
+&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <script>
 (function(root){
 
@@ -4148,3 +4196,16 @@ root.addEventListener('langhide',()=>stop());
   window.addEventListener('hashchange',fromHash);
 })();
 </script>
+<style id="pastel">
+:root{--prog:#8DB4F2;--prog-soft:#EAF1FD;--isra:#8ED3A5;--isra-soft:#E6F6EC;--isrb:#B8A7F3;--isrb-soft:#F0ECFD;--on-solid:#1F2A3C}
+*{--cd:color-mix(in srgb,var(--c,#8A94A6) 62%,#1F2A3C)}
+header h1 em{color:var(--accent-ink)}
+.src .pg{color:#1F4AA8}
+.src[aria-pressed="true"]{border-color:#4FA571}
+.src[aria-pressed="true"] .ty,.pitem .o,.opt.right::after{color:#23774A}
+.opt.right{border-color:#4FA571}
+.cpu,.flow,.flow .fs,.bit.own,.frame,.isr.own,.isr.act{border-color:var(--cd)}
+.reg{border-left-color:var(--cd)}
+.flow .fa{color:var(--cd)}
+.bit .tagsig{color:#FFFFFF}
+</style>
