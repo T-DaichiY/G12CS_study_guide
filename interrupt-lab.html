@@ -248,9 +248,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .langin .brand{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
 .langin .seg button{font-family:"Atkinson Hyperlegible","Zen Kaku Gothic New","Noto Sans SC","Sarabun",system-ui,sans-serif}
 .schednote{max-width:1100px;margin:10px auto 0;font-size:13px;color:var(--muted)}
-#schedwrap{max-width:1100px;margin:0 auto}
+#schedwrap{margin:0}
 .langin .seg+.seg{margin-left:0}
-body.t-sched .langin .seg[aria-label="Language"]{display:none}
+
 </style>
 <style id="calm">
 :root{--bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;--accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;--edge:#6B86B3;--disk:#DDE8F7;--disk-top:#C2D5EE;--pa:#5F7090;}
@@ -852,21 +852,21 @@ button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outlin
 </div>
 </div>
 </div>
-<div id="schedwrap" hidden><p class="schednote">Scheduling page: English only for now. Language buttons apply to the Interrupts tab.</p><iframe id="schedframe" title="Preemptive vs Non-preemptive scheduling" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+<div id="schedwrap" hidden><iframe id="schedframe" title="Preemptive vs Non-preemptive scheduling" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
 &lt;title&gt;Preemptive vs Non-preemptive&lt;/title&gt;
 &lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
 &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
 &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=JetBrains+Mono:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;700&amp;family=Noto+Sans+SC:wght@400;700&amp;family=Sarabun:wght@400;700&amp;display=swap&quot;&gt;
 &lt;style&gt;
 /* Layout concept: a calm lab-notebook page. Narrow reading column, one wide animator panel, CPU timeline as the visual signature. */
 :root{
   --bg:#F2F5F8; --surface:#FFFFFF; --surface-2:#E8EDF2; --ink:#13202C; --ink-2:#4A5B6B; --line:#D3DCE4;
   --accent:#1B5FC1; --accent-bg:#DCE9FA; --ok:#0B7A3E;
   --p1:#D9480F; --p2:#0B7A6A; --p3:#6741D9;
-  --font-display:&quot;Bricolage Grotesque&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
-  --font-body:&quot;IBM Plex Sans&quot;,&quot;Segoe UI&quot;,system-ui,sans-serif;
-  --font-mono:&quot;IBM Plex Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
+  --font-display:&quot;Bricolage Grotesque&quot;,&quot;Zen Kaku Gothic New&quot;,&quot;Noto Sans SC&quot;,&quot;Sarabun&quot;,system-ui,sans-serif;
+  --font-body:&quot;Atkinson Hyperlegible&quot;,&quot;Zen Kaku Gothic New&quot;,&quot;Noto Sans SC&quot;,&quot;Sarabun&quot;,system-ui,sans-serif;
+  --font-mono:&quot;JetBrains Mono&quot;,ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark) and (max-width: 0px){
   :root:not([data-theme=&quot;light&quot;]){
@@ -971,274 +971,373 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 
 &lt;div class=&quot;wrap&quot;&gt;
 &lt;header class=&quot;hero&quot;&gt;
-  &lt;p class=&quot;eyebrow&quot;&gt;CPU scheduling · Operating systems&lt;/p&gt;
-  &lt;h1&gt;Who gets the CPU next?&lt;/h1&gt;
-  &lt;p class=&quot;lede&quot;&gt;One CPU, three processes, and one question: can the OS take the CPU back from a process that is still running? Step through both answers below, one millisecond at a time.&lt;/p&gt;
+  &lt;p class=&quot;eyebrow&quot;&gt;Cambridge 9618 · Topic 16 · Preemptive vs non-preemptive&lt;/p&gt;
+  &lt;h1 data-t=&quot;h1&quot;&gt;&lt;/h1&gt;
+  &lt;p class=&quot;lede&quot; data-t=&quot;lede&quot;&gt;&lt;/p&gt;
 &lt;/header&gt;
 
 &lt;section id=&quot;burst&quot;&gt;
-  &lt;h2&gt;Burst time in one picture&lt;/h2&gt;
-  &lt;div class=&quot;read&quot;&gt;
-    &lt;p&gt;&lt;span class=&quot;term&quot;&gt;Burst time&lt;/span&gt; is how long a process needs the CPU in one continuous stretch. A process with a burst time of 8 ms needs 8 ms of CPU time to finish that stretch. Waiting in the ready queue does not count, and neither does waiting for the disk.&lt;/p&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;panel burst-demo&quot; aria-label=&quot;Burst times of the three example processes&quot;&gt;
-    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p1&quot;&gt;P1&lt;/span&gt;&lt;div class=&quot;burst-bar p1&quot; style=&quot;width:100%&quot;&gt;burst time 8 ms&lt;/div&gt;&lt;/div&gt;
+  &lt;h2 data-t=&quot;bH&quot;&gt;&lt;/h2&gt;
+  &lt;div class=&quot;read&quot;&gt;&lt;p data-t=&quot;bP&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+  &lt;div class=&quot;panel burst-demo&quot;&gt;
+    &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p1&quot;&gt;P1&lt;/span&gt;&lt;div class=&quot;burst-bar p1&quot; style=&quot;width:100%&quot; data-t=&quot;b8&quot;&gt;&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p2&quot;&gt;P2&lt;/span&gt;&lt;div class=&quot;burst-bar p2&quot; style=&quot;width:25%;min-width:110px&quot;&gt;2 ms&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;burst-row&quot;&gt;&lt;span class=&quot;chip p3&quot;&gt;P3&lt;/span&gt;&lt;div class=&quot;burst-bar p3&quot; style=&quot;width:12.5%;min-width:64px&quot;&gt;1 ms&lt;/div&gt;&lt;/div&gt;
-    &lt;p class=&quot;lab&quot;&gt;Bar length is proportional to burst time. These three processes are used in every animation on this page. All three arrive at t = 0, queued in the order P1, P2, P3.&lt;/p&gt;
+    &lt;p class=&quot;lab&quot; data-t=&quot;bNote&quot;&gt;&lt;/p&gt;
   &lt;/div&gt;
-  &lt;div class=&quot;read&quot;&gt;
-    &lt;p&gt;Real processes alternate between using the CPU and waiting for input or output:&lt;/p&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;life&quot; aria-label=&quot;CPU burst, I/O wait, CPU burst, I/O wait, CPU burst, finish&quot;&gt;
-    &lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;I/O wait&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;I/O wait&lt;/span&gt;&lt;span class=&quot;cpu&quot;&gt;CPU burst&lt;/span&gt;&lt;span class=&quot;io&quot;&gt;done&lt;/span&gt;
-  &lt;/div&gt;
+  &lt;div class=&quot;read&quot;&gt;&lt;p data-t=&quot;bP2&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+  &lt;div class=&quot;life&quot;&gt;&lt;span class=&quot;cpu&quot; data-t=&quot;lCpu&quot;&gt;&lt;/span&gt;&lt;span class=&quot;io&quot; data-t=&quot;lIo&quot;&gt;&lt;/span&gt;&lt;span class=&quot;cpu&quot; data-t=&quot;lCpu&quot;&gt;&lt;/span&gt;&lt;span class=&quot;io&quot; data-t=&quot;lIo&quot;&gt;&lt;/span&gt;&lt;span class=&quot;cpu&quot; data-t=&quot;lCpu&quot;&gt;&lt;/span&gt;&lt;span class=&quot;io&quot; data-t=&quot;lDone&quot;&gt;&lt;/span&gt;&lt;/div&gt;
 &lt;/section&gt;
 
 &lt;section id=&quot;animator&quot;&gt;
-  &lt;h2&gt;Run the scheduler&lt;/h2&gt;
+  &lt;h2 data-t=&quot;aH&quot;&gt;&lt;/h2&gt;
   &lt;div class=&quot;panel&quot;&gt;
     &lt;div class=&quot;controls&quot; style=&quot;margin-bottom:14px&quot;&gt;
-      &lt;button id=&quot;m0&quot; aria-pressed=&quot;true&quot;&gt;Non-preemptive (FCFS)&lt;/button&gt;
-      &lt;button id=&quot;m1&quot; aria-pressed=&quot;false&quot;&gt;Preemptive (Round Robin)&lt;/button&gt;
-      &lt;label id=&quot;qwrap&quot; class=&quot;lab&quot; hidden&gt;Time quantum
-        &lt;select id=&quot;qsel&quot; aria-label=&quot;Time quantum in milliseconds&quot;&gt;
-          &lt;option value=&quot;1&quot;&gt;1 ms&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;2 ms&lt;/option&gt;&lt;option value=&quot;3&quot; selected&gt;3 ms&lt;/option&gt;&lt;option value=&quot;4&quot;&gt;4 ms&lt;/option&gt;&lt;option value=&quot;8&quot;&gt;8 ms&lt;/option&gt;
-        &lt;/select&gt;
+      &lt;button id=&quot;m0&quot; aria-pressed=&quot;true&quot; data-t=&quot;m0&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;m1&quot; aria-pressed=&quot;false&quot; data-t=&quot;m1&quot;&gt;&lt;/button&gt;
+      &lt;label id=&quot;qwrap&quot; class=&quot;lab&quot; hidden&gt;&lt;span data-t=&quot;quant&quot;&gt;&lt;/span&gt;
+        &lt;select id=&quot;qsel&quot;&gt;&lt;option value=&quot;1&quot;&gt;1 ms&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;2 ms&lt;/option&gt;&lt;option value=&quot;3&quot; selected&gt;3 ms&lt;/option&gt;&lt;option value=&quot;4&quot;&gt;4 ms&lt;/option&gt;&lt;option value=&quot;8&quot;&gt;8 ms&lt;/option&gt;&lt;/select&gt;
       &lt;/label&gt;
     &lt;/div&gt;
     &lt;div class=&quot;controls&quot; style=&quot;margin-bottom:16px&quot;&gt;
-      &lt;button id=&quot;play&quot; class=&quot;go&quot;&gt;Play&lt;/button&gt;
-      &lt;button id=&quot;step&quot;&gt;Step 1 ms&lt;/button&gt;
-      &lt;button id=&quot;reset&quot;&gt;Reset&lt;/button&gt;
-      &lt;label class=&quot;lab&quot;&gt;Speed
-        &lt;select id=&quot;speed&quot; aria-label=&quot;Animation speed&quot;&gt;
-          &lt;option value=&quot;1300&quot;&gt;Slow&lt;/option&gt;&lt;option value=&quot;850&quot; selected&gt;Normal&lt;/option&gt;&lt;option value=&quot;400&quot;&gt;Fast&lt;/option&gt;
-        &lt;/select&gt;
+      &lt;button id=&quot;play&quot; class=&quot;go&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;step&quot; data-t=&quot;step&quot;&gt;&lt;/button&gt;
+      &lt;button id=&quot;reset&quot; data-t=&quot;reset&quot;&gt;&lt;/button&gt;
+      &lt;label class=&quot;lab&quot;&gt;&lt;span data-t=&quot;speed&quot;&gt;&lt;/span&gt;
+        &lt;select id=&quot;speed&quot;&gt;&lt;option value=&quot;1300&quot; data-t=&quot;sp0&quot;&gt;&lt;/option&gt;&lt;option value=&quot;850&quot; selected data-t=&quot;sp1&quot;&gt;&lt;/option&gt;&lt;option value=&quot;400&quot; data-t=&quot;sp2&quot;&gt;&lt;/option&gt;&lt;/select&gt;
       &lt;/label&gt;
       &lt;span class=&quot;spacer&quot;&gt;&lt;/span&gt;
-      &lt;span class=&quot;clock&quot;&gt;time &lt;b id=&quot;clock&quot;&gt;0&lt;/b&gt; ms&lt;/span&gt;
+      &lt;span class=&quot;clock&quot;&gt;&lt;span data-t=&quot;time&quot;&gt;&lt;/span&gt; &lt;b id=&quot;clock&quot;&gt;0&lt;/b&gt; ms&lt;/span&gt;
     &lt;/div&gt;
-
     &lt;div class=&quot;procs&quot; id=&quot;procs&quot; style=&quot;margin-bottom:16px&quot;&gt;&lt;/div&gt;
-
     &lt;div class=&quot;two&quot; style=&quot;margin-bottom:16px&quot;&gt;
       &lt;div&gt;
         &lt;div class=&quot;lab&quot;&gt;CPU&lt;/div&gt;
-        &lt;div id=&quot;cpu&quot; class=&quot;cpu-box idle&quot;&gt;idle&lt;/div&gt;
+        &lt;div id=&quot;cpu&quot; class=&quot;cpu-box idle&quot;&gt;&lt;/div&gt;
         &lt;div id=&quot;qmeter&quot; class=&quot;qmeter&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
         &lt;div class=&quot;lab&quot; id=&quot;qinfo&quot; style=&quot;min-height:1.6em;margin-top:4px&quot;&gt;&lt;/div&gt;
       &lt;/div&gt;
       &lt;div&gt;
-        &lt;div class=&quot;lab&quot;&gt;Ready queue (waiting for the CPU)&lt;/div&gt;
+        &lt;div class=&quot;lab&quot; data-t=&quot;rq&quot;&gt;&lt;/div&gt;
         &lt;div id=&quot;queue&quot; class=&quot;queue&quot;&gt;&lt;/div&gt;
         &lt;p id=&quot;msg&quot; class=&quot;msg&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
-
-    &lt;div class=&quot;lab&quot; style=&quot;margin-bottom:6px&quot;&gt;CPU timeline&lt;/div&gt;
+    &lt;div class=&quot;lab&quot; style=&quot;margin-bottom:6px&quot; data-t=&quot;tl&quot;&gt;&lt;/div&gt;
     &lt;div id=&quot;gantt&quot; class=&quot;gantt&quot;&gt;&lt;/div&gt;
     &lt;div id=&quot;axis&quot; class=&quot;axis&quot;&gt;&lt;/div&gt;
-    &lt;div class=&quot;legend&quot; style=&quot;margin-top:10px&quot;&gt;&lt;span&gt;&lt;i&gt;&lt;/i&gt;thick edge = context switch (CPU handed to a different process)&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;legend&quot; style=&quot;margin-top:10px&quot;&gt;&lt;span&gt;&lt;i&gt;&lt;/i&gt;&lt;span data-t=&quot;leg&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;
     &lt;p id=&quot;result&quot; class=&quot;result&quot;&gt;&lt;/p&gt;
   &lt;/div&gt;
-
   &lt;div class=&quot;read&quot;&gt;
-    &lt;h3&gt;Both modes at a glance&lt;/h3&gt;
-    &lt;p class=&quot;note&quot;&gt;Waiting time = finish time minus burst time. Context-switch cost is set to zero here, so the preemptive numbers look better than they would on a real machine.&lt;/p&gt;
+    &lt;h3 data-t=&quot;gH&quot;&gt;&lt;/h3&gt;
+    &lt;p class=&quot;note&quot; data-t=&quot;gN&quot;&gt;&lt;/p&gt;
   &lt;/div&gt;
   &lt;div id=&quot;glance&quot; class=&quot;glance&quot;&gt;&lt;/div&gt;
 &lt;/section&gt;
 
-&lt;div style=&quot;max-width:960px;margin:0 auto;padding-top:18px&quot;&gt;&lt;button class=&quot;go&quot; id=&quot;goalgo&quot;&gt;Step through FCFS, SJF, SRTF and Round Robin →&lt;/button&gt;&lt;/div&gt;
+&lt;div&gt;&lt;button class=&quot;go&quot; id=&quot;goalgo&quot; data-t=&quot;goalgo&quot;&gt;&lt;/button&gt;&lt;/div&gt;
+
 &lt;section id=&quot;compare&quot;&gt;
-  &lt;h2&gt;The difference, side by side&lt;/h2&gt;
-  &lt;div class=&quot;tablewrap&quot;&gt;
-    &lt;table&gt;
-      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;Preemptive&lt;/th&gt;&lt;th&gt;Non-preemptive&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
-      &lt;tbody&gt;
-        &lt;tr&gt;&lt;td&gt;CPU allocation&lt;/td&gt;&lt;td&gt;A process gets the CPU for a limited time.&lt;/td&gt;&lt;td&gt;A process keeps the CPU until its burst time is used up or it moves to a waiting state.&lt;/td&gt;&lt;/tr&gt;
-        &lt;tr&gt;&lt;td&gt;Interruption&lt;/td&gt;&lt;td&gt;The OS can interrupt a running process.&lt;/td&gt;&lt;td&gt;A running process cannot be interrupted. It must finish or start waiting first.&lt;/td&gt;&lt;/tr&gt;
-        &lt;tr&gt;&lt;td&gt;Who can starve&lt;/td&gt;&lt;td&gt;Low-priority processes, if high-priority ones keep arriving.&lt;/td&gt;&lt;td&gt;Short-burst processes, if a long-burst process holds the CPU.&lt;/td&gt;&lt;/tr&gt;
-        &lt;tr&gt;&lt;td&gt;Flexibility&lt;/td&gt;&lt;td&gt;More flexible.&lt;/td&gt;&lt;td&gt;More rigid.&lt;/td&gt;&lt;/tr&gt;
-        &lt;tr&gt;&lt;td&gt;Overhead&lt;/td&gt;&lt;td&gt;More context switches.&lt;/td&gt;&lt;td&gt;Fewer context switches.&lt;/td&gt;&lt;/tr&gt;
-      &lt;/tbody&gt;
-    &lt;/table&gt;
-  &lt;/div&gt;
-  &lt;p class=&quot;note&quot;&gt;The first four rows follow the usual textbook comparison, reworded. The overhead row is added from general operating-systems knowledge.&lt;/p&gt;
+  &lt;h2 data-t=&quot;cH&quot;&gt;&lt;/h2&gt;
+  &lt;div class=&quot;tablewrap&quot;&gt;&lt;table id=&quot;ctab&quot;&gt;&lt;/table&gt;&lt;/div&gt;
+  &lt;p class=&quot;note&quot; data-t=&quot;cN&quot;&gt;&lt;/p&gt;
 &lt;/section&gt;
 
 &lt;section id=&quot;mixups&quot;&gt;
-  &lt;h2&gt;Three common mix-ups&lt;/h2&gt;
-  &lt;div class=&quot;mix&quot;&gt;
-    &lt;div class=&quot;panel&quot;&gt;
-      &lt;h3&gt;Order is a separate rule&lt;/h3&gt;
-      &lt;p&gt;FCFS orders processes by arrival. SJF orders them by shortest burst time. &quot;Non-preemptive&quot; only says that a process that has the CPU cannot lose it by force. Any ordering rule can be paired with either answer.&lt;/p&gt;
-    &lt;/div&gt;
-    &lt;div class=&quot;panel&quot;&gt;
-      &lt;h3&gt;Quantum is an upper limit&lt;/h3&gt;
-      &lt;p&gt;A time quantum is the longest a process may use the CPU in one turn. P2 and P3 finish well inside a 3 ms quantum, so they give the CPU back early.&lt;/p&gt;
-    &lt;/div&gt;
-    &lt;div class=&quot;panel&quot;&gt;
-      &lt;h3&gt;Quantum is not the only trigger&lt;/h3&gt;
-      &lt;p&gt;Round Robin pre-empts when the quantum runs out. A priority scheduler can also pre-empt when a higher-priority process arrives. Both are preemptive.&lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+  &lt;h2 data-t=&quot;xH&quot;&gt;&lt;/h2&gt;
+  &lt;div class=&quot;mix&quot; id=&quot;mix&quot;&gt;&lt;/div&gt;
 &lt;/section&gt;
 
 &lt;section id=&quot;exam&quot;&gt;
-  &lt;h2&gt;How to say it in an exam&lt;/h2&gt;
-  &lt;div class=&quot;say&quot;&gt;&lt;p&gt;&lt;b&gt;Non-preemptive:&lt;/b&gt; once a process is given the CPU, it keeps it until it finishes its burst time or moves to a waiting state. Other processes wait in the ready queue.&lt;/p&gt;&lt;/div&gt;
-  &lt;div class=&quot;say&quot;&gt;&lt;p&gt;&lt;b&gt;Preemptive:&lt;/b&gt; each process may use the CPU for a limited time, such as one time quantum. If it has not finished, the OS interrupts it, saves its state, and gives the CPU to the next process.&lt;/p&gt;&lt;/div&gt;
-  &lt;p class=&quot;note&quot;&gt;These are study wordings, not an official mark scheme. Check your syllabus and textbook for the exact terms your exam expects.&lt;/p&gt;
+  &lt;h2 data-t=&quot;eH&quot;&gt;&lt;/h2&gt;
+  &lt;div class=&quot;say&quot;&gt;&lt;p data-t=&quot;e1&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+  &lt;div class=&quot;say&quot;&gt;&lt;p data-t=&quot;e2&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+  &lt;p class=&quot;note&quot; data-t=&quot;eN&quot;&gt;&lt;/p&gt;
 &lt;/section&gt;
 
-&lt;section id=&quot;bridge&quot;&gt;&lt;h2&gt;Where interrupts come in&lt;/h2&gt;
-&lt;div class=&quot;read&quot;&gt;&lt;p&gt;Round Robin needs a way to take the CPU back when the quantum ends. The OS sets a hardware timer. When the timer fires, it raises a &lt;span class=&quot;term&quot;&gt;timer interrupt&lt;/span&gt;. The CPU saves the running process on the kernel stack, the IDT points to the scheduler&#x27;s ISR, and the scheduler picks the next process. That is what &quot;pre-empted&quot; means in practice.&lt;/p&gt;&lt;/div&gt;
-&lt;div class=&quot;controls&quot;&gt;&lt;button class=&quot;go&quot; id=&quot;gointr&quot;&gt;Open the Interrupts tab and choose Timer&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;
-&lt;footer&gt;
-  &lt;p class=&quot;note&quot;&gt;Example data: P1 = 8 ms, P2 = 2 ms, P3 = 1 ms, all arriving at t = 0. Non-preemptive uses first come, first served. Preemptive uses Round Robin with the quantum you choose.&lt;/p&gt;
-&lt;/footer&gt;
+&lt;section id=&quot;bridge&quot;&gt;&lt;h2 data-t=&quot;brH&quot;&gt;&lt;/h2&gt;
+&lt;div class=&quot;read&quot;&gt;&lt;p data-t=&quot;brP&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;div class=&quot;controls&quot;&gt;&lt;button class=&quot;go&quot; id=&quot;gointr&quot; data-t=&quot;brB&quot;&gt;&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;
+&lt;footer&gt;&lt;p class=&quot;note&quot; data-t=&quot;foot&quot;&gt;&lt;/p&gt;&lt;/footer&gt;
 &lt;/div&gt;
 
 &lt;script&gt;
 (function(){
-  var B=[8,2,1],N=[&#x27;P1&#x27;,&#x27;P2&#x27;,&#x27;P3&#x27;];
-  var mode=0,q=3,c=0,timer=null,speed=850,ticks=[];
-  function $(id){return document.getElementById(id);}
-  function build(qq){
-    var rem=B.slice(),queue=[0,1,2],t=[],first=true;
-    while(queue.length){
-      var p=queue.shift(),run=Math.min(qq,rem[p]);
-      for(var i=0;i&lt;run;i++){
-        rem[p]--;
-        t.push({p:p,q:queue.slice(),sw:(i===0&amp;&amp;!first),qu:i+1,end:(i===run-1),done:rem[p]===0});
-      }
-      first=false;
-      if(rem[p]&gt;0)queue.push(p);
-    }
-    return t;
+const TX={
+en:{h1:&#x27;Who gets the CPU next?&#x27;,
+ lede:&#x27;One CPU, three processes, and one question: can the OS take the CPU back from a process that is still running? Step through both answers below, one millisecond at a time.&#x27;,
+ bH:&#x27;Burst time in one picture&#x27;,
+ bP:&#x27;&lt;span class=&quot;term&quot;&gt;Burst time&lt;/span&gt; is how long a process needs the CPU in one continuous stretch. A process with a burst time of 8 ms needs 8 ms of CPU time to finish that stretch. Waiting in the ready queue does not count, and neither does waiting for the disk.&#x27;,
+ b8:&#x27;burst time 8 ms&#x27;,
+ bNote:&#x27;Bar length is proportional to burst time. These three processes are used in every animation on this page. All three arrive at t = 0, queued in the order P1, P2, P3.&#x27;,
+ bP2:&#x27;Real processes alternate between using the CPU and waiting for input or output:&#x27;,
+ lCpu:&#x27;CPU burst&#x27;,lIo:&#x27;I/O wait&#x27;,lDone:&#x27;done&#x27;,
+ aH:&#x27;Run the scheduler&#x27;,m0:&#x27;Non-preemptive (FCFS)&#x27;,m1:&#x27;Preemptive (Round Robin)&#x27;,quant:&#x27;Time quantum &#x27;,
+ play:&#x27;Play&#x27;,pause:&#x27;Pause&#x27;,step:&#x27;Step 1 ms&#x27;,reset:&#x27;Reset&#x27;,speed:&#x27;Speed &#x27;,sp0:&#x27;Slow&#x27;,sp1:&#x27;Normal&#x27;,sp2:&#x27;Fast&#x27;,time:&#x27;time&#x27;,
+ rq:&#x27;Ready queue (waiting for the CPU)&#x27;,tl:&#x27;CPU timeline&#x27;,leg:&#x27;thick edge = context switch (CPU handed to a different process)&#x27;,
+ gH:&#x27;Both modes at a glance&#x27;,gN:&#x27;Waiting time = finish time minus burst time. Context-switch cost is set to zero here, so the preemptive numbers look better than they would on a real machine.&#x27;,
+ goalgo:&#x27;Step through FCFS, SJF, SRTF and Round Robin →&#x27;,
+ cH:&#x27;The difference, side by side&#x27;,
+ cHead:[&#x27;&#x27;,&#x27;Preemptive&#x27;,&#x27;Non-preemptive&#x27;],
+ cRows:[[&#x27;CPU allocation&#x27;,&#x27;A process gets the CPU for a limited time.&#x27;,&#x27;A process keeps the CPU until its burst time is used up or it moves to a waiting state.&#x27;],
+  [&#x27;Interruption&#x27;,&#x27;The OS can interrupt a running process.&#x27;,&#x27;A running process cannot be interrupted. It must finish or start waiting first.&#x27;],
+  [&#x27;Who can starve&#x27;,&#x27;Low-priority processes, if high-priority ones keep arriving.&#x27;,&#x27;Short-burst processes, if a long-burst process holds the CPU.&#x27;],
+  [&#x27;Flexibility&#x27;,&#x27;More flexible.&#x27;,&#x27;More rigid.&#x27;],
+  [&#x27;Overhead&#x27;,&#x27;More context switches.&#x27;,&#x27;Fewer context switches.&#x27;]],
+ cN:&#x27;The first four rows follow the usual textbook comparison, reworded. The overhead row is added from general operating-systems knowledge.&#x27;,
+ xH:&#x27;Three common mix-ups&#x27;,
+ mix:[[&#x27;Order is a separate rule&#x27;,&#x27;FCFS orders processes by arrival. SJF orders them by shortest burst time. &quot;Non-preemptive&quot; only says that a process that has the CPU cannot lose it by force. Any ordering rule can be paired with either answer.&#x27;],
+  [&#x27;Quantum is an upper limit&#x27;,&#x27;A time quantum is the longest a process may use the CPU in one turn. P2 and P3 finish well inside a 3 ms quantum, so they give the CPU back early.&#x27;],
+  [&#x27;Quantum is not the only trigger&#x27;,&#x27;Round Robin pre-empts when the quantum runs out. A priority scheduler can also pre-empt when a higher-priority process arrives. Both are preemptive.&#x27;]],
+ eH:&#x27;How to say it in an exam&#x27;,
+ e1:&#x27;&lt;b&gt;Non-preemptive:&lt;/b&gt; once a process is given the CPU, it keeps it until it finishes its burst time or moves to a waiting state. Other processes wait in the ready queue.&#x27;,
+ e2:&#x27;&lt;b&gt;Preemptive:&lt;/b&gt; each process may use the CPU for a limited time, such as one time quantum. If it has not finished, the OS interrupts it, saves its state, and gives the CPU to the next process.&#x27;,
+ eN:&#x27;These are study wordings, not an official mark scheme. Check your syllabus and textbook for the exact terms your exam expects.&#x27;,
+ brH:&#x27;Where interrupts come in&#x27;,
+ brP:&#x27;Round Robin needs a way to take the CPU back when the quantum ends. The OS sets a hardware timer. When the timer fires, it raises a &lt;span class=&quot;term&quot;&gt;timer interrupt&lt;/span&gt;. The CPU saves the running process on the kernel stack, the IDT points to the scheduler\&#x27;s ISR, and the scheduler picks the next process. That is what &quot;pre-empted&quot; means in practice.&#x27;,
+ brB:&#x27;Open the Interrupts tab and choose Timer&#x27;,
+ foot:&#x27;Example data: P1 = 8 ms, P2 = 2 ms, P3 = 1 ms, all arriving at t = 0. Non-preemptive uses first come, first served. Preemptive uses Round Robin with the quantum you choose.&#x27;,
+ st:{wait:&#x27;waiting&#x27;,run:&#x27;running&#x27;,done:&#x27;done&#x27;},lb:&#x27;left / burst&#x27;,left:&#x27;ms left&#x27;,idle:&#x27;idle&#x27;,alldone:&#x27;all done&#x27;,
+ qUsed:(u,q)=&gt;&#x27;quantum used: &#x27;+u+&#x27; of &#x27;+q+&#x27; ms&#x27;,keeps:&#x27;keeps the CPU until its burst ends&#x27;,
+ nobody:&#x27;nobody is waiting&#x27;,joins:p=&gt;&#x27;then &#x27;+p+&#x27; joins at the back&#x27;,empty:&#x27;empty&#x27;,
+ mStart:&#x27;Press Play or Step. All three processes arrive at t = 0, queued as P1, P2, P3.&#x27;,
+ mAll:&#x27;All three processes are done. Compare the waiting times below the timeline.&#x27;,
+ mFin:p=&gt;p+&#x27; used up its burst time and finished. The CPU goes to the next process.&#x27;,
+ mQ:(p,q)=&gt;p+&#x27; used its full &#x27;+q+&#x27; ms quantum and still has burst time left. It is pre-empted and goes to the back of the queue.&#x27;,
+ mSw:p=&gt;&#x27;Context switch: &#x27;+p+&#x27; now has the CPU.&#x27;,
+ mNon:p=&gt;p+&#x27; is running. Nothing can interrupt it until it finishes.&#x27;,
+ mRun:p=&gt;p+&#x27; is running.&#x27;,
+ res:&#x27;Waiting time = finish time − burst time.&#x27;,avgL:&#x27;Average&#x27;,
+ gNon:&#x27;Non-preemptive (FCFS)&#x27;,gPre:q=&gt;&#x27;Preemptive (Round Robin, quantum &#x27;+q+&#x27; ms)&#x27;,avgW:&#x27;average wait&#x27;},
+ja:{h1:&#x27;次に CPU を使うのはだれ？&#x27;,
+ lede:&#x27;CPU は 1 つ、プロセスは 3 つ。問いは 1 つです。OS は、まだ実行中のプロセスから CPU を取り上げられるのか？ 2 つの答えを 1 ms ずつ見ていきましょう。&#x27;,
+ bH:&#x27;バースト時間を 1 枚の図で&#x27;,
+ bP:&#x27;&lt;span class=&quot;term&quot;&gt;バースト時間 (burst time)&lt;/span&gt; は、プロセスが続けて CPU を必要とする時間です。バースト時間 8 ms のプロセスは、その区間を終えるのに CPU 時間が 8 ms 必要です。レディキューで待つ時間やディスクを待つ時間は含みません。&#x27;,
+ b8:&#x27;バースト時間 8 ms&#x27;,
+ bNote:&#x27;バーの長さはバースト時間に比例します。このページのアニメーションはすべてこの 3 つのプロセスを使います。3 つとも t = 0 に到着し、P1、P2、P3 の順に並びます。&#x27;,
+ bP2:&#x27;実際のプロセスは、CPU を使う時間と入出力 (I/O) を待つ時間をくり返します：&#x27;,
+ lCpu:&#x27;CPU バースト&#x27;,lIo:&#x27;I/O 待ち&#x27;,lDone:&#x27;終了&#x27;,
+ aH:&#x27;スケジューラを動かす&#x27;,m0:&#x27;ノンプリエンプティブ (FCFS)&#x27;,m1:&#x27;プリエンプティブ (ラウンドロビン)&#x27;,quant:&#x27;タイムクォンタム &#x27;,
+ play:&#x27;再生&#x27;,pause:&#x27;一時停止&#x27;,step:&#x27;1 ms 進む&#x27;,reset:&#x27;リセット&#x27;,speed:&#x27;速さ &#x27;,sp0:&#x27;ゆっくり&#x27;,sp1:&#x27;ふつう&#x27;,sp2:&#x27;速い&#x27;,time:&#x27;時刻&#x27;,
+ rq:&#x27;レディキュー（CPU を待っている）&#x27;,tl:&#x27;CPU のタイムライン&#x27;,leg:&#x27;太い線 = コンテキストスイッチ（CPU が別のプロセスに渡った）&#x27;,
+ gH:&#x27;2 つの方式をひと目で&#x27;,gN:&#x27;待ち時間 = 終了時刻 − バースト時間。ここではコンテキストスイッチにかかる時間を 0 としているので、プリエンプティブの数字は実際の機械より良く見えます。&#x27;,
+ goalgo:&#x27;FCFS・SJF・SRTF・ラウンドロビンを 1 ms ずつ見る →&#x27;,
+ cH:&#x27;違いを並べて比べる&#x27;,
+ cHead:[&#x27;&#x27;,&#x27;プリエンプティブ&#x27;,&#x27;ノンプリエンプティブ&#x27;],
+ cRows:[[&#x27;CPU の割り当て&#x27;,&#x27;プロセスは限られた時間だけ CPU を使える。&#x27;,&#x27;プロセスは、バースト時間を使い切るか待ち状態になるまで CPU を持ち続ける。&#x27;],
+  [&#x27;中断&#x27;,&#x27;OS は実行中のプロセスを中断できる。&#x27;,&#x27;実行中のプロセスは中断できない。終わるか、待ち状態になるまで続く。&#x27;],
+  [&#x27;飢餓状態になりうるもの&#x27;,&#x27;優先度の高いプロセスが来続けると、優先度の低いプロセス。&#x27;,&#x27;バーストの長いプロセスが CPU を持つと、バーストの短いプロセス。&#x27;],
+  [&#x27;柔軟性&#x27;,&#x27;より柔軟。&#x27;,&#x27;より硬直的。&#x27;],
+  [&#x27;オーバーヘッド&#x27;,&#x27;コンテキストスイッチが多い。&#x27;,&#x27;コンテキストスイッチが少ない。&#x27;]],
+ cN:&#x27;上の 4 行は教科書のよくある比較を言い換えたものです。オーバーヘッドの行は OS の一般的な知識から加えました。&#x27;,
+ xH:&#x27;よくある 3 つの混同&#x27;,
+ mix:[[&#x27;順番は別のルール&#x27;,&#x27;FCFS は到着順、SJF はバースト時間の短い順に並べます。「ノンプリエンプティブ」が言っているのは、CPU を持っているプロセスから無理やり取り上げない、ということだけです。どの並べ方も、どちらの答えとも組み合わせられます。&#x27;],
+  [&#x27;クォンタムは上限&#x27;,&#x27;タイムクォンタムは、1 回の順番で CPU を使える最長の時間です。P2 と P3 は 3 ms のクォンタムの途中で終わるので、早めに CPU を返します。&#x27;],
+  [&#x27;きっかけはクォンタムだけではない&#x27;,&#x27;ラウンドロビンはクォンタムが切れたときに中断します。優先度スケジューラは、より優先度の高いプロセスが来たときにも中断できます。どちらもプリエンプティブです。&#x27;]],
+ eH:&#x27;試験での書き方&#x27;,
+ e1:&#x27;&lt;b&gt;ノンプリエンプティブ：&lt;/b&gt;プロセスは一度 CPU を与えられると、バースト時間が終わるか待ち状態になるまで CPU を持ち続ける。ほかのプロセスはレディキューで待つ。&#x27;,
+ e2:&#x27;&lt;b&gt;プリエンプティブ：&lt;/b&gt;各プロセスは、1 タイムクォンタムなど限られた時間だけ CPU を使える。終わっていなければ OS が中断し、状態を保存して、次のプロセスに CPU を渡す。&#x27;,
+ eN:&#x27;これは学習用の言い方で、公式の採点基準ではありません。試験で求められる用語はシラバスと教科書で確認してください。&#x27;,
+ brH:&#x27;割り込みとの関係&#x27;,
+ brP:&#x27;ラウンドロビンには、クォンタムが終わったときに CPU を取り戻す仕組みが必要です。OS はハードウェアのタイマーを設定します。タイマーが時間になると&lt;span class=&quot;term&quot;&gt;タイマー割り込み&lt;/span&gt;が起きます。CPU は実行中のプロセスをカーネルスタックに保存し、IDT がスケジューラの ISR を指し、スケジューラが次のプロセスを選びます。これが実際の「プリエンプト（中断）」です。&#x27;,
+ brB:&#x27;割り込みタブを開いてタイマーを選ぶ&#x27;,
+ foot:&#x27;例のデータ：P1 = 8 ms、P2 = 2 ms、P3 = 1 ms、すべて t = 0 に到着。ノンプリエンプティブは先着順 (FCFS)、プリエンプティブは選んだクォンタムでのラウンドロビンです。&#x27;,
+ st:{wait:&#x27;待ち&#x27;,run:&#x27;実行中&#x27;,done:&#x27;終了&#x27;},lb:&#x27;残り / バースト&#x27;,left:&#x27;ms 残り&#x27;,idle:&#x27;アイドル&#x27;,alldone:&#x27;すべて終了&#x27;,
+ qUsed:(u,q)=&gt;&#x27;クォンタム使用：&#x27;+u+&#x27; / &#x27;+q+&#x27; ms&#x27;,keeps:&#x27;バーストが終わるまで CPU を持ち続ける&#x27;,
+ nobody:&#x27;待っているプロセスはない&#x27;,joins:p=&gt;&#x27;このあと &#x27;+p+&#x27; が最後に並ぶ&#x27;,empty:&#x27;空&#x27;,
+ mStart:&#x27;「再生」か「1 ms 進む」を押してください。3 つのプロセスは t = 0 に到着し、P1、P2、P3 の順に並んでいます。&#x27;,
+ mAll:&#x27;3 つのプロセスがすべて終わりました。タイムラインの下で待ち時間を比べましょう。&#x27;,
+ mFin:p=&gt;p+&#x27; はバースト時間を使い切って終わりました。CPU は次のプロセスに渡ります。&#x27;,
+ mQ:(p,q)=&gt;p+&#x27; は &#x27;+q+&#x27; ms のクォンタムを使い切りましたが、まだバースト時間が残っています。中断され、キューの最後に並びます。&#x27;,
+ mSw:p=&gt;&#x27;コンテキストスイッチ：&#x27;+p+&#x27; が CPU を得ました。&#x27;,
+ mNon:p=&gt;p+&#x27; が実行中。終わるまで何も中断できません。&#x27;,
+ mRun:p=&gt;p+&#x27; が実行中。&#x27;,
+ res:&#x27;待ち時間 = 終了時刻 − バースト時間。&#x27;,avgL:&#x27;平均&#x27;,
+ gNon:&#x27;ノンプリエンプティブ (FCFS)&#x27;,gPre:q=&gt;&#x27;プリエンプティブ（ラウンドロビン、クォンタム &#x27;+q+&#x27; ms）&#x27;,avgW:&#x27;平均待ち時間&#x27;},
+zh:{h1:&#x27;下一个使用 CPU 的是谁？&#x27;,
+ lede:&#x27;一个 CPU，三个进程，一个问题：操作系统能不能从仍在运行的进程手中收回 CPU？下面一毫秒一毫秒地看两种答案。&#x27;,
+ bH:&#x27;一张图看懂突发时间&#x27;,
+ bP:&#x27;&lt;span class=&quot;term&quot;&gt;突发时间 (burst time)&lt;/span&gt; 是进程连续需要 CPU 的时间。突发时间为 8 ms 的进程需要 8 ms 的 CPU 时间来完成这一段。在就绪队列中等待和等待磁盘的时间都不算。&#x27;,
+ b8:&#x27;突发时间 8 ms&#x27;,
+ bNote:&#x27;条的长度与突发时间成正比。本页所有动画都使用这三个进程。它们都在 t = 0 到达，按 P1、P2、P3 的顺序排队。&#x27;,
+ bP2:&#x27;真实的进程会在使用 CPU 和等待输入/输出之间交替：&#x27;,
+ lCpu:&#x27;CPU 突发&#x27;,lIo:&#x27;等待 I/O&#x27;,lDone:&#x27;完成&#x27;,
+ aH:&#x27;运行调度程序&#x27;,m0:&#x27;非抢占式 (FCFS)&#x27;,m1:&#x27;抢占式（时间片轮转）&#x27;,quant:&#x27;时间片 &#x27;,
+ play:&#x27;播放&#x27;,pause:&#x27;暂停&#x27;,step:&#x27;前进 1 ms&#x27;,reset:&#x27;重置&#x27;,speed:&#x27;速度 &#x27;,sp0:&#x27;慢&#x27;,sp1:&#x27;正常&#x27;,sp2:&#x27;快&#x27;,time:&#x27;时间&#x27;,
+ rq:&#x27;就绪队列（等待 CPU）&#x27;,tl:&#x27;CPU 时间线&#x27;,leg:&#x27;粗边 = 上下文切换（CPU 交给另一个进程）&#x27;,
+ gH:&#x27;两种方式一览&#x27;,gN:&#x27;等待时间 = 完成时间 − 突发时间。这里把上下文切换的开销设为 0，所以抢占式的数字比真实机器上好看。&#x27;,
+ goalgo:&#x27;一毫秒一毫秒地看 FCFS、SJF、SRTF 和时间片轮转 →&#x27;,
+ cH:&#x27;并排比较两者的区别&#x27;,
+ cHead:[&#x27;&#x27;,&#x27;抢占式&#x27;,&#x27;非抢占式&#x27;],
+ cRows:[[&#x27;CPU 分配&#x27;,&#x27;进程只能在有限的时间内使用 CPU。&#x27;,&#x27;进程一直占用 CPU，直到用完突发时间或进入等待状态。&#x27;],
+  [&#x27;中断&#x27;,&#x27;操作系统可以中断正在运行的进程。&#x27;,&#x27;正在运行的进程不能被中断，必须先完成或进入等待。&#x27;],
+  [&#x27;谁可能饥饿&#x27;,&#x27;如果高优先级进程不断到达，低优先级进程会饥饿。&#x27;,&#x27;如果长突发的进程占着 CPU，短突发的进程会饥饿。&#x27;],
+  [&#x27;灵活性&#x27;,&#x27;更灵活。&#x27;,&#x27;更死板。&#x27;],
+  [&#x27;开销&#x27;,&#x27;上下文切换更多。&#x27;,&#x27;上下文切换更少。&#x27;]],
+ cN:&#x27;前四行按课本常见的比较改写。开销一行来自操作系统的一般知识。&#x27;,
+ xH:&#x27;三个常见的混淆&#x27;,
+ mix:[[&#x27;顺序是另一条规则&#x27;,&#x27;FCFS 按到达顺序排列进程，SJF 按突发时间从短到长排列。&quot;非抢占式&quot;只表示已得到 CPU 的进程不会被强行收回。任何排序规则都可以与这两种答案中的任何一种搭配。&#x27;],
+  [&#x27;时间片是上限&#x27;,&#x27;时间片是进程一轮中最多能使用 CPU 的时间。P2 和 P3 在 3 ms 的时间片内就完成了，所以会提前交还 CPU。&#x27;],
+  [&#x27;时间片不是唯一的触发条件&#x27;,&#x27;时间片轮转在时间片用完时抢占。优先级调度在更高优先级的进程到达时也可以抢占。两者都是抢占式。&#x27;]],
+ eH:&#x27;考试中怎样表述&#x27;,
+ e1:&#x27;&lt;b&gt;非抢占式：&lt;/b&gt;进程一旦得到 CPU，就一直占用，直到完成它的突发时间或进入等待状态。其他进程在就绪队列中等待。&#x27;,
+ e2:&#x27;&lt;b&gt;抢占式：&lt;/b&gt;每个进程只能在有限的时间内（例如一个时间片）使用 CPU。如果还没完成，操作系统会中断它，保存其状态，并把 CPU 交给下一个进程。&#x27;,
+ eN:&#x27;这些是学习用的表述，不是官方评分标准。请根据大纲和课本确认考试要求的确切用语。&#x27;,
+ brH:&#x27;中断在哪里出现&#x27;,
+ brP:&#x27;时间片轮转需要在时间片结束时收回 CPU 的方法。操作系统设置一个硬件定时器。定时器到时会产生&lt;span class=&quot;term&quot;&gt;定时器中断&lt;/span&gt;。CPU 把正在运行的进程保存到内核栈，IDT 指向调度程序的 ISR，调度程序选择下一个进程。这就是&quot;被抢占&quot;的实际含义。&#x27;,
+ brB:&#x27;打开中断标签页并选择定时器&#x27;,
+ foot:&#x27;示例数据：P1 = 8 ms，P2 = 2 ms，P3 = 1 ms，全部在 t = 0 到达。非抢占式使用先来先服务，抢占式使用你选择的时间片进行时间片轮转。&#x27;,
+ st:{wait:&#x27;等待&#x27;,run:&#x27;运行中&#x27;,done:&#x27;完成&#x27;},lb:&#x27;剩余 / 突发&#x27;,left:&#x27;ms 剩余&#x27;,idle:&#x27;空闲&#x27;,alldone:&#x27;全部完成&#x27;,
+ qUsed:(u,q)=&gt;&#x27;已用时间片：&#x27;+u+&#x27; / &#x27;+q+&#x27; ms&#x27;,keeps:&#x27;一直占用 CPU 直到突发结束&#x27;,
+ nobody:&#x27;没有进程在等待&#x27;,joins:p=&gt;&#x27;然后 &#x27;+p+&#x27; 排到队尾&#x27;,empty:&#x27;空&#x27;,
+ mStart:&#x27;按&quot;播放&quot;或&quot;前进 1 ms&quot;。三个进程都在 t = 0 到达，按 P1、P2、P3 排队。&#x27;,
+ mAll:&#x27;三个进程都已完成。在时间线下方比较等待时间。&#x27;,
+ mFin:p=&gt;p+&#x27; 用完了突发时间并完成。CPU 交给下一个进程。&#x27;,
+ mQ:(p,q)=&gt;p+&#x27; 用完了 &#x27;+q+&#x27; ms 的时间片，但还有突发时间剩余。它被抢占并排到队尾。&#x27;,
+ mSw:p=&gt;&#x27;上下文切换：&#x27;+p+&#x27; 现在获得 CPU。&#x27;,
+ mNon:p=&gt;p+&#x27; 正在运行。在它完成之前，什么都不能中断它。&#x27;,
+ mRun:p=&gt;p+&#x27; 正在运行。&#x27;,
+ res:&#x27;等待时间 = 完成时间 − 突发时间。&#x27;,avgL:&#x27;平均&#x27;,
+ gNon:&#x27;非抢占式 (FCFS)&#x27;,gPre:q=&gt;&#x27;抢占式（时间片轮转，时间片 &#x27;+q+&#x27; ms）&#x27;,avgW:&#x27;平均等待时间&#x27;},
+th:{h1:&#x27;ใครจะได้ใช้ CPU ต่อไป?&#x27;,
+ lede:&#x27;CPU หนึ่งตัว โปรเซสสามตัว และคำถามเดียว: OS เอา CPU คืนจากโปรเซสที่ยังทำงานอยู่ได้หรือไม่? ดูทั้งสองคำตอบด้านล่างทีละ 1 มิลลิวินาที&#x27;,
+ bH:&#x27;เวลาเบิร์สต์ในภาพเดียว&#x27;,
+ bP:&#x27;&lt;span class=&quot;term&quot;&gt;เวลาเบิร์สต์ (burst time)&lt;/span&gt; คือเวลาที่โปรเซสต้องใช้ CPU ต่อเนื่องกันหนึ่งช่วง โปรเซสที่มีเวลาเบิร์สต์ 8 ms ต้องใช้ CPU 8 ms เพื่อจบช่วงนั้น เวลาที่รอในคิวพร้อมและเวลาที่รอดิสก์ไม่นับ&#x27;,
+ b8:&#x27;เวลาเบิร์สต์ 8 ms&#x27;,
+ bNote:&#x27;ความยาวแถบเป็นสัดส่วนกับเวลาเบิร์สต์ ทุกแอนิเมชันในหน้านี้ใช้โปรเซสสามตัวนี้ ทั้งสามมาถึงที่ t = 0 และเข้าคิวตามลำดับ P1, P2, P3&#x27;,
+ bP2:&#x27;โปรเซสจริงจะสลับระหว่างการใช้ CPU กับการรออินพุตหรือเอาต์พุต:&#x27;,
+ lCpu:&#x27;CPU เบิร์สต์&#x27;,lIo:&#x27;รอ I/O&#x27;,lDone:&#x27;เสร็จ&#x27;,
+ aH:&#x27;ลองเดินตัวจัดลำดับงาน&#x27;,m0:&#x27;Non-preemptive (FCFS)&#x27;,m1:&#x27;Preemptive (Round Robin)&#x27;,quant:&#x27;ควอนตัม &#x27;,
+ play:&#x27;เล่น&#x27;,pause:&#x27;หยุดชั่วคราว&#x27;,step:&#x27;ไปต่อ 1 ms&#x27;,reset:&#x27;เริ่มใหม่&#x27;,speed:&#x27;ความเร็ว &#x27;,sp0:&#x27;ช้า&#x27;,sp1:&#x27;ปกติ&#x27;,sp2:&#x27;เร็ว&#x27;,time:&#x27;เวลา&#x27;,
+ rq:&#x27;คิวพร้อม (รอ CPU)&#x27;,tl:&#x27;ไทม์ไลน์ของ CPU&#x27;,leg:&#x27;เส้นหนา = การสลับบริบท (CPU ส่งให้โปรเซสอื่น)&#x27;,
+ gH:&#x27;สองแบบในภาพเดียว&#x27;,gN:&#x27;เวลารอ = เวลาเสร็จ − เวลาเบิร์สต์ ที่นี่ถือว่าการสลับบริบทไม่ใช้เวลา ตัวเลขของแบบ preemptive จึงดูดีกว่าบนเครื่องจริง&#x27;,
+ goalgo:&#x27;ดู FCFS, SJF, SRTF และ Round Robin ทีละ 1 ms →&#x27;,
+ cH:&#x27;เทียบความแตกต่างแบบเคียงกัน&#x27;,
+ cHead:[&#x27;&#x27;,&#x27;Preemptive&#x27;,&#x27;Non-preemptive&#x27;],
+ cRows:[[&#x27;การให้ CPU&#x27;,&#x27;โปรเซสได้ใช้ CPU เป็นเวลาจำกัด&#x27;,&#x27;โปรเซสใช้ CPU ไปจนหมดเวลาเบิร์สต์ หรือจนเข้าสู่สถานะรอ&#x27;],
+  [&#x27;การขัดจังหวะ&#x27;,&#x27;OS ขัดจังหวะโปรเซสที่กำลังทำงานได้&#x27;,&#x27;โปรเซสที่กำลังทำงานขัดจังหวะไม่ได้ ต้องเสร็จหรือเข้าสู่สถานะรอก่อน&#x27;],
+  [&#x27;ใครอาจอดอยาก&#x27;,&#x27;โปรเซสลำดับความสำคัญต่ำ ถ้าโปรเซสสำคัญสูงมาเรื่อย ๆ&#x27;,&#x27;โปรเซสเบิร์สต์สั้น ถ้าโปรเซสเบิร์สต์ยาวครอง CPU อยู่&#x27;],
+  [&#x27;ความยืดหยุ่น&#x27;,&#x27;ยืดหยุ่นกว่า&#x27;,&#x27;ตายตัวกว่า&#x27;],
+  [&#x27;ภาระเพิ่ม (overhead)&#x27;,&#x27;สลับบริบทบ่อยกว่า&#x27;,&#x27;สลับบริบทน้อยกว่า&#x27;]],
+ cN:&#x27;สี่แถวแรกเรียบเรียงจากการเปรียบเทียบทั่วไปในตำรา แถว overhead เพิ่มจากความรู้ทั่วไปเรื่องระบบปฏิบัติการ&#x27;,
+ xH:&#x27;สามเรื่องที่มักสับสน&#x27;,
+ mix:[[&#x27;ลำดับเป็นอีกกฎหนึ่ง&#x27;,&#x27;FCFS เรียงโปรเซสตามการมาถึง SJF เรียงตามเวลาเบิร์สต์ที่สั้นที่สุด คำว่า &quot;non-preemptive&quot; บอกเพียงว่าโปรเซสที่ได้ CPU แล้วจะไม่ถูกบังคับให้คืน กฎการเรียงลำดับใดก็จับคู่กับคำตอบใดก็ได้&#x27;],
+  [&#x27;ควอนตัมคือขีดจำกัดบน&#x27;,&#x27;ควอนตัมคือเวลานานที่สุดที่โปรเซสใช้ CPU ได้ในหนึ่งรอบ P2 และ P3 เสร็จก่อนครบควอนตัม 3 ms จึงคืน CPU เร็ว&#x27;],
+  [&#x27;ควอนตัมไม่ใช่ตัวกระตุ้นเดียว&#x27;,&#x27;Round Robin ขัดจังหวะเมื่อควอนตัมหมด ตัวจัดลำดับตามความสำคัญก็ขัดจังหวะได้เมื่อโปรเซสที่สำคัญกว่ามาถึง ทั้งสองแบบเป็น preemptive&#x27;]],
+ eH:&#x27;วิธีเขียนในข้อสอบ&#x27;,
+ e1:&#x27;&lt;b&gt;Non-preemptive:&lt;/b&gt; เมื่อโปรเซสได้ CPU แล้ว จะใช้ไปจนจบเวลาเบิร์สต์หรือจนเข้าสู่สถานะรอ โปรเซสอื่นรอในคิวพร้อม&#x27;,
+ e2:&#x27;&lt;b&gt;Preemptive:&lt;/b&gt; แต่ละโปรเซสใช้ CPU ได้เป็นเวลาจำกัด เช่น หนึ่งควอนตัม ถ้ายังไม่เสร็จ OS จะขัดจังหวะ บันทึกสถานะ แล้วส่ง CPU ให้โปรเซสถัดไป&#x27;,
+ eN:&#x27;นี่คือถ้อยคำสำหรับทบทวน ไม่ใช่เกณฑ์การให้คะแนนทางการ ตรวจสอบคำศัพท์ที่ข้อสอบต้องการจากหลักสูตรและตำรา&#x27;,
+ brH:&#x27;อินเทอร์รัปต์เกี่ยวข้องตรงไหน&#x27;,
+ brP:&#x27;Round Robin ต้องมีวิธีเอา CPU คืนเมื่อควอนตัมหมด OS ตั้งตัวจับเวลาฮาร์ดแวร์ เมื่อหมดเวลาจะเกิด&lt;span class=&quot;term&quot;&gt;timer interrupt&lt;/span&gt; CPU บันทึกโปรเซสที่กำลังทำงานลงใน kernel stack IDT ชี้ไปที่ ISR ของตัวจัดลำดับ แล้วตัวจัดลำดับเลือกโปรเซสถัดไป นี่คือความหมายจริงของ &quot;ถูกขัดจังหวะ (pre-empted)&quot;&#x27;,
+ brB:&#x27;เปิดแท็บอินเทอร์รัปต์และเลือกตัวจับเวลา&#x27;,
+ foot:&#x27;ข้อมูลตัวอย่าง: P1 = 8 ms, P2 = 2 ms, P3 = 1 ms ทั้งหมดมาถึงที่ t = 0 แบบ non-preemptive ใช้มาก่อนได้ก่อน แบบ preemptive ใช้ Round Robin ตามควอนตัมที่เลือก&#x27;,
+ st:{wait:&#x27;รอ&#x27;,run:&#x27;กำลังทำงาน&#x27;,done:&#x27;เสร็จ&#x27;},lb:&#x27;เหลือ / เบิร์สต์&#x27;,left:&#x27;ms ที่เหลือ&#x27;,idle:&#x27;ว่าง&#x27;,alldone:&#x27;เสร็จทั้งหมด&#x27;,
+ qUsed:(u,q)=&gt;&#x27;ใช้ควอนตัมไป: &#x27;+u+&#x27; / &#x27;+q+&#x27; ms&#x27;,keeps:&#x27;ใช้ CPU จนจบเบิร์สต์&#x27;,
+ nobody:&#x27;ไม่มีโปรเซสรอ&#x27;,joins:p=&gt;&#x27;จากนั้น &#x27;+p+&#x27; ไปต่อท้ายคิว&#x27;,empty:&#x27;ว่าง&#x27;,
+ mStart:&#x27;กด &quot;เล่น&quot; หรือ &quot;ไปต่อ 1 ms&quot; ทั้งสามโปรเซสมาถึงที่ t = 0 และเข้าคิวเป็น P1, P2, P3&#x27;,
+ mAll:&#x27;ทั้งสามโปรเซสเสร็จแล้ว เทียบเวลารอใต้ไทม์ไลน์&#x27;,
+ mFin:p=&gt;p+&#x27; ใช้เวลาเบิร์สต์หมดและเสร็จแล้ว CPU ไปที่โปรเซสถัดไป&#x27;,
+ mQ:(p,q)=&gt;p+&#x27; ใช้ควอนตัม &#x27;+q+&#x27; ms ครบแล้วแต่ยังมีเวลาเบิร์สต์เหลือ จึงถูกขัดจังหวะและไปต่อท้ายคิว&#x27;,
+ mSw:p=&gt;&#x27;สลับบริบท: ตอนนี้ &#x27;+p+&#x27; ได้ CPU&#x27;,
+ mNon:p=&gt;p+&#x27; กำลังทำงาน ไม่มีอะไรขัดจังหวะได้จนกว่าจะเสร็จ&#x27;,
+ mRun:p=&gt;p+&#x27; กำลังทำงาน&#x27;,
+ res:&#x27;เวลารอ = เวลาเสร็จ − เวลาเบิร์สต์&#x27;,avgL:&#x27;เฉลี่ย&#x27;,
+ gNon:&#x27;Non-preemptive (FCFS)&#x27;,gPre:q=&gt;&#x27;Preemptive (Round Robin ควอนตัม &#x27;+q+&#x27; ms)&#x27;,avgW:&#x27;เวลารอเฉลี่ย&#x27;}
+};
+let lang=&#x27;en&#x27;;
+const T=()=&gt;TX[lang];
+var B=[8,2,1],N=[&#x27;P1&#x27;,&#x27;P2&#x27;,&#x27;P3&#x27;];
+var mode=0,q=3,c=0,timer=null,speed=850,ticks=[];
+function $(id){return document.getElementById(id);}
+function build(qq){
+  var rem=B.slice(),queue=[0,1,2],t=[],first=true;
+  while(queue.length){
+    var p=queue.shift(),run=Math.min(qq,rem[p]);
+    for(var i=0;i&lt;run;i++){rem[p]--;t.push({p:p,q:queue.slice(),sw:(i===0&amp;&amp;!first),qu:i+1,end:(i===run-1),done:rem[p]===0});}
+    first=false;if(rem[p]&gt;0)queue.push(p);
   }
-  function finish(t){
-    var f=[0,0,0];
-    for(var i=0;i&lt;t.length;i++){if(t[i].done)f[t[i].p]=i+1;}
-    return f;
-  }
-  function waits(t){var f=finish(t);return f.map(function(x,p){return x-B[p];});}
-  function avg(w){return Math.round((w[0]+w[1]+w[2])/3*100)/100;}
-  function chip(p){return &#x27;&lt;span class=&quot;chip p&#x27;+(p+1)+&#x27;&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;;}
-  function stop(){
-    if(timer){clearInterval(timer);timer=null;}
-    $(&#x27;play&#x27;).textContent=&#x27;Play&#x27;;
-  }
-  function setup(){
-    stop();
-    ticks=build(mode===0?99:q);
-    c=0;
-    $(&#x27;qwrap&#x27;).hidden=(mode===0);
-    $(&#x27;m0&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===0?&#x27;true&#x27;:&#x27;false&#x27;);
-    $(&#x27;m1&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===1?&#x27;true&#x27;:&#x27;false&#x27;);
-    draw();
-  }
-  function glance(){
-    var a=waits(build(99)),b=waits(build(q));
-    $(&#x27;glance&#x27;).innerHTML=
-      &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;Non-preemptive (FCFS)&lt;/span&gt;&lt;b&gt;&#x27;+avg(a)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;average wait (P1 &#x27;+a[0]+&#x27;, P2 &#x27;+a[1]+&#x27;, P3 &#x27;+a[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;+
-      &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;Preemptive (Round Robin, quantum &#x27;+q+&#x27; ms)&lt;/span&gt;&lt;b&gt;&#x27;+avg(b)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;average wait (P1 &#x27;+b[0]+&#x27;, P2 &#x27;+b[1]+&#x27;, P3 &#x27;+b[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;;
-  }
-  function draw(){
-    var rem=B.slice(),fin=[null,null,null],i,p;
-    for(i=0;i&lt;c;i++){rem[ticks[i].p]--;if(ticks[i].done)fin[ticks[i].p]=i+1;}
-    var finished=c&gt;=ticks.length;
-    var cur=c&gt;0?ticks[c-1]:null;
-    $(&#x27;clock&#x27;).textContent=c;
-
-    var h=&#x27;&#x27;;
-    for(p=0;p&lt;3;p++){
-      var st=&#x27;waiting&#x27;,cl=&#x27;wait&#x27;;
-      if(fin[p]!==null){st=&#x27;done&#x27;;cl=&#x27;done&#x27;;}
-      else if(cur&amp;&amp;cur.p===p&amp;&amp;!finished){st=&#x27;running&#x27;;cl=&#x27;run&#x27;;}
-      h+=&#x27;&lt;div class=&quot;proc&quot;&gt;&lt;span class=&quot;name&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;+
-        &#x27;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;outer &#x27;+&#x27;p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(B[p]/8*100)+&#x27;%;--n:&#x27;+B[p]+&#x27;;background-color:transparent&quot;&gt;&lt;div class=&quot;inner p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(rem[p]/B[p]*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
-        &#x27;&lt;span class=&quot;info&quot;&gt;&lt;b&gt;&#x27;+rem[p]+&#x27;&lt;/b&gt; / &#x27;+B[p]+&#x27; ms&lt;small&gt;left / burst&lt;/small&gt;&lt;/span&gt;&#x27;+
-        &#x27;&lt;span class=&quot;state &#x27;+cl+&#x27;&quot;&gt;&#x27;+st+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;
-    }
-    $(&#x27;procs&#x27;).innerHTML=h;
-
-    var cpu=$(&#x27;cpu&#x27;);
-    if(cur&amp;&amp;!finished){cpu.className=&#x27;cpu-box p&#x27;+(cur.p+1);cpu.innerHTML=N[cur.p]+&#x27;&lt;small&gt;&lt;b&gt;&#x27;+rem[cur.p]+&#x27;&lt;/b&gt; ms left&lt;/small&gt;&#x27;;}
-    else{cpu.className=&#x27;cpu-box idle&#x27;;cpu.textContent=finished?&#x27;all done&#x27;:&#x27;idle&#x27;;}
-
-    var qm=&#x27;&#x27;;
-    if(mode===1&amp;&amp;cur&amp;&amp;!finished){
-      for(i=1;i&lt;=q;i++){qm+=&#x27;&lt;i class=&quot;&#x27;+(i&lt;=cur.qu?&#x27;on&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;;}
-      $(&#x27;qinfo&#x27;).textContent=&#x27;quantum used: &#x27;+cur.qu+&#x27; of &#x27;+q+&#x27; ms&#x27;;
-    }else if(mode===0&amp;&amp;cur&amp;&amp;!finished){
-      $(&#x27;qinfo&#x27;).textContent=&#x27;keeps the CPU until its burst ends&#x27;;
-    }else{$(&#x27;qinfo&#x27;).textContent=&#x27;&#x27;;}
-    $(&#x27;qmeter&#x27;).innerHTML=qm;
-
-    var qh=&#x27;&#x27;;
-    if(c===0){qh=chip(0)+chip(1)+chip(2);}
-    else if(!finished){
-      qh=cur.q.length?cur.q.map(chip).join(&#x27;&#x27;):&#x27;&lt;span class=&quot;lab&quot;&gt;nobody is waiting&lt;/span&gt;&#x27;;
-      if(mode===1&amp;&amp;cur.end&amp;&amp;!cur.done){qh+=&#x27;&lt;span class=&quot;lab&quot;&gt;then &#x27;+N[cur.p]+&#x27; joins at the back&lt;/span&gt;&#x27;;}
-    }else{qh=&#x27;&lt;span class=&quot;lab&quot;&gt;empty&lt;/span&gt;&#x27;;}
-    $(&#x27;queue&#x27;).innerHTML=qh;
-
-    var m=&#x27;Press Play or Step. All three processes arrive at t = 0, queued as P1, P2, P3.&#x27;;
-    if(c&gt;0){
-      if(finished)m=&#x27;All three processes are done. Compare the waiting times below the timeline.&#x27;;
-      else if(cur.done)m=N[cur.p]+&#x27; used up its burst time and finished. The CPU goes to the next process.&#x27;;
-      else if(mode===1&amp;&amp;cur.end)m=N[cur.p]+&#x27; used its full &#x27;+q+&#x27; ms quantum and still has burst time left. It is pre-empted and goes to the back of the queue.&#x27;;
-      else if(mode===1&amp;&amp;cur.sw)m=&#x27;Context switch: &#x27;+N[cur.p]+&#x27; now has the CPU.&#x27;;
-      else if(mode===0)m=N[cur.p]+&#x27; is running. Nothing can interrupt it until it finishes.&#x27;;
-      else m=N[cur.p]+&#x27; is running.&#x27;;
-    }
-    $(&#x27;msg&#x27;).textContent=m;
-
-    var g=&#x27;&#x27;,a=&#x27;&#x27;;
-    for(i=0;i&lt;ticks.length;i++){
-      var on=i&lt;c;
-      g+=&#x27;&lt;div class=&quot;cell&#x27;+(on?&#x27; p&#x27;+(ticks[i].p+1):&#x27;&#x27;)+(on&amp;&amp;ticks[i].sw?&#x27; sw&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+(on?N[ticks[i].p]:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
-      a+=&#x27;&lt;span&gt;&#x27;+i+(i===ticks.length-1?&#x27;&lt;em&gt;&#x27;+ticks.length+&#x27;&lt;/em&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/span&gt;&#x27;;
-    }
-    $(&#x27;gantt&#x27;).innerHTML=g;
-    $(&#x27;axis&#x27;).innerHTML=a;
-
-    var r=&#x27;&#x27;;
-    if(finished){
-      var w=[fin[0]-B[0],fin[1]-B[1],fin[2]-B[2]];
-      r=&#x27;Waiting time = finish time − burst time. P1: &#x27;+fin[0]+&#x27; − &#x27;+B[0]+&#x27; = &#x27;+w[0]+&#x27; ms. P2: &#x27;+fin[1]+&#x27; − &#x27;+B[1]+&#x27; = &#x27;+w[1]+&#x27; ms. P3: &#x27;+fin[2]+&#x27; − &#x27;+B[2]+&#x27; = &#x27;+w[2]+&#x27; ms. Average: &#x27;+avg(w)+&#x27; ms.&#x27;;
-    }
-    $(&#x27;result&#x27;).textContent=r;
-    glance();
-  }
-  function next(){
-    if(c&lt;ticks.length){c++;draw();}
-    if(c&gt;=ticks.length)stop();
-  }
-  $(&#x27;m0&#x27;).onclick=function(){mode=0;setup();};
-  $(&#x27;m1&#x27;).onclick=function(){mode=1;setup();};
-  $(&#x27;qsel&#x27;).onchange=function(){q=parseInt(this.value,10);setup();};
-  $(&#x27;speed&#x27;).onchange=function(){
-    speed=parseInt(this.value,10);
-    if(timer){clearInterval(timer);timer=setInterval(next,speed);}
-  };
-  $(&#x27;step&#x27;).onclick=function(){stop();next();};
-  $(&#x27;reset&#x27;).onclick=function(){stop();c=0;draw();};
-  $(&#x27;play&#x27;).onclick=function(){
-    if(timer){stop();return;}
-    if(c&gt;=ticks.length){c=0;}
-    $(&#x27;play&#x27;).textContent=&#x27;Pause&#x27;;
-    next();
-    if(c&lt;ticks.length){timer=setInterval(next,speed);}
-  };
-  setup();
+  return t;
+}
+function finish(t){var f=[0,0,0];for(var i=0;i&lt;t.length;i++){if(t[i].done)f[t[i].p]=i+1;}return f;}
+function waits(t){var f=finish(t);return f.map(function(x,p){return x-B[p];});}
+function avg(w){return Math.round((w[0]+w[1]+w[2])/3*100)/100;}
+function chip(p){return &#x27;&lt;span class=&quot;chip p&#x27;+(p+1)+&#x27;&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;;}
+function stop(){if(timer){clearInterval(timer);timer=null;}$(&#x27;play&#x27;).textContent=T().play;}
+function setup(){stop();ticks=build(mode===0?99:q);c=0;$(&#x27;qwrap&#x27;).hidden=(mode===0);
+  $(&#x27;m0&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===0?&#x27;true&#x27;:&#x27;false&#x27;);$(&#x27;m1&#x27;).setAttribute(&#x27;aria-pressed&#x27;,mode===1?&#x27;true&#x27;:&#x27;false&#x27;);draw();}
+function glance(){var t=T(),a=waits(build(99)),b=waits(build(q));
+  $(&#x27;glance&#x27;).innerHTML=&#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.gNon+&#x27;&lt;/span&gt;&lt;b&gt;&#x27;+avg(a)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.avgW+&#x27; (P1 &#x27;+a[0]+&#x27;, P2 &#x27;+a[1]+&#x27;, P3 &#x27;+a[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;+
+    &#x27;&lt;div&gt;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.gPre(q)+&#x27;&lt;/span&gt;&lt;b&gt;&#x27;+avg(b)+&#x27; ms&lt;/b&gt;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.avgW+&#x27; (P1 &#x27;+b[0]+&#x27;, P2 &#x27;+b[1]+&#x27;, P3 &#x27;+b[2]+&#x27;)&lt;/span&gt;&lt;/div&gt;&#x27;;}
+function draw(){
+  var t=T(),rem=B.slice(),fin=[null,null,null],i,p;
+  for(i=0;i&lt;c;i++){rem[ticks[i].p]--;if(ticks[i].done)fin[ticks[i].p]=i+1;}
+  var finished=c&gt;=ticks.length,cur=c&gt;0?ticks[c-1]:null;
+  $(&#x27;clock&#x27;).textContent=c;
+  var h=&#x27;&#x27;;
+  for(p=0;p&lt;3;p++){var st=t.st.wait,cl=&#x27;wait&#x27;;
+    if(fin[p]!==null){st=t.st.done;cl=&#x27;done&#x27;;}else if(cur&amp;&amp;cur.p===p&amp;&amp;!finished){st=t.st.run;cl=&#x27;run&#x27;;}
+    h+=&#x27;&lt;div class=&quot;proc&quot;&gt;&lt;span class=&quot;name&quot;&gt;&#x27;+N[p]+&#x27;&lt;/span&gt;&#x27;+
+      &#x27;&lt;div class=&quot;track&quot;&gt;&lt;div class=&quot;outer p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(B[p]/8*100)+&#x27;%;--n:&#x27;+B[p]+&#x27;;background-color:transparent&quot;&gt;&lt;div class=&quot;inner p&#x27;+(p+1)+&#x27;&quot; style=&quot;width:&#x27;+(rem[p]/B[p]*100)+&#x27;%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#x27;+
+      &#x27;&lt;span class=&quot;info&quot;&gt;&lt;b&gt;&#x27;+rem[p]+&#x27;&lt;/b&gt; / &#x27;+B[p]+&#x27; ms&lt;small&gt;&#x27;+t.lb+&#x27;&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;state &#x27;+cl+&#x27;&quot;&gt;&#x27;+st+&#x27;&lt;/span&gt;&lt;/div&gt;&#x27;;}
+  $(&#x27;procs&#x27;).innerHTML=h;
+  var cpu=$(&#x27;cpu&#x27;);
+  if(cur&amp;&amp;!finished){cpu.className=&#x27;cpu-box p&#x27;+(cur.p+1);cpu.innerHTML=N[cur.p]+&#x27;&lt;small&gt;&lt;b&gt;&#x27;+rem[cur.p]+&#x27;&lt;/b&gt; &#x27;+t.left+&#x27;&lt;/small&gt;&#x27;;}
+  else{cpu.className=&#x27;cpu-box idle&#x27;;cpu.textContent=finished?t.alldone:t.idle;}
+  var qm=&#x27;&#x27;;
+  if(mode===1&amp;&amp;cur&amp;&amp;!finished){for(i=1;i&lt;=q;i++)qm+=&#x27;&lt;i class=&quot;&#x27;+(i&lt;=cur.qu?&#x27;on&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&lt;/i&gt;&#x27;;$(&#x27;qinfo&#x27;).textContent=t.qUsed(cur.qu,q);}
+  else if(mode===0&amp;&amp;cur&amp;&amp;!finished){$(&#x27;qinfo&#x27;).textContent=t.keeps;}else{$(&#x27;qinfo&#x27;).textContent=&#x27;&#x27;;}
+  $(&#x27;qmeter&#x27;).innerHTML=qm;
+  var qh=&#x27;&#x27;;
+  if(c===0)qh=chip(0)+chip(1)+chip(2);
+  else if(!finished){qh=cur.q.length?cur.q.map(chip).join(&#x27;&#x27;):&#x27;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.nobody+&#x27;&lt;/span&gt;&#x27;;
+    if(mode===1&amp;&amp;cur.end&amp;&amp;!cur.done)qh+=&#x27;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.joins(N[cur.p])+&#x27;&lt;/span&gt;&#x27;;}
+  else qh=&#x27;&lt;span class=&quot;lab&quot;&gt;&#x27;+t.empty+&#x27;&lt;/span&gt;&#x27;;
+  $(&#x27;queue&#x27;).innerHTML=qh;
+  var m=t.mStart;
+  if(c&gt;0){if(finished)m=t.mAll;else if(cur.done)m=t.mFin(N[cur.p]);else if(mode===1&amp;&amp;cur.end)m=t.mQ(N[cur.p],q);
+    else if(mode===1&amp;&amp;cur.sw)m=t.mSw(N[cur.p]);else if(mode===0)m=t.mNon(N[cur.p]);else m=t.mRun(N[cur.p]);}
+  $(&#x27;msg&#x27;).textContent=m;
+  var g=&#x27;&#x27;,a=&#x27;&#x27;;
+  for(i=0;i&lt;ticks.length;i++){var on=i&lt;c;
+    g+=&#x27;&lt;div class=&quot;cell&#x27;+(on?&#x27; p&#x27;+(ticks[i].p+1):&#x27;&#x27;)+(on&amp;&amp;ticks[i].sw?&#x27; sw&#x27;:&#x27;&#x27;)+&#x27;&quot;&gt;&#x27;+(on?N[ticks[i].p]:&#x27;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
+    a+=&#x27;&lt;span&gt;&#x27;+i+(i===ticks.length-1?&#x27;&lt;em&gt;&#x27;+ticks.length+&#x27;&lt;/em&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;/span&gt;&#x27;;}
+  $(&#x27;gantt&#x27;).innerHTML=g;$(&#x27;axis&#x27;).innerHTML=a;
+  var r=&#x27;&#x27;;
+  if(finished){var w=[fin[0]-B[0],fin[1]-B[1],fin[2]-B[2]];
+    r=t.res+&#x27; P1: &#x27;+fin[0]+&#x27; − &#x27;+B[0]+&#x27; = &#x27;+w[0]+&#x27; ms. P2: &#x27;+fin[1]+&#x27; − &#x27;+B[1]+&#x27; = &#x27;+w[1]+&#x27; ms. P3: &#x27;+fin[2]+&#x27; − &#x27;+B[2]+&#x27; = &#x27;+w[2]+&#x27; ms. &#x27;+t.avgL+&#x27;: &#x27;+avg(w)+&#x27; ms.&#x27;;}
+  $(&#x27;result&#x27;).textContent=r;
+  glance();
+}
+function next(){if(c&lt;ticks.length){c++;draw();}if(c&gt;=ticks.length)stop();}
+function texts(){
+  var t=T();document.documentElement.lang=lang===&#x27;zh&#x27;?&#x27;zh-Hans&#x27;:lang;
+  document.body.className=&#x27;v-&#x27;+lang;
+  document.querySelectorAll(&#x27;[data-t]&#x27;).forEach(function(e){var v=t[e.dataset.t];if(typeof v===&#x27;string&#x27;)e.innerHTML=v;});
+  $(&#x27;ctab&#x27;).innerHTML=&#x27;&lt;thead&gt;&lt;tr&gt;&#x27;+t.cHead.map(function(h){return &#x27;&lt;th&gt;&#x27;+h+&#x27;&lt;/th&gt;&#x27;;}).join(&#x27;&#x27;)+&#x27;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;+t.cRows.map(function(r){return &#x27;&lt;tr&gt;&lt;td&gt;&#x27;+r[0]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+r[1]+&#x27;&lt;/td&gt;&lt;td&gt;&#x27;+r[2]+&#x27;&lt;/td&gt;&lt;/tr&gt;&#x27;;}).join(&#x27;&#x27;)+&#x27;&lt;/tbody&gt;&#x27;;
+  $(&#x27;mix&#x27;).innerHTML=t.mix.map(function(m){return &#x27;&lt;div class=&quot;panel&quot;&gt;&lt;h3&gt;&#x27;+m[0]+&#x27;&lt;/h3&gt;&lt;p&gt;&#x27;+m[1]+&#x27;&lt;/p&gt;&lt;/div&gt;&#x27;;}).join(&#x27;&#x27;);
+  $(&#x27;play&#x27;).textContent=timer?t.pause:t.play;
+  draw();
+}
+$(&#x27;m0&#x27;).onclick=function(){mode=0;setup();};
+$(&#x27;m1&#x27;).onclick=function(){mode=1;setup();};
+$(&#x27;qsel&#x27;).onchange=function(){q=parseInt(this.value,10);setup();};
+$(&#x27;speed&#x27;).onchange=function(){speed=parseInt(this.value,10);if(timer){clearInterval(timer);timer=setInterval(next,speed);}};
+$(&#x27;step&#x27;).onclick=function(){stop();next();};
+$(&#x27;reset&#x27;).onclick=function(){stop();c=0;draw();};
+$(&#x27;play&#x27;).onclick=function(){if(timer){stop();return;}if(c&gt;=ticks.length)c=0;$(&#x27;play&#x27;).textContent=T().pause;next();if(c&lt;ticks.length)timer=setInterval(next,speed);};
+$(&#x27;gointr&#x27;).onclick=function(){parent.postMessage({go:&#x27;intr&#x27;,pick:&#x27;timer&#x27;},&#x27;*&#x27;);};
+$(&#x27;goalgo&#x27;).onclick=function(){parent.postMessage({go:&#x27;algo&#x27;},&#x27;*&#x27;);};
+window.addEventListener(&#x27;message&#x27;,function(e){var d=(e.data||{}).sched;if(!d)return;if(d.lang&amp;&amp;TX[d.lang]&amp;&amp;d.lang!==lang){lang=d.lang;texts();}if(d.hide)stop();});
+try{var s=localStorage.getItem(&#x27;lang4&#x27;);if(TX[s])lang=s;}catch(e){}
+ticks=build(99);texts();setup();
+function h(){parent.postMessage({h:document.documentElement.scrollHeight},&#x27;*&#x27;);}
+addEventListener(&#x27;load&#x27;,h);addEventListener(&#x27;resize&#x27;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700);
 })();
 &lt;/script&gt;
 
-&lt;script&gt;document.getElementById(&quot;goalgo&quot;).onclick=function(){parent.postMessage({go:&quot;algo&quot;},&quot;*&quot;)};document.getElementById(&quot;gointr&quot;).onclick=function(){parent.postMessage({go:&quot;intr&quot;,pick:&quot;timer&quot;},&quot;*&quot;)};(function(){function h(){parent.postMessage({h:document.documentElement.scrollHeight},&quot;*&quot;)}addEventListener(&quot;load&quot;,h);addEventListener(&quot;resize&quot;,h);new ResizeObserver(h).observe(document.body);setInterval(h,700)})()&lt;/script&gt;&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark-off&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;style id=&quot;pastel&quot;&gt;
+&lt;style id=&quot;calm-sched&quot;&gt;:root{--bg:#F3F6FB;--surface-2:#E9EEF7;--ink:#1F2A3C;--ink-2:#586479;--line:#D3DCEA;}@media (prefers-color-scheme: dark) and (max-width: 0px){:root:not([data-theme=&quot;light&quot;]){--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}}:root[data-theme=&quot;dark-off&quot;]{--bg:#1B2436;--surface:#25314B;--surface-2:#2D3B58;--ink:#EAF0FA;--ink-2:#AEBBD1;--line:#3E4E6E;--accent:#8AB0FF;--accent-bg:#2C426F;--ok:#6BD893;color-scheme:dark;}&lt;/style&gt;&lt;style id=&quot;pastel&quot;&gt;
 :root{--p1:#F6A38E;--p2:#7ED3C3;--p3:#B8A7F3}
 *{--cd:color-mix(in srgb,var(--c,#8A94A6) 62%,#1F2A3C)}
 .p1{--c:var(--p1)} .p2{--c:var(--p2)} .p3{--c:var(--p3)}
@@ -1255,7 +1354,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 .proc .info{font-family:var(--font-mono);min-width:11rem;color:var(--ink-2)}
 .proc .info b{font-size:1.25rem;color:var(--ink)}
 .proc .info small{font-family:var(--font-body);font-size:.75rem;margin-left:4px}
-&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+&lt;/style&gt;&lt;style id=&quot;hdr&quot;&gt;.wrap{max-width:1100px}header.hero,header{padding-block:40px 24px}header.hero{gap:14px}h1{font-family:&quot;Bricolage Grotesque&quot;,&quot;Zen Kaku Gothic New&quot;,&quot;Noto Sans SC&quot;,&quot;Sarabun&quot;,system-ui,sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.01em;line-height:1.15}.eyebrow{font-family:&quot;JetBrains Mono&quot;,ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#586479}.lede{font-size:16px;max-width:64ch}&lt;/style&gt;&lt;style id=&quot;langfont&quot;&gt;body.v-ja{--font-body:&quot;Zen Kaku Gothic New&quot;,system-ui,sans-serif}body.v-zh{--font-body:&quot;Noto Sans SC&quot;,system-ui,sans-serif}body.v-th{--font-body:&quot;Sarabun&quot;,system-ui,sans-serif}#goalgo{margin-top:8px}&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <div id="algowrap" hidden><iframe id="algoframe" title="Scheduling algorithms: FCFS, SJF, SRTF, round robin" style="width:100%;border:0;display:block;min-height:600px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=utf8&gt;&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;style&gt;:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
 &lt;title&gt;Scheduling Algorithms Lab&lt;/title&gt;
 &lt;meta name=&quot;claude:viewport-fit-sides&quot; content=&quot;cover&quot;&gt;
@@ -1279,13 +1378,14 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1
 :lang(ja) body,body:lang(ja){font-family:&quot;Zen Kaku Gothic New&quot;,&quot;Atkinson Hyperlegible&quot;,system-ui,sans-serif}
 .wrap{max-width:1100px;margin:0 auto;display:grid;gap:18px}
 h1,h2,h3{font-family:var(--f-display);line-height:1.2;text-wrap:balance;margin:0}
-h1{font-size:clamp(1.9rem,4.6vw,2.8rem);font-weight:800;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.01em;line-height:1.15}
 h2{font-size:1.3rem;font-weight:700}
 h3{font-size:1.02rem;font-weight:700}
 p{margin:0}
-.eyebrow{font-family:var(--f-mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
-.lede{color:var(--muted);max-width:68ch}
-header{padding-block:28px 0;display:grid;gap:10px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:64ch;font-size:16px}
+header{padding-block:28px 0;display:grid;gap:15px}
+body.emb header{padding-block:40px 0}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
 .lab{font-size:.8rem;color:var(--muted);letter-spacing:.02em}
 .mono{font-family:var(--f-mono)}
@@ -1464,7 +1564,7 @@ tfoot td{border-bottom:0;font-weight:700}
     &lt;button id=&quot;lg-en&quot; aria-pressed=&quot;true&quot;&gt;English&lt;/button&gt;&lt;button id=&quot;lg-ja&quot; aria-pressed=&quot;false&quot;&gt;日本語&lt;/button&gt;&lt;button id=&quot;lg-zh&quot; aria-pressed=&quot;false&quot;&gt;中文&lt;/button&gt;&lt;button id=&quot;lg-th&quot; aria-pressed=&quot;false&quot;&gt;ไทย&lt;/button&gt;
   &lt;/div&gt;
   &lt;header&gt;
-    &lt;p class=&quot;eyebrow&quot;&gt;Cambridge 9618 · 16.1 Process management&lt;/p&gt;
+    &lt;p class=&quot;eyebrow&quot;&gt;Cambridge 9618 · Topic 16 · Scheduling routines&lt;/p&gt;
     &lt;h1 id=&quot;h1&quot;&gt;&lt;/h1&gt;
     &lt;p class=&quot;lede&quot; id=&quot;lede&quot;&gt;&lt;/p&gt;
   &lt;/header&gt;
@@ -1808,7 +1908,7 @@ const FIGNAME={fcfs:&#x27;Fig. 16.5&#x27;,sjf:&#x27;Fig. 16.6&#x27;,srtf:&#x27;F
 /* ---------- state ---------- */
 let lang=&#x27;en&#x27;,alg=&#x27;fcfs&#x27;,preset=&#x27;tbA&#x27;,q=5,procs=[],sim=null,k=0,timer=null,speed=900,chips=[],flash=&#x27;&#x27;;
 const EMB=location.href===&#x27;about:srcdoc&#x27;;
-if(EMB)$(&#x27;langbar&#x27;).hidden=true;
+if(EMB){$(&#x27;langbar&#x27;).hidden=true;document.body.classList.add(&#x27;emb&#x27;);}
 const T=()=&gt;TX[lang];
 const nm=i=&gt;&#x27;P&#x27;+(i+1);
 const tagP=i=&gt;&#x27;&lt;span class=&quot;shp&quot;&gt;&#x27;+SHAPE[i]+&#x27;&lt;/span&gt;&#x27;+nm(i);
@@ -3288,7 +3388,7 @@ h1 em{color:var(--accent-ink)}
 .cell.part{outline-color:var(--cd)}
 .sw.dash{outline-color:#4FA571}
 .sw.hatch{outline-color:#4FA571}
-&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
+&lt;/style&gt;&lt;style id=&quot;hdr&quot;&gt;.wrap{max-width:1100px}header.hero,header{padding-block:40px 24px}h1{font-family:&quot;Bricolage Grotesque&quot;,&quot;Zen Kaku Gothic New&quot;,&quot;Noto Sans SC&quot;,&quot;Sarabun&quot;,system-ui,sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.01em;line-height:1.15}.eyebrow{font-family:&quot;JetBrains Mono&quot;,ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#586479}.lede{font-size:16px;max-width:64ch}&lt;/style&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></div>
 <script>
 (function(root){
 
@@ -4153,12 +4253,13 @@ root.addEventListener('langhide',()=>stop());
   const LS=['en','ja','zh','th'],SC=['page','virt','seg','int','ext'];
   const curLang=()=>(document.documentElement.lang||'en').slice(0,2);
   const toMem=d=>mf.contentWindow&&mf.contentWindow.postMessage({mem:d},'*');
+  const toSched=d=>sf.contentWindow&&sf.contentWindow.postMessage({sched:d},'*');
   let cur='intr',pendingSc=null;
   const memHash=()=>'#mem-'+curLang();
   function topic(t,pick){
     const s=t==='sched',m=t==='mem',a=t==='algo';
     if(t!=='intr')document.querySelectorAll('#intro > div:not([hidden])').forEach(v=>v.dispatchEvent(new Event('langhide')));
-    if(cur==='mem'&&!m)toMem({hide:true});if(cur==='algo'&&!a)toAlgo({hide:true});
+    if(cur==='mem'&&!m)toMem({hide:true});if(cur==='sched'&&!s)toSched({hide:true});if(s)toSched({lang:curLang()});if(cur==='algo'&&!a)toAlgo({hide:true});
     cur=t;
     intro.hidden=t!=='intr';sw.hidden=!s;mw.hidden=!m;aw.hidden=!a;document.body.classList.toggle('t-sched',s);
     bi.setAttribute('aria-pressed',t==='intr');bs.setAttribute('aria-pressed',s);bm.setAttribute('aria-pressed',m);ba.setAttribute('aria-pressed',a);
@@ -4166,7 +4267,7 @@ root.addEventListener('langhide',()=>stop());
     if(t==='intr'&&pick){const v=document.querySelector('#intro > div:not([hidden])');const b=v&&v.querySelector('.src[data-k="'+pick+'"]');if(b)b.click();}
     if(m){toMem({lang:curLang(),sc:pendingSc,show:true});pendingSc=null;}
     if(a){if(pendingAlg)algNow=pendingAlg;toAlgo({lang:curLang(),alg:pendingAlg});pendingAlg=null;}
-    try{history.replaceState(null,'',s?'#sched':m?memHash():a?'#algo-'+curLang()+'-'+algNow:'#'+curLang());}catch(e){}
+    try{history.replaceState(null,'',s?'#sched-'+curLang():m?memHash():a?'#algo-'+curLang()+'-'+algNow:'#'+curLang());}catch(e){}
     window.scrollTo(0,0);
   }
   bi.onclick=()=>topic('intr');ba.onclick=()=>topic('algo');bs.onclick=()=>topic('sched');bm.onclick=()=>topic('mem');
@@ -4175,14 +4276,14 @@ root.addEventListener('langhide',()=>stop());
     if(d.go==='intr')topic('intr',d.pick);if(d.go==='algo')topic('algo');
     if(d.algoHash&&cur==='algo'){algNow=d.algoHash.split('-')[1]||algNow;try{history.replaceState(null,'','#algo-'+d.algoHash)}catch(err){}}
     if(d.algoTop)af.scrollIntoView({behavior:'smooth',block:'start'})});
-  LS.forEach(l=>g('lg-'+l).addEventListener('click',()=>{if(cur==='algo'){toAlgo({lang:l});try{history.replaceState(null,'','#algo-'+l+'-'+algNow)}catch(e){}return;}if(cur!=='mem')return;toMem({lang:l});try{history.replaceState(null,'',memHash())}catch(e){}}));
+  LS.forEach(l=>g('lg-'+l).addEventListener('click',()=>{toSched({lang:l});if(cur==='sched'){try{history.replaceState(null,'','#sched-'+l)}catch(e){}return;}if(cur==='algo'){toAlgo({lang:l});try{history.replaceState(null,'','#algo-'+l+'-'+algNow)}catch(e){}return;}if(cur!=='mem')return;toMem({lang:l});try{history.replaceState(null,'',memHash())}catch(e){}}));
   document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;
     if(cur==='algo'){if(e.key==='ArrowRight')toAlgo({key:'next'});if(e.key==='ArrowLeft')toAlgo({key:'prev'});return;}
     if(cur!=='mem')return;
     if(e.key==='ArrowRight')toMem({key:'next'});if(e.key==='ArrowLeft')toMem({key:'prev'})});
   function fromHash(){
     const h=location.hash.slice(1);
-    if(h==='sched'){topic('sched');return}
+    if(h==='sched'||h.startsWith('sched-')){const l=h.split('-')[1];if(l&&LS.includes(l)&&l!==curLang())g('lg-'+l).click();topic('sched');return}
     if(h==='algo'||h.startsWith('algo-')){const p=h.split('-'),l=p.find(x=>LS.includes(x));pendingAlg=p.find(x=>AL.includes(x))||null;if(l&&l!==curLang())g('lg-'+l).click();topic('algo');return}
     if(h==='mem'||h.startsWith('mem-')){
       const p=h.split('-'),l=p.find(x=>LS.includes(x));pendingSc=p.find(x=>SC.includes(x))||null;
@@ -4190,6 +4291,7 @@ root.addEventListener('langhide',()=>stop());
       topic('mem');return}
     if(LS.includes(h)&&cur!=='intr')topic('intr');
   }
+  sf.addEventListener('load',()=>toSched({lang:curLang()}));
   af.addEventListener('load',()=>{toAlgo({lang:curLang(),alg:cur==='algo'?pendingAlg||algNow:null})});
   mf.addEventListener('load',()=>{if(cur==='mem')toMem({lang:curLang(),sc:pendingSc,show:true}),pendingSc=null;else toMem({lang:curLang()})});
   fromHash();
