@@ -4209,3 +4209,52 @@ header h1 em{color:var(--accent-ink)}
 .flow .fa{color:var(--cd)}
 .bit .tagsig{color:#FFFFFF}
 </style>
+<style id="intrcolor">
+.src[data-k="power"],#b0,#i0,.isrs .isr:nth-of-type(1),.cmp tr:has([data-k="power"]){--tc:#F6A38E;--ts:#FDE9E3;--td:#B5482C}
+.src[data-k="timer"],#b1,#i1,.isrs .isr:nth-of-type(2),.cmp tr:has([data-k="timer"]){--tc:#F5C76A;--ts:#FDF3DA;--td:#8A5A00}
+.src[data-k="disk"],#b2,#i2,.isrs .isr:nth-of-type(3),.cmp tr:has([data-k="disk"]){--tc:#7ED3C3;--ts:#E1F5F1;--td:#1F7A69}
+.src[data-k="kbd"],#b3,#i3,.isrs .isr:nth-of-type(4),.cmp tr:has([data-k="kbd"]){--tc:#A3D17F;--ts:#EBF6E2;--td:#3F7A1F}
+.src[data-k="div"],#b4,#i4,.isrs .isr:nth-of-type(5),.cmp tr:has([data-k="div"]){--tc:#F2A7C9;--ts:#FCE7F1;--td:#A8346A}
+.src[data-k="trap"],#b5,#i5,.isrs .isr:nth-of-type(6),.cmp tr:has([data-k="trap"]){--tc:#B8A7F3;--ts:#EEEAFD;--td:#5B43B5}
+.src{background:var(--ts);border:1px solid color-mix(in srgb,var(--tc) 70%,#FFFFFF);border-top:6px solid var(--tc)}
+.src .ty{color:var(--td)}
+.src[aria-pressed="true"]{background:var(--ts);border:2px solid var(--td);border-top:6px solid var(--td);box-shadow:0 0 0 3px color-mix(in srgb,var(--tc) 45%,transparent);padding:7px 9px}
+.src[aria-pressed="true"] .ty{color:var(--td);font-weight:700}
+.bit:not(.one){background:var(--ts);border-color:color-mix(in srgb,var(--tc) 80%,#FFFFFF)}
+.bit .l{color:var(--td);font-weight:700}
+.idt tr:not(.hit) td:first-child{box-shadow:inset 6px 0 0 var(--tc);padding-left:14px;background:var(--ts)}
+.isr{border-left:5px solid var(--tc)}
+.cmp tbody td:first-child{box-shadow:inset 6px 0 0 var(--tc);background:var(--ts)}
+.tyb{border:1px solid transparent;font-weight:700}
+.tyb.hw{background:#E7EFFD;color:#1F4AA8;border-color:#8DB4F2}
+.tyb:not(.hw):not(.tr){background:#FCE7F1;color:#A8346A;border-color:#F2A7C9}
+.tyb.tr{background:#EEEAFD;color:#5B43B5;border-color:#B8A7F3}
+.tstep[data-i="0"]{--sc:#C5CDD9;--ss:#EEF1F6;--sd:#4A5568}
+.tstep[data-i="7"]{--sc:#C5CDD9;--ss:#EEF1F6;--sd:#4A5568}
+.tstep[data-i="1"]{--sc:#F5C76A;--ss:#FDF3DA;--sd:#8A5A00}
+.tstep[data-i="6"]{--sc:#F5C76A;--ss:#FDF3DA;--sd:#8A5A00}
+.tstep[data-i="2"]{--sc:#8DB4F2;--ss:#E7EFFD;--sd:#1F4AA8}
+.tstep[data-i="5"]{--sc:#8DB4F2;--ss:#E7EFFD;--sd:#1F4AA8}
+.tstep[data-i="3"]{--sc:#B8A7F3;--ss:#EEEAFD;--sd:#5B43B5}
+.tstep[data-i="4"]{--sc:#B8A7F3;--ss:#EEEAFD;--sd:#5B43B5}
+.tstep{background:var(--ss);border:1px solid color-mix(in srgb,var(--sc) 70%,#FFFFFF);border-bottom:4px solid var(--sc);color:var(--sd)}
+.tstep b{color:var(--sd)}
+.tstep.done{color:var(--sd)}
+.tstep.now{background:var(--sc);border-color:var(--sd);border-bottom-color:var(--sd);color:#1F2A3C;box-shadow:0 0 0 3px color-mix(in srgb,var(--sc) 45%,transparent)}
+.tstep.now b{color:#1F2A3C}
+.pairs .pair:nth-child(1){background:#FDF3DA;border-color:#F5C76A}
+.pairs .pair:nth-child(2){background:#E7EFFD;border-color:#8DB4F2}
+.pairs .pair:nth-child(1) .pill{border-color:#C9962E;color:#8A5A00;background:#FFFFFF}
+.pairs .pair:nth-child(1) .pill.solid{background:#F5C76A;color:#1F2A3C}
+.pairs .pair:nth-child(2) .pill{border-color:#5C8FDB;color:#1F4AA8;background:#FFFFFF}
+.pairs .pair:nth-child(2) .pill.solid{background:#8DB4F2;color:#1F2A3C}
+.analogy .an:nth-child(1){background:#FDF3DA;border-color:#F5C76A;border-top:5px solid #F5C76A} .analogy .an:nth-child(1) .n{color:#8A5A00}
+.analogy .an:nth-child(2){background:#E7EFFD;border-color:#8DB4F2;border-top:5px solid #8DB4F2} .analogy .an:nth-child(2) .n{color:#1F4AA8}
+.analogy .an:nth-child(3){background:#EEEAFD;border-color:#B8A7F3;border-top:5px solid #B8A7F3} .analogy .an:nth-child(3) .n{color:#5B43B5}
+.analogy .an:nth-child(4){background:#EEEAFD;border-color:#B8A7F3;border-top:5px solid #B8A7F3} .analogy .an:nth-child(4) .n{color:#5B43B5}
+.analogy .an:nth-child(5){background:#E7EFFD;border-color:#8DB4F2;border-top:5px solid #8DB4F2} .analogy .an:nth-child(5) .n{color:#1F4AA8}
+.analogy .an:nth-child(6){background:#FDF3DA;border-color:#F5C76A;border-top:5px solid #F5C76A} .analogy .an:nth-child(6) .n{color:#8A5A00}
+.pitem>div:first-child{background:#FDECEA;border-radius:8px;padding:8px 10px}
+.pitem>div:last-child{background:#E6F6EC;border-radius:8px;padding:8px 10px}
+.pitem .x{color:#B42318} .pitem .o{color:#23774A}
+</style>
