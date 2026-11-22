@@ -937,6 +937,8 @@ STUDY.ch14 = {
 <div class="sg-box def"><b>Exam rule:</b> a protocol is a set of rules — it cannot "do" anything itself. It is always the <b>device</b> that acts, <i>because the protocol requires it</i>. Write "the sending device transmits the data, as required by the protocol," never "the protocol sends the data."</div>
 <div class="sg-box warn"><b>A-Level vs AS-Level:</b> "a protocol is a set of rules" alone earns no credit. The A-Level point: protocols are essential because they enable communication between devices on <b>different platforms/manufacturers</b> — always state this explicitly.</div>
 
+<div class="sg-box def">&#9654; <b>Interactive:</b> <a href="tcp-ip-lab.html" target="_blank" rel="noopener">TCP/IP Stack Lab</a> &mdash; follow one message down the four layers, across a router and up again (message &rarr; segment &rarr; packet &rarr; frame &rarr; bits), then see HTTP, FTP, SMTP, POP3, IMAP and BitTorrent in everyday situations. Includes exam tips and MCQs (English / &#26085;&#26412;&#35486; / &#20013;&#25991; / &#3652;&#3607;&#3618;).</div>
+
 <h3>Protocols as a layered stack (TCP/IP, 4 layers)</h3>
 <p>Breaking the process into independent layers (<b>decomposition</b>) lets each layer be developed/replaced independently, keeps different manufacturers' hardware compatible, and each layer only ever talks to the layer directly above/below it. Data passes <b>down</b> the stack at the sender (each layer adding a header = <b>encapsulation</b>) and <b>up</b> at the receiver (each layer stripping its header).</p>
 <table><tr><th>Layer</th><th>Function</th><th>Protocols</th></tr>
