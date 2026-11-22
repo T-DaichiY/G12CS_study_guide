@@ -1,0 +1,3678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>TCP/IP Stack Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Sarabun:wght@400;700&display=swap">
+<style>
+/* Light theme only, same lab-notebook look as the Topic 16 OS Lab.
+   Layout: two protocol stacks side by side with a router between them; one colour per layer, and each header keeps the colour of the layer that added it. */
+:root{
+  --bg:#F3F6FB;--panel:#FFFFFF;--ink:#1F2A3C;--muted:#586479;--line:#D3DCEA;--soft:#E9EEF7;
+  --accent:#3B6FD4;--accent-soft:#E4ECFB;--accent-ink:#1F4AA8;--on-accent:#FFFFFF;
+  --app:#B8A7F3;--app-s:#EEEAFD;--app-d:#5B43B5;
+  --tra:#8DB4F2;--tra-s:#E7EFFD;--tra-d:#1F4AA8;
+  --int:#8ED3A5;--int-s:#E6F6EC;--int-d:#23774A;
+  --lnk:#F5C76A;--lnk-s:#FDF3DA;--lnk-d:#8A5A00;
+  --f-display:"Bricolage Grotesque","Zen Kaku Gothic New","Noto Sans SC","Sarabun",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Zen Kaku Gothic New","Noto Sans SC","Sarabun",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{overflow-x:clip}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-block:0 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body.ja{--f-body:"Zen Kaku Gothic New","Atkinson Hyperlegible",system-ui,sans-serif}
+body.zh{--f-body:"Noto Sans SC","Atkinson Hyperlegible",system-ui,sans-serif}
+body.th{--f-body:"Sarabun","Atkinson Hyperlegible",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:18px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,4.6vw,3.2rem);font-weight:800;letter-spacing:-.01em;line-height:1.15}
+h2{font-size:1.3rem}
+h3{font-size:1rem}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:66ch}
+header{padding-block:18px 0;display:grid;gap:14px}
+.top{display:flex;justify-content:flex-end;gap:6px;padding-top:14px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.note{font-size:.88rem;color:var(--muted);max-width:75ch}
+button{font:inherit;font-size:.92rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 12px;min-height:38px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.btn.primary,.top button[aria-pressed="true"],.pbtns button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.steps{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.steps button{min-height:30px;min-width:34px;padding:2px 8px;font-family:var(--f-mono);font-size:.8rem}
+.steps button.now{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.steps button.seen{background:var(--accent-soft)}
+
+/* the two stacks and the router */
+.net{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1fr);grid-template-rows:auto repeat(4,minmax(58px,auto));gap:6px 12px;margin-top:14px}
+.hh{align-self:end}
+.hh h3{font-size:1rem}
+.hh p{font-size:.78rem;color:var(--muted);line-height:1.3}
+.hh.b{text-align:right}
+.hh.m{text-align:center}
+.layer{border:2px solid;border-radius:10px;padding:6px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;transition:box-shadow .3s,opacity .3s;min-width:0}
+.layer .ln{font-family:var(--f-display);font-weight:800;font-size:1rem;letter-spacing:.02em}
+.layer .lp{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);grid-column:1;line-height:1.2}
+.layer .slot{grid-column:2;grid-row:1/3;min-width:56px;min-height:50px;display:flex;align-items:center;justify-content:center}
+.layer.app{background:var(--app-s);border-color:var(--app)} .layer.app .ln{color:var(--app-d)}
+.layer.tra{background:var(--tra-s);border-color:var(--tra)} .layer.tra .ln{color:var(--tra-d)}
+.layer.int{background:var(--int-s);border-color:var(--int)} .layer.int .ln{color:var(--int-d)}
+.layer.lnk{background:var(--lnk-s);border-color:var(--lnk)} .layer.lnk .ln{color:var(--lnk-d)}
+.layer.hot{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 40%,transparent)}
+.layer.dim{opacity:.55}
+.b .layer,.layer.b{grid-template-columns:auto minmax(0,1fr)}
+.layer.b .slot{grid-column:1} .layer.b .ln,.layer.b .lp{grid-column:2;text-align:right}
+.mid{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}
+.mid.cloud{grid-row:2/4;border:2px dashed var(--line);border-radius:14px;color:var(--muted);font-size:.8rem;text-align:center;padding:6px;flex-direction:column}
+.mid .slot{min-width:20px;min-height:38px;display:flex;align-items:center;justify-content:center;flex:1}
+.rbox{border:2px solid;border-radius:10px;padding:4px 8px;font-family:var(--f-display);font-weight:800;font-size:.82rem;text-align:center;flex:0 1 auto;min-width:0}
+.rbox.int{background:var(--int-s);border-color:var(--int);color:var(--int-d)}
+.rbox.lnk{background:var(--lnk-s);border-color:var(--lnk);color:var(--lnk-d)}
+.rbox small{display:block;font-family:var(--f-body);font-weight:400;font-size:.66rem;color:var(--muted);line-height:1.2}
+.wire{position:relative}
+.wire>*{position:relative;z-index:2}
+.dirs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1fr);gap:12px;margin-top:4px;font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.dirs span:last-child{text-align:right}
+
+/* the tunnel: a slim glass tube that follows the path of the data; the data unit travels inside it */
+.tube{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible;filter:drop-shadow(0 2px 3px rgba(31,42,60,.10))}
+.tube path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.tube .to{stroke:#9DB2DA}
+.tube .ti{stroke:#FFFFFF;opacity:.86}
+.tube .tp{stroke:var(--accent);opacity:.17}
+.tube .tf{stroke:var(--accent);opacity:.55;stroke-width:2.5;stroke-dasharray:1 11;animation:flow 1.1s linear infinite}
+.tube .tg{stroke:#C3CFE6;stroke-width:2.5;stroke-dasharray:1 11}
+@keyframes flow{to{stroke-dashoffset:-12}}
+@media (prefers-reduced-motion:reduce){.tube .tf{animation:none}}
+.slot{position:relative;z-index:2}
+.rbox{position:relative;z-index:2}
+.rbox.rslot{display:grid;justify-items:center;gap:1px;min-width:92px;padding-bottom:5px}
+.rbox.rslot .slot{min-height:30px;min-width:50px;flex:none}
+.layer .ln,.layer .lp{position:relative;z-index:2}
+/* the travelling data unit: turned to match the direction of the tunnel */
+.tok{display:inline-flex;align-items:stretch;gap:0;border-radius:7px;overflow:hidden;border:2px solid var(--ink);box-shadow:0 2px 5px rgba(31,42,60,.22);will-change:transform;background:var(--panel)}
+.tok i{display:block;width:7px;height:22px}
+.tok i.d{width:16px}
+.tok.v{flex-direction:column}
+.tok.v i{width:22px;height:7px}
+.tok.v i.d{height:16px}
+.tok .bitsT{font-family:var(--f-mono);font-size:.62rem;padding:0 4px;align-self:center;white-space:nowrap;line-height:22px}
+.c-fh,.c-ft{background:var(--lnk)} .c-ih{background:var(--int)} .c-th{background:var(--tra)} .c-data{background:var(--app)}
+
+/* inspector */
+.insp{margin-top:14px;display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:14px;align-items:stretch}
+@media (max-width:760px){.insp{grid-template-columns:minmax(0,1fr)}}
+.unit{border-radius:12px;border:3px solid;padding:10px 14px;display:grid;align-content:center;gap:2px}
+.unit .ul{font-size:.74rem;color:var(--muted);font-weight:700;letter-spacing:.03em}
+.unit .un{font-family:var(--f-display);font-weight:800;font-size:1.5rem;line-height:1.15}
+.unit .uy{font-family:var(--f-mono);font-size:.74rem}
+.unit.app{background:var(--app-s);border-color:var(--app)} .unit.app .un{color:var(--app-d)}
+.unit.tra{background:var(--tra-s);border-color:var(--tra)} .unit.tra .un{color:var(--tra-d)}
+.unit.int{background:var(--int-s);border-color:var(--int)} .unit.int .un{color:var(--int-d)}
+.unit.lnk,.unit.bits{background:var(--lnk-s);border-color:var(--lnk)} .unit.lnk .un,.unit.bits .un{color:var(--lnk-d)}
+.pdu{display:flex;gap:0;align-items:stretch;min-width:0;overflow-x:auto;border-radius:10px}
+.part{flex:1 1 0;min-width:108px;padding:8px 10px;border:2px solid var(--ink);border-left-width:0;display:grid;align-content:start;gap:3px;position:relative}
+.part:first-child{border-left-width:2px;border-radius:10px 0 0 10px}
+.part:last-child{border-radius:0 10px 10px 0}
+.part:only-child{border-radius:10px}
+.part .pt{font-family:var(--f-display);font-weight:800;font-size:.86rem}
+.part dl{margin:0;display:grid;gap:1px;font-size:.74rem}
+.part dt{color:var(--muted);font-size:.66rem;line-height:1.1}
+.part dd{margin:0 0 3px;font-family:var(--f-mono);font-size:.72rem;line-height:1.2;word-break:break-all}
+.part.data{flex:1.3 1 0}
+.part.data dd{font-size:.82rem;font-weight:600}
+.part .tg{position:absolute;top:-1px;right:-1px;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:0 0 0 6px;background:var(--accent);color:var(--on-accent)}
+.part.new .pt,.part.chg .pt{margin-top:16px}
+.part.new{animation:pop .5s ease-out}
+.part.chg dd.v{background:#FFF;outline:2px solid var(--accent);border-radius:3px;padding:0 3px}
+@keyframes pop{from{transform:scaleX(.2);opacity:0}to{transform:none;opacity:1}}
+.bitsrow{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.12em;padding:12px;border:2px solid var(--ink);border-radius:10px;background:var(--lnk-s);overflow:hidden;white-space:nowrap;flex:1}
+.bitsrow small{display:block;font-family:var(--f-body);letter-spacing:0;color:var(--muted);margin-top:4px;white-space:normal}
+.extra{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:.86rem}
+.extra .sq{display:inline-flex;gap:4px}
+.extra .sq b{font-family:var(--f-mono);font-size:.76rem;padding:2px 8px;border-radius:6px;background:var(--tra);border:1px solid var(--tra-d)}
+.extra .ack{font-family:var(--f-mono);font-size:.78rem;padding:2px 10px;border-radius:999px;background:var(--accent);color:var(--on-accent)}
+.msg{margin-top:12px;padding:12px 16px;border-radius:10px;background:var(--soft);border-left:4px solid var(--accent);display:grid;gap:6px}
+.msg .tag{font-family:var(--f-mono);font-size:.76rem;color:var(--accent-ink);font-weight:600}
+.msg h3{font-size:1.1rem}
+.msg .exam{font-size:.92rem;padding:8px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line)}
+.msg .exam b{font-size:.74rem;color:var(--muted);display:block}
+
+.why{margin:8px 0 0;padding-left:1.2em;display:grid;gap:6px;max-width:80ch}
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:640px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.76rem;color:var(--muted)}
+td.l{font-family:var(--f-display);font-weight:800;white-space:nowrap}
+tr.app td.l{box-shadow:inset 6px 0 0 var(--app);background:var(--app-s)}
+tr.tra td.l{box-shadow:inset 6px 0 0 var(--tra);background:var(--tra-s)}
+tr.int td.l{box-shadow:inset 6px 0 0 var(--int);background:var(--int-s)}
+tr.lnk td.l{box-shadow:inset 6px 0 0 var(--lnk);background:var(--lnk-s)}
+td.u{font-weight:700}
+td.m{font-family:var(--f-mono);font-size:.8rem}
+
+.pbtns{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.pbtns button{font-family:var(--f-mono);font-weight:600}
+.pcard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+@media (max-width:820px){.pcard{grid-template-columns:minmax(0,1fr)}}
+.pdiag{overflow-x:auto}
+.pdiag svg{min-width:460px}
+.pdiag .tb{stroke-linecap:round}
+.pdiag .tb.o{stroke:#9FB0CE;stroke-width:28}
+.pdiag .tb.i{stroke:#F8FAFF;stroke-width:23}
+.pdiag .tb.on{stroke:#D6E3FB;stroke-width:23}
+.pdiag .fl.on{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:6 5}
+.pdiag .fll{font-size:12.5px;fill:var(--accent-ink);font-weight:700;paint-order:stroke;stroke:var(--soft);stroke-width:4px;stroke-linejoin:round}
+.pdiag .nm{font-size:12.5px;font-weight:700}
+.pdiag .stt{font-family:var(--f-mono);font-size:11.5px;fill:var(--muted)}
+.pdiag .nb{transition:fill .3s}
+.pdiag .nb.got{stroke-width:4;fill:var(--accent-soft)}
+.pdiag .pill rect{fill:var(--accent);stroke:#fff;stroke-width:1.5}
+.pdiag .pill text{fill:#fff;font-weight:700;font-size:12px}
+.pseqH{margin-top:16px}
+.pseq{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.pseq button{width:100%;text-align:left;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;padding:8px 12px;font-size:.94rem;line-height:1.5}
+.pseq button b{font-family:var(--f-mono);font-size:.78rem;width:24px;height:24px;border-radius:50%;background:var(--soft);display:grid;place-items:center}
+.pseq button.now{border-color:var(--accent);background:var(--accent-soft)}
+.pseq button.now b{background:var(--accent);color:var(--on-accent)}
+.pseq button.todo{opacity:.55}
+.pbtns button{display:grid;gap:0;text-align:left;padding:6px 12px;line-height:1.3}
+.pbtns button small{font-family:var(--f-body);font-weight:400;font-size:.76rem;opacity:.85}
+.pact{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px 12px;border-radius:10px;margin-bottom:8px;border:2px solid #E58E73;background:#FDEDE7;font-weight:700;min-height:52px}
+.pact .who{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-display);padding:2px 10px 2px 4px;border-radius:999px;background:#E58E73;color:#fff;white-space:nowrap}
+.pact .who svg{width:22px;height:22px}
+.pact.auto{border:2px dashed var(--line);background:var(--panel);color:var(--muted);font-weight:400}
+.pact.auto .who{background:var(--soft);color:var(--muted)}
+.scr{margin-top:14px;border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--panel);max-width:22rem}
+.scrL{font-size:.72rem;font-weight:700;color:var(--muted);padding:4px 10px;background:var(--soft);border-bottom:1px solid var(--line)}
+.scrB{padding:0 0 8px;font-size:.9rem;min-height:8.4rem}
+.scrB div{padding:3px 12px}
+.scrB div:first-child{font-family:var(--f-mono);font-size:.8rem;background:var(--accent-soft);color:var(--accent-ink);font-weight:600;padding:6px 12px;margin-bottom:5px;word-break:break-all}
+.pdiag .pp circle{fill:#C9D3E3}
+.pdiag .pp path{fill:#fff}
+.pdiag .pp text{font-size:12px;font-weight:700;fill:var(--muted)}
+.pdiag .pp.act circle{fill:#E58E73}
+.pdiag .pp.act text{fill:#B4543A}
+.pdiag .pp .ring{fill:none;stroke:#E58E73;stroke-width:2;opacity:0}
+.pdiag .pp.act .ring{animation:tap 1.1s ease-out 2}
+@keyframes tap{from{opacity:.9;r:11px}to{opacity:0;r:26px}}
+.pseq .ha{display:block;font-weight:700;color:#B4543A}
+/* practice block */
+.ex h3{margin-top:18px;font-size:1.1rem}
+.ex h3:first-of-type{margin-top:10px}
+.ex ul{margin:8px 0 0;padding-left:1.2em;display:grid;gap:6px;max-width:82ch}
+.exq{margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--soft)}
+.exq .mk,.mq .mk{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);white-space:nowrap}
+.exq .al{font-size:.76rem;font-weight:700;color:var(--muted);margin-top:8px}
+.exq ul{margin-top:4px}
+.pits{list-style:none!important;padding:0!important}
+.pits li{display:grid;gap:2px;padding:8px 12px;border:1px solid var(--line);border-radius:10px}
+.pits .bad{color:#A33A2B}
+.pits .good{color:#1E6A41;font-weight:700}
+.mq{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
+.mo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+@media (max-width:640px){.mo{grid-template-columns:minmax(0,1fr)}}
+.mo button{text-align:left}
+.mo button:disabled{opacity:1}
+.mo button b{font-family:var(--f-mono);margin-right:6px}
+.mo button.ok{background:#E6F6EC;border-color:#23774A;font-weight:700}
+.mo button.no{background:#FCE9E5;border-color:#A33A2B}
+.mw{margin-top:8px;font-size:.92rem}
+.mw.ok{color:#1E6A41}.mw.no{color:#A33A2B}
+.score{margin-top:12px;font-family:var(--f-mono);font-weight:600}
+.pcard h3{font-size:1.4rem}
+.pcard h3 small{display:block;font-family:var(--f-body);font-weight:400;font-size:.86rem;color:var(--muted)}
+.pinfo{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;margin-top:10px;font-size:.94rem}
+.pinfo dt{font-size:.76rem;font-weight:700;color:var(--muted);padding-top:3px}
+.pinfo dd{margin:0}
+.pinfo dd.ty{font-family:var(--f-mono);font-size:.82rem;color:var(--app-d)}
+.pdiag{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:6px}
+.pdiag svg{display:block;width:100%;height:auto}
+.pdiag text{font-family:var(--f-body);font-size:13px;fill:var(--ink)}
+.pdiag .nb{fill:var(--panel);stroke:var(--app-d);stroke-width:2}
+.pdiag .nb.srv{stroke:var(--int-d)}
+.pdiag .nb.dash{stroke-dasharray:5 4;stroke:var(--muted)}
+.pdiag .fl{stroke:#8FA0BC;stroke-width:2;fill:none}
+.pdiag .fl.dash{stroke-dasharray:4 4}
+.pdiag .fll{font-size:11.5px;fill:var(--muted)}
+.pdiag .dot{fill:var(--accent)}
+.pdiag .nt{font-size:12px;fill:var(--lnk-d);font-weight:700}
+@media (max-width:640px){
+  .net{gap:5px 6px;grid-template-columns:minmax(0,1fr) minmax(0,.62fr) minmax(0,1fr)}
+  .layer{padding:5px 6px;grid-template-columns:minmax(0,1fr)!important}
+  .layer .ln{font-size:.72rem;grid-column:1!important;text-align:left!important}
+  .layer .lp{display:none}
+  .layer .slot{grid-column:1!important;grid-row:auto;min-width:0;justify-content:center}
+  .tok i{width:5px;height:16px}.tok i.d{width:11px}.tok.v i{width:16px;height:5px}.tok.v i.d{height:11px}
+  .layer .slot{min-height:38px}.rbox.rslot{min-width:0;padding:3px 4px}.rbox.rslot .slot{min-width:36px;min-height:22px}
+  .rbox{font-size:.66rem;padding:3px 4px}.rbox small{display:none}
+  .hh p{display:none}.hh h3{font-size:.8rem}
+  .dirs{display:none}
+  .part{min-width:96px}
+}
+@media (prefers-reduced-motion:reduce){.part.new{animation:none}}
+</style>
+
+<div class="wrap">
+  <div class="top" role="group" aria-label="Language">
+    <button id="lg-en" aria-pressed="true">English</button><button id="lg-ja" aria-pressed="false">日本語</button><button id="lg-zh" aria-pressed="false">中文</button><button id="lg-th" aria-pressed="false">ไทย</button>
+  </div>
+  <header>
+    <p class="eyebrow">Cambridge 9618 · Topic 14.1 · Protocols and the TCP/IP suite</p>
+    <h1 data-t="h1"></h1>
+    <p class="lede" data-t="lede"></p>
+  </header>
+
+  <div class="panel">
+    <div class="controls">
+      <button id="back" data-t="back"></button>
+      <button class="btn primary" id="play"></button>
+      <button id="next" data-t="next"></button>
+      <button id="restart" data-t="restart"></button>
+    </div>
+    <div class="steps" id="steps"></div>
+
+    <div class="net" id="net">
+      <svg class="tube" id="tube" aria-hidden="true"></svg>
+      <div class="hh a" style="grid-column:1;grid-row:1"><h3 data-t="sender"></h3><p data-t="senderSub"></p></div>
+      <div class="hh m" style="grid-column:2;grid-row:1"><h3 data-t="router"></h3><p data-t="routerSub"></p></div>
+      <div class="hh b" style="grid-column:3;grid-row:1"><h3 data-t="receiver"></h3><p data-t="receiverSub"></p></div>
+      <div class="layer app" id="A0" style="grid-column:1;grid-row:2"><span class="ln"></span><span class="lp"></span><span class="slot" id="s-0"></span></div>
+      <div class="layer tra" id="A1" style="grid-column:1;grid-row:3"><span class="ln"></span><span class="lp"></span><span class="slot" id="s-1"></span></div>
+      <div class="layer int" id="A2" style="grid-column:1;grid-row:4"><span class="ln"></span><span class="lp"></span><span class="slot" id="s-2"></span></div>
+      <div class="layer lnk" id="A3" style="grid-column:1;grid-row:5"><span class="ln"></span><span class="lp"></span><span class="slot" id="s-3"></span></div>
+      <div class="mid cloud" style="grid-column:2">Internet</div>
+      <div class="mid" style="grid-column:2;grid-row:4"><span class="rbox int rslot" id="R2"><span class="rn"></span><span class="slot" id="p-router"></span></span></div>
+      <div class="mid wire" style="grid-column:2;grid-row:5"><span class="slot" id="p-wire1"></span><span class="rbox lnk" id="R3"><span class="rn"></span></span><span class="slot" id="p-wire2"></span></div>
+      <div class="layer app b" id="B0" style="grid-column:3;grid-row:2"><span class="ln"></span><span class="lp"></span><span class="slot" id="r-0"></span></div>
+      <div class="layer tra b" id="B1" style="grid-column:3;grid-row:3"><span class="ln"></span><span class="lp"></span><span class="slot" id="r-1"></span></div>
+      <div class="layer int b" id="B2" style="grid-column:3;grid-row:4"><span class="ln"></span><span class="lp"></span><span class="slot" id="r-2"></span></div>
+      <div class="layer lnk b" id="B3" style="grid-column:3;grid-row:5"><span class="ln"></span><span class="lp"></span><span class="slot" id="r-3"></span></div>
+    </div>
+    <div class="dirs"><span>↓ ↓ ↓</span><span></span><span>↑ ↑ ↑</span></div>
+    <p class="note" data-t="tunnel" style="margin-top:6px"></p>
+
+    <h3 style="margin-top:16px" data-t="inspH"></h3>
+    <div class="insp">
+      <div class="unit" id="unit"><span class="ul" data-t="unitL"></span><span class="un" id="unitN"></span><span class="uy" id="unitY"></span></div>
+      <div class="pdu" id="pdu"></div>
+      <div class="extra" id="extra" hidden></div>
+    </div>
+
+    <div class="msg" aria-live="polite"><span class="tag" id="mTag"></span><h3 id="mT"></h3><p id="mR"></p><p class="exam"><b data-t="examL"></b><span id="mX"></span></p></div>
+  </div>
+
+  <div class="panel"><h2 data-t="whyH"></h2><ul class="why" id="why"></ul></div>
+
+  <div class="panel"><h2 data-t="tableH"></h2><div class="tscroll" style="margin-top:8px"><table id="ltab"></table></div></div>
+
+  <div class="panel">
+    <h2 data-t="protoH"></h2>
+    <p class="note" data-t="protoN" style="margin-top:4px"></p>
+    <div class="pbtns" id="pbtns" role="group" aria-label="Protocol"></div>
+    <div class="pcard">
+      <div><h3 id="pN"></h3>
+        <dl class="pinfo"><dt data-t="purposeL"></dt><dd id="pP"></dd><dt data-t="typeL"></dt><dd class="ty" id="pT"></dd><dt data-t="pointL"></dt><dd id="pK"></dd></dl>
+        <div class="scr"><div class="scrL" id="scrL"></div><div class="scrB" id="scrB"></div></div></div>
+      <div><div class="pact" id="pact"><span class="who" id="pwho"></span><span id="pdo"></span></div><div class="pdiag" id="pdiag"></div>
+        <div class="controls" style="margin-top:10px"><button id="pback" data-t="back"></button><button class="btn primary" id="pplay"></button><button id="pnext" data-t="next"></button></div></div>
+    </div>
+    <h3 class="pseqH" data-t="pseqH"></h3>
+    <ol class="pseq" id="pseq"></ol>
+  </div>
+
+  <div class="panel ex">
+    <h2 id="exH"></h2>
+    <h3 id="exTipsH"></h3><ul id="exTips"></ul>
+    <h3 id="exQH"></h3><div id="exQs"></div>
+    <h3 id="exPitH"></h3><ul class="pits" id="exPits"></ul>
+    <h3 id="exMcqH"></h3><div id="exMcq"></div>
+    <p class="score" id="exScore"></p>
+  </div>
+</div>
+<script type="application/json" id="tx-en">
+{
+ "ui": {
+  "h1": "TCP/IP: how one message crosses the internet",
+  "lede": "A browser asks a web server for a page. Follow the data down the four layers of the sender, across a router and up the four layers of the receiver. Watch its name change: message, segment, packet, frame.",
+  "back": "← Back",
+  "next": "Next →",
+  "play": "▶ Play",
+  "pause": "❚❚ Pause",
+  "restart": "Restart",
+  "sender": "Host A · your computer",
+  "senderSub": "sender: data goes DOWN the stack (encapsulation)",
+  "receiver": "Host B · web server",
+  "receiverSub": "receiver: data goes UP the stack (decapsulation)",
+  "router": "Router",
+  "routerSub": "uses only the bottom two layers",
+  "inspH": "What the data looks like now",
+  "unitL": "Name of the data unit",
+  "layerL": "layer",
+  "newTag": "added here",
+  "changedTag": "changed by the router",
+  "bitsNote": "The whole frame, sent one bit at a time.",
+  "segNote": "segment 1 of 3",
+  "reorderL": "Segments arrived:",
+  "reorderR": "TCP reorders them:",
+  "ack": "ACK sent back to Host A",
+  "respData": "HTTP 200 OK + index.html",
+  "roleL": "What happens here",
+  "examL": "Exam wording",
+  "whyH": "Why protocols, and why layers?",
+  "tableH": "The four layers at a glance",
+  "tcol": [
+   "Layer",
+   "Purpose",
+   "Data unit",
+   "Address it uses",
+   "Protocols"
+  ],
+  "protoH": "Protocols in everyday use",
+  "protoN": "Each protocol is shown in a real situation. Follow what the person does and what the protocol does in reply.",
+  "purposeL": "Purpose",
+  "typeL": "Type",
+  "pointL": "Remember",
+  "nodes": {
+   "browser": "Browser",
+   "web": "Web server",
+   "client": "Client",
+   "ftp": "FTP server",
+   "mailc": "Mail client",
+   "mailA": "Sender's mail server",
+   "mailB": "Mail server",
+   "laptop": "Laptop",
+   "phone": "Phone",
+   "peer": "Peer",
+   "tracker": "Tracker",
+   "mailR": "Receiver's mail server",
+   "rdev": "Receiver's device"
+  },
+  "flows": {
+   "req": "request",
+   "res": "web page",
+   "up": "upload",
+   "down": "download",
+   "send": "send",
+   "fetch": "download",
+   "sync": "sync",
+   "piece": "pieces"
+  },
+  "notes": {
+   "pop3": "server copy deleted after download",
+   "imap": "● unread   ○ read   ·   the mail stays on the server",
+   "bt": "■ = a piece this peer has   ·   the tracker holds only the list of peers"
+  },
+  "pseqH": "Step by step",
+  "tunnel": "The tunnel shows the path of the data.",
+  "scrL": "{n}'s screen",
+  "autoL": "Automatic: no human action in this step"
+ },
+ "fields": {
+  "fh": "Frame header",
+  "ft": "Frame trailer",
+  "ih": "IP header",
+  "th": "TCP header",
+  "data": "Data",
+  "dmac": "Dest. MAC",
+  "smac": "Source MAC",
+  "sip": "Source IP",
+  "dip": "Dest. IP",
+  "sport": "Source port",
+  "dport": "Dest. port",
+  "seq": "Sequence no.",
+  "crc": "Error check"
+ },
+ "units": {
+  "app": "Message (data)",
+  "tra": "Segment",
+  "int": "Packet (datagram)",
+  "lnk": "Frame",
+  "bits": "Bits"
+ },
+ "layers": [
+  {
+   "n": "Application",
+   "p": "HTTP, FTP, SMTP, POP3, IMAP, BitTorrent",
+   "purpose": "Lets programs exchange data in an agreed format.",
+   "addr": "none (uses names such as URLs)"
+  },
+  {
+   "n": "Transport",
+   "p": "TCP",
+   "purpose": "Splits the message into segments, numbers them and checks that they all arrive, in order.",
+   "addr": "Port numbers"
+  },
+  {
+   "n": "Internet",
+   "p": "IP",
+   "purpose": "Addresses each packet and routes it from network to network.",
+   "addr": "IP addresses"
+  },
+  {
+   "n": "Link",
+   "p": "Ethernet, Wi-Fi",
+   "purpose": "Moves frames across one local link and sends them as bits.",
+   "addr": "MAC addresses"
+  }
+ ],
+ "why": [
+  "A <b>protocol<\/b> is an agreed set of rules for communication. Without one, two computers would not agree on the format of the data, the order of messages, the addresses or what to do when there is an error.",
+  "The rules are organised as a <b>stack of layers<\/b>. Each layer has one job and only passes data to the layer directly above or below it.",
+  "So one layer can change without changing the others: switch from cable to Wi-Fi (link layer) and HTTP (application layer) still works."
+ ],
+ "steps": [
+  {
+   "t": "The browser writes a message",
+   "r": "<b>Application layer.<\/b> You type a web address. The browser uses HTTP to write a request: GET /index.html. This layer decides <i>what<\/i> to say and in which format. It does not know how the message will be delivered.",
+   "x": "The application layer provides the protocols that applications use to exchange data, for example HTTP for web pages."
+  },
+  {
+   "t": "TCP turns it into a segment",
+   "r": "<b>Transport layer.<\/b> TCP splits a long message into segments and adds a TCP header to each one: port numbers (which program on each host) and a sequence number (the order). TCP will also check that every segment arrives.",
+   "x": "The transport layer splits the data into segments, adds sequence numbers and port numbers, and gives reliable delivery using acknowledgements and re-transmission."
+  },
+  {
+   "t": "IP turns it into a packet",
+   "r": "<b>Internet layer.<\/b> IP adds an IP header with the source and destination IP addresses. They say which host on the whole internet the packet comes from and is going to. Routers read this header.",
+   "x": "The internet layer adds the source and destination IP addresses to form a packet (datagram) and routes it between networks."
+  },
+  {
+   "t": "The link layer turns it into a frame",
+   "r": "<b>Link layer.<\/b> The packet is put inside a frame. The frame header holds MAC addresses for the next hop only (here: your computer → your router). The trailer holds an error check.",
+   "x": "The link layer encapsulates the packet in a frame with MAC addresses and an error check, and handles transmission on the local network."
+  },
+  {
+   "t": "The frame travels as bits",
+   "r": "The frame leaves the computer as a stream of bits: electrical signals in a cable, light in fibre or radio waves in Wi-Fi. This is the first moment anything physically moves.",
+   "x": "The link layer transmits the frame as bits over the physical medium."
+  },
+  {
+   "t": "The router reads the IP header",
+   "r": "<b>Router.<\/b> It removes the old frame, reads the destination IP address and chooses the next hop. Then it builds a new frame with new MAC addresses. The IP addresses, the TCP header and the data do not change.",
+   "x": "A router uses the destination IP address to forward each packet towards its destination. MAC addresses change at every hop; IP addresses stay the same."
+  },
+  {
+   "t": "The frame arrives at the server",
+   "r": "<b>Link layer of Host B.<\/b> It rebuilds the frame from the bits, checks that the destination MAC address is its own and that the error check is correct.",
+   "x": "The receiving link layer checks the frame for errors and passes the packet up to the internet layer."
+  },
+  {
+   "t": "Frame removed: it is a packet again",
+   "r": "<b>Internet layer of Host B.<\/b> The link layer has taken off the frame header and trailer. IP checks that the destination IP address is this host, then takes off the IP header.",
+   "x": "At the receiver, each layer removes its own header (decapsulation) and passes the rest up the stack."
+  },
+  {
+   "t": "TCP puts the segments in order",
+   "r": "<b>Transport layer of Host B.<\/b> Segments can arrive out of order. TCP uses the sequence numbers to rebuild the message, sends an acknowledgement (ACK) and asks again for any missing segment. Destination port 80 tells it which program gets the data: the web server.",
+   "x": "TCP reassembles the segments in the correct order using sequence numbers and acknowledges receipt; missing segments are re-transmitted."
+  },
+  {
+   "t": "The web server reads the message",
+   "r": "<b>Application layer of Host B.<\/b> The web server program receives exactly what the browser wrote: GET /index.html. Neither program had to know about cables, routers or MAC addresses. That is the point of layers.",
+   "x": "The application layer of the receiving host passes the data to the correct application."
+  },
+  {
+   "t": "The reply goes back the same way",
+   "r": "Now Host B is the sender. The web server writes an HTTP response containing the web page. It goes down B's stack, across the routers and up A's stack. Every web page, email and download makes this trip.",
+   "x": "When a message is sent from one host to another, it passes down the layers of the sender (encapsulation) and up the layers of the receiver (decapsulation)."
+  }
+ ],
+ "protocols": [
+  {
+   "k": "http",
+   "n": "HTTP",
+   "f": "Hypertext Transfer Protocol",
+   "purpose": "Transfers web pages. The browser (client) sends a request and the web server sends back the files of the page.",
+   "type": "client–server · request and response",
+   "point": "HTTPS is the same protocol with encryption added.",
+   "use": "Viewing a website"
+  },
+  {
+   "k": "ftp",
+   "n": "FTP",
+   "f": "File Transfer Protocol",
+   "purpose": "Transfers files between a client and a server, in both directions. Often used to upload files to a web server.",
+   "type": "client–server · upload and download",
+   "point": "It is only for files. Access can need a username and password, or be anonymous.",
+   "use": "Putting website files on a server"
+  },
+  {
+   "k": "smtp",
+   "n": "SMTP",
+   "f": "Simple Mail Transfer Protocol",
+   "purpose": "Sends email: from your mail client to your mail server, and from one mail server to the next.",
+   "type": "push protocol · sending only",
+   "point": "SMTP is the only sending protocol in the syllabus. It does not deliver mail to the reader's device.",
+   "use": "Sending an email with an attachment"
+  },
+  {
+   "k": "pop3",
+   "n": "POP3",
+   "f": "Post Office Protocol 3",
+   "purpose": "Receives email: downloads the messages from the mail server to one device. The server copy is then deleted.",
+   "type": "pull protocol · receiving only",
+   "point": "Mail is not kept in sync between your devices.",
+   "use": "Reading email on one device"
+  },
+  {
+   "k": "imap",
+   "n": "IMAP",
+   "f": "Internet Message Access Protocol",
+   "purpose": "Receives email but leaves it on the server. Each device downloads a copy, so every device shows the same mailbox.",
+   "type": "pull protocol · receiving only",
+   "point": "Read a message on your phone and it shows as read on your laptop too.",
+   "use": "Same mailbox on phone and laptop"
+  },
+  {
+   "k": "bt",
+   "n": "BitTorrent",
+   "f": "BitTorrent protocol",
+   "purpose": "Shares large files peer to peer. The file is split into pieces. Each peer downloads pieces from many peers and uploads pieces to others at the same time.",
+   "type": "peer-to-peer · no central file server",
+   "point": "A tracker keeps the list of peers (the swarm). A peer that has the whole file is a seed.",
+   "use": "Downloading a very large file"
+  }
+ ],
+ "psteps": {
+  "http": [
+   {
+    "l": [
+     "GET /index.html"
+    ],
+    "t": "The browser sends an HTTP request: the method GET and the name of the file it wants.",
+    "a": "Ana types www.example.com and presses Enter.",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Loading…"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + HTML"
+    ],
+    "t": "The web server sends an HTTP response: a status code (200 = OK) and the HTML file.",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ image loading…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /photo.jpg"
+    ],
+    "t": "The browser reads the HTML and finds an image. It sends one more request for each extra file.",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ image loading…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + JPG"
+    ],
+    "t": "The server returns the image and the browser shows the finished page. Every file needs its own request and response.",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "🖼 photo.jpg",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /menu.html"
+    ],
+    "t": "A click on a link starts a new request. Every page that Ana views repeats the same request and response.",
+    "a": "Ana clicks the link \"Menu\" on the page.",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com/menu.html",
+     "Loading…"
+    ]
+   }
+  ],
+  "ftp": [
+   {
+    "l": [
+     "user + password"
+    ],
+    "t": "The client connects to the FTP server and logs in with a username and password (some servers allow anonymous access).",
+    "a": "Tom, a web designer, opens his FTP program and types his username and password.",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "User: tom",
+     "Password: ••••••"
+    ]
+   },
+   {
+    "l": [
+     "login OK"
+    ],
+    "t": "The server accepts the login. The client can now see the list of files on the server.",
+    "a": "",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "Connected ✓",
+     "On the server: prices.csv"
+    ]
+   },
+   {
+    "l": [
+     "index.html + photo.jpg"
+    ],
+    "t": "Upload: the client sends the files to the server. Now the website is online.",
+    "a": "Tom drags the two files of his new website into the server window.",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "Uploaded ✓ index.html",
+     "Uploaded ✓ photo.jpg"
+    ]
+   },
+   {
+    "l": [
+     "prices.csv"
+    ],
+    "t": "Download: the server sends a file to the client. FTP moves files in both directions.",
+    "a": "Tom downloads the old price list from the server so that he can edit it.",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "Downloaded ✓ prices.csv"
+    ]
+   }
+  ],
+  "smtp": [
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "Mia's mail app uses SMTP to push the email to her own mail server. The attached photo travels inside the email.",
+    "a": "Mia writes an email to ken@b.com, attaches photo.jpg and presses Send.",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "To: ken@b.com",
+     "Subject: Beach trip",
+     "📎 photo.jpg (2 MB)",
+     "[ Send ]"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "The sender's mail server finds the mail server of the receiver's domain and uses SMTP again to forward the email.",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "Sent ✓"
+    ]
+   },
+   {
+    "l": [],
+    "t": "The email is stored in the receiver's mailbox on that server. The job of SMTP ends here: it never delivers to the receiver's device.",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "Sent ✓"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 POP3 / IMAP"
+    ],
+    "t": "The receiver's device uses POP3 or IMAP to collect the email from the server (pull).",
+    "a": "Ken opens the mail app on his phone.",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox (1)",
+     "● Mia — Beach trip 📎"
+    ]
+   },
+   {
+    "l": [],
+    "t": "The attachment arrived together with the email, so the photo opens on Ken's phone. SMTP sent it; POP3 or IMAP collected it.",
+    "a": "Ken taps the attachment to look at the photo.",
+    "who": "Ken",
+    "scr": [
+     "✉ Mia — Beach trip",
+     "🖼 photo.jpg"
+    ]
+   }
+  ],
+  "pop3": [
+   {
+    "l": [
+     "user + password"
+    ],
+    "t": "The mail client connects to the mail server and logs in.",
+    "a": "Ken opens the mail program on his laptop and clicks \"Get mail\".",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox",
+     "Connecting…"
+    ]
+   },
+   {
+    "l": [
+     "✉ ✉ ✉"
+    ],
+    "t": "The server sends all the new messages. They are downloaded to this one device.",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "delete"
+    ],
+    "t": "After the download, the copies on the server are deleted.",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [],
+    "t": "The mail now exists only on this device. It can be read offline, but a second device would find an empty mailbox.",
+    "a": "Later, with no internet connection, Ken reads the emails on the laptop.",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox · Offline",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "imap": [
+   {
+    "l": [
+     "login"
+    ],
+    "t": "The laptop connects to the mail server and logs in.",
+    "a": "Ken opens the mail app on his laptop.",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox",
+     "Connecting…"
+    ]
+   },
+   {
+    "l": [
+     "copy ✉✉✉"
+    ],
+    "t": "The server sends copies of the messages. The originals stay on the server.",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "message 1 = read"
+    ],
+    "t": "The user reads message 1 on the laptop. The laptop tells the server, and the server marks it as read.",
+    "a": "Ken opens the email from Mia and reads it.",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "sync"
+    ],
+    "t": "Later the phone connects. It gets the same mailbox, and message 1 already shows as read.",
+    "a": "On the bus, Ken opens the mail app on his phone.",
+    "who": "Ken",
+    "scr": [
+     "✉ Inbox (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "bt": [
+   {
+    "l": [
+     "who has the file?"
+    ],
+    "t": "A new peer (Peer A) wants a file. It asks the tracker which peers are sharing it.",
+    "a": "Sam opens the torrent for linux.iso (4 GB) in his BitTorrent program.",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "Finding peers…",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "peers: B, C, D"
+    ],
+    "t": "The tracker replies with the list of peers in the swarm. The tracker does not hold the file itself.",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "Peers: 3",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "piece 3",
+     "piece 1"
+    ],
+    "t": "Peer A downloads different pieces from several peers at the same time. The file was split into pieces to allow this.",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "Downloading from 2 peers",
+     "■□■□ 50%"
+    ]
+   },
+   {
+    "l": [
+     "piece 1",
+     "piece 4"
+    ],
+    "t": "While it is still downloading, Peer A uploads the pieces it already has to another peer.",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "Downloading ↓ and uploading ↑",
+     "■□■■ 75%"
+    ]
+   },
+   {
+    "l": [
+     "piece 2"
+    ],
+    "t": "Peer A now has every piece and joins them into the complete file. It stays in the swarm as a seed and keeps uploading.",
+    "a": "Sam leaves the program running after the download has finished.",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB ✓",
+     "Seeding ↑ (uploading)",
+     "■■■■ 100%"
+    ]
+   }
+  ]
+ },
+ "exam": {
+  "h": "Exam practice",
+  "tipsH": "Exam tips",
+  "qH": "Sample questions and model answers",
+  "pitH": "Common pitfalls",
+  "mcqH": "Multiple-choice check",
+  "marks": "marks",
+  "ansL": "Model answer (one mark for each point)",
+  "scoreL": "Score",
+  "why": "Why",
+  "tips": [
+   "Name the layer first, then say what it does. \"The Transport layer splits the data into segments\" scores; \"the data is split\" does not.",
+   "Learn the order from the top: Application → Transport → Internet → Link. The sender goes down this order; the receiver goes up.",
+   "Match each address to its layer: port number = Transport, IP address = Internet, MAC address = Link.",
+   "For a protocol, give its purpose and its direction: SMTP sends (push); POP3 and IMAP receive (pull).",
+   "For BitTorrent, use the key terms: peer, swarm, tracker, seed, pieces.",
+   "One mark needs one fact. A 4-mark \"describe\" question needs four different points."
+  ],
+  "qs": [
+   {
+    "q": "Explain why a protocol is essential for communication between computers.",
+    "m": 2,
+    "a": [
+     "A protocol is a set of rules for communication that both computers agree to follow.",
+     "Without the same rules the receiver could not understand the data (for example its format, its order or how errors are checked)."
+    ]
+   },
+   {
+    "q": "A message is sent from one host to another on the internet. Describe the function of the Transport layer and the Internet layer.",
+    "m": 4,
+    "a": [
+     "The Transport layer splits the data into segments.",
+     "It adds a sequence number and port numbers to each segment (and makes sure every segment arrives).",
+     "The Internet layer adds the source and destination IP addresses to make a packet.",
+     "It routes each packet across the networks to the destination host."
+    ]
+   },
+   {
+    "q": "A large file is shared using the BitTorrent protocol. Describe how a new peer downloads the file.",
+    "m": 4,
+    "a": [
+     "The peer contacts the tracker to get the list of peers in the swarm.",
+     "The file has been split into pieces.",
+     "The peer downloads different pieces from several peers at the same time.",
+     "It uploads the pieces it already has to other peers (and joins the pieces together when it has them all)."
+    ]
+   }
+  ],
+  "pits": [
+   {
+    "x": "\"TCP/IP has seven layers.\"",
+    "o": "The TCP/IP suite has four layers: Application, Transport, Internet, Link."
+   },
+   {
+    "x": "\"The router changes the IP address of the packet.\"",
+    "o": "The router makes a new frame, so the MAC addresses change at every hop. The IP addresses stay the same from end to end."
+   },
+   {
+    "x": "\"SMTP is used to receive email.\"",
+    "o": "SMTP only sends. POP3 and IMAP receive."
+   },
+   {
+    "x": "\"POP3 and IMAP do the same thing.\"",
+    "o": "POP3 downloads to one device and deletes the server copy. IMAP keeps the mail on the server, so all devices stay in sync."
+   },
+   {
+    "x": "\"Packet, segment and frame all mean the same.\"",
+    "o": "Segment = Transport layer, packet = Internet layer, frame = Link layer."
+   },
+   {
+    "x": "\"In BitTorrent the file is downloaded from the tracker.\"",
+    "o": "The tracker stores only the list of peers. The pieces come from the other peers."
+   }
+  ],
+  "mcq": [
+   {
+    "q": "Which layer adds the source and destination IP addresses?",
+    "w": "The Internet layer adds the IP header. This makes a packet.",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 1
+   },
+   {
+    "q": "Which protocol sends an email from a mail client to a mail server?",
+    "w": "SMTP is the push protocol for sending. POP3 and IMAP only receive.",
+    "o": [
+     "IMAP",
+     "POP3",
+     "HTTP",
+     "SMTP"
+    ],
+    "c": 3
+   },
+   {
+    "q": "What is the data unit of the Transport layer called?",
+    "w": "Transport = segment, Internet = packet, Link = frame.",
+    "o": [
+     "segment",
+     "packet",
+     "frame",
+     "message"
+    ],
+    "c": 0
+   },
+   {
+    "q": "A user wants the same mailbox on a phone and a laptop. Which protocol should receive the email?",
+    "w": "IMAP leaves the mail on the server, so every device shows the same mailbox.",
+    "o": [
+     "HTTP",
+     "POP3",
+     "IMAP",
+     "SMTP"
+    ],
+    "c": 2
+   },
+   {
+    "q": "In BitTorrent, what is a peer that has the complete file called?",
+    "w": "A seed has every piece and uploads to the swarm.",
+    "o": [
+     "leech",
+     "swarm",
+     "host",
+     "seed"
+    ],
+    "c": 3
+   },
+   {
+    "q": "Data goes down the sender's stack. In which order are the data units made?",
+    "w": "Transport makes segments, Internet makes packets, Link makes frames.",
+    "o": [
+     "packet → segment → frame",
+     "segment → packet → frame",
+     "frame → packet → segment",
+     "segment → frame → packet"
+    ],
+    "c": 1
+   },
+   {
+    "q": "Which layer splits the data and adds port numbers?",
+    "w": "The Transport layer (TCP) makes segments with port numbers and sequence numbers.",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 2
+   },
+   {
+    "q": "Which protocol transfers the files of a web page?",
+    "w": "HTTP: the browser sends a request and the web server sends a response.",
+    "o": [
+     "HTTP",
+     "SMTP",
+     "IMAP",
+     "POP3"
+    ],
+    "c": 0
+   }
+  ]
+ }
+}
+</script>
+<script type="application/json" id="tx-ja">
+{
+ "ui": {
+  "h1": "TCP/IP：1 つのメッセージがインターネットを渡るまで",
+  "lede": "ブラウザが Web サーバにページを頼みます。データが送信側の 4 つの層を下り、ルータを通り、受信側の 4 つの層を上る様子を追いましょう。名前が メッセージ → セグメント → パケット → フレーム と変わります。",
+  "back": "← 戻る",
+  "next": "次へ →",
+  "play": "▶ 再生",
+  "pause": "❚❚ 一時停止",
+  "restart": "最初から",
+  "sender": "ホスト A・あなたのコンピュータ",
+  "senderSub": "送信側：データはスタックを「下る」（カプセル化）",
+  "receiver": "ホスト B・Web サーバ",
+  "receiverSub": "受信側：データはスタックを「上る」（カプセル化の解除）",
+  "router": "ルータ",
+  "routerSub": "下の 2 層だけを使う",
+  "inspH": "いまのデータの姿",
+  "unitL": "データの呼び名",
+  "layerL": "層",
+  "newTag": "ここで追加",
+  "changedTag": "ルータが書き換えた",
+  "bitsNote": "フレーム全体を 1 ビットずつ送る。",
+  "segNote": "セグメント 1 / 3",
+  "reorderL": "届いた順：",
+  "reorderR": "TCP が並べ直す：",
+  "ack": "ホスト A に ACK を返す",
+  "respData": "HTTP 200 OK + index.html",
+  "roleL": "ここで起きること",
+  "examL": "試験での書き方",
+  "whyH": "なぜプロトコルが必要？ なぜ層に分ける？",
+  "tableH": "4 つの層のまとめ",
+  "tcol": [
+   "層",
+   "役割",
+   "データの呼び名",
+   "使うアドレス",
+   "プロトコル"
+  ],
+  "protoH": "身近な場面で見るプロトコル",
+  "protoN": "プロトコルごとに、実際の場面で見ます。人が何をして、プロトコルが何をするかを順に追ってください。",
+  "purposeL": "目的",
+  "typeL": "種類",
+  "pointL": "覚えること",
+  "nodes": {
+   "browser": "ブラウザ",
+   "web": "Web サーバ",
+   "client": "クライアント",
+   "ftp": "FTP サーバ",
+   "mailc": "メールソフト",
+   "mailA": "送信側メールサーバ",
+   "mailB": "メールサーバ",
+   "laptop": "ノート PC",
+   "phone": "スマホ",
+   "peer": "ピア",
+   "tracker": "トラッカー",
+   "mailR": "受信側メールサーバ",
+   "rdev": "受信者の端末"
+  },
+  "flows": {
+   "req": "リクエスト",
+   "res": "Web ページ",
+   "up": "アップロード",
+   "down": "ダウンロード",
+   "send": "送信",
+   "fetch": "ダウンロード",
+   "sync": "同期",
+   "piece": "ピース"
+  },
+  "notes": {
+   "pop3": "ダウンロード後、サーバのコピーは削除",
+   "imap": "● 未読   ○ 既読   ·   メールはサーバに残る",
+   "bt": "■ = このピアが持っているピース   ·   トラッカーはピアの一覧だけを持つ"
+  },
+  "pseqH": "ステップごとの流れ",
+  "tunnel": "トンネルはデータの通り道を表します。",
+  "scrL": "{n} の画面",
+  "autoL": "自動：このステップで人は何もしない"
+ },
+ "fields": {
+  "fh": "フレームヘッダ",
+  "ft": "フレームトレーラ",
+  "ih": "IP ヘッダ",
+  "th": "TCP ヘッダ",
+  "data": "データ",
+  "dmac": "宛先 MAC",
+  "smac": "送信元 MAC",
+  "sip": "送信元 IP",
+  "dip": "宛先 IP",
+  "sport": "送信元ポート",
+  "dport": "宛先ポート",
+  "seq": "シーケンス番号",
+  "crc": "誤り検査"
+ },
+ "units": {
+  "app": "メッセージ（データ）",
+  "tra": "セグメント (segment)",
+  "int": "パケット (packet / datagram)",
+  "lnk": "フレーム (frame)",
+  "bits": "ビット (bits)"
+ },
+ "layers": [
+  {
+   "n": "Application",
+   "p": "HTTP, FTP, SMTP, POP3, IMAP, BitTorrent",
+   "purpose": "プログラムどうしが、決まった形式でデータをやり取りできるようにする。",
+   "addr": "なし（URL などの名前を使う）"
+  },
+  {
+   "n": "Transport",
+   "p": "TCP",
+   "purpose": "メッセージをセグメントに分け、番号を付け、すべてが順番どおりに届いたかを確かめる。",
+   "addr": "ポート番号"
+  },
+  {
+   "n": "Internet",
+   "p": "IP",
+   "purpose": "各パケットに宛先を付け、ネットワークからネットワークへ経路を選んで送る。",
+   "addr": "IP アドレス"
+  },
+  {
+   "n": "Link",
+   "p": "Ethernet, Wi-Fi",
+   "purpose": "1 つのローカルな区間でフレームを運び、ビットとして送る。",
+   "addr": "MAC アドレス"
+  }
+ ],
+ "why": [
+  "<b>プロトコル<\/b>は、通信のために決めた約束（ルール）の集まりです。これがないと、2 台のコンピュータはデータの形式、メッセージの順番、アドレス、エラーのときの対応について合意できません。",
+  "ルールは<b>層の積み重ね（スタック）<\/b>に整理されています。各層は 1 つの仕事だけをして、すぐ上と下の層にだけデータを渡します。",
+  "だから、ある層を変えてもほかの層は変えなくて済みます。ケーブルを Wi-Fi に変えても（リンク層）、HTTP（アプリケーション層）はそのまま動きます。"
+ ],
+ "steps": [
+  {
+   "t": "ブラウザがメッセージを作る",
+   "r": "<b>アプリケーション層。<\/b>Web アドレスを入力すると、ブラウザは HTTP でリクエスト GET /index.html を作ります。この層が決めるのは「何を・どんな形式で」伝えるかです。どう届けるかは知りません。",
+   "x": "アプリケーション層は、アプリケーションがデータをやり取りするためのプロトコルを提供する。例：Web ページの HTTP。"
+  },
+  {
+   "t": "TCP がセグメントにする",
+   "r": "<b>トランスポート層。<\/b>TCP は長いメッセージをセグメントに分け、それぞれに TCP ヘッダを付けます。中身はポート番号（各ホストのどのプログラムか）とシーケンス番号（順番）です。TCP はすべてのセグメントが届いたかも確かめます。",
+   "x": "トランスポート層はデータをセグメントに分割し、シーケンス番号とポート番号を付け、確認応答と再送によって信頼性のある配送を行う。"
+  },
+  {
+   "t": "IP がパケットにする",
+   "r": "<b>インターネット層。<\/b>IP は送信元と宛先の IP アドレスが入った IP ヘッダを付けます。インターネット全体の中で、どのホストから来てどのホストへ行くかを表します。ルータはこのヘッダを読みます。",
+   "x": "インターネット層は送信元と宛先の IP アドレスを付けてパケット（データグラム）を作り、ネットワーク間で経路選択（ルーティング）する。"
+  },
+  {
+   "t": "リンク層がフレームにする",
+   "r": "<b>リンク層。<\/b>パケットをフレームの中に入れます。フレームヘッダには「次の区間だけ」の MAC アドレスが入ります（ここでは あなたの PC → 自宅のルータ）。トレーラには誤り検査の値が入ります。",
+   "x": "リンク層はパケットを MAC アドレスと誤り検査の付いたフレームにカプセル化し、ローカルネットワークでの伝送を担当する。"
+  },
+  {
+   "t": "フレームがビットとして流れる",
+   "r": "フレームはビットの列としてコンピュータを出ます。ケーブルなら電気信号、光ファイバなら光、Wi-Fi なら電波です。実際に何かが動くのはここが初めてです。",
+   "x": "リンク層はフレームを物理的な媒体の上でビットとして送る。"
+  },
+  {
+   "t": "ルータが IP ヘッダを読む",
+   "r": "<b>ルータ。<\/b>古いフレームを外し、宛先 IP アドレスを読んで次の行き先を決めます。そして新しい MAC アドレスで新しいフレームを作ります。IP アドレス、TCP ヘッダ、データは変わりません。",
+   "x": "ルータは宛先 IP アドレスを使って、各パケットを目的地に向けて転送する。MAC アドレスは区間ごとに変わるが、IP アドレスは変わらない。"
+  },
+  {
+   "t": "フレームがサーバに届く",
+   "r": "<b>ホスト B のリンク層。<\/b>ビットからフレームを組み立て直し、宛先 MAC アドレスが自分のものか、誤り検査が正しいかを確かめます。",
+   "x": "受信側のリンク層はフレームの誤りを検査し、パケットをインターネット層に渡す。"
+  },
+  {
+   "t": "フレームが外れて、またパケットに",
+   "r": "<b>ホスト B のインターネット層。<\/b>リンク層がフレームヘッダとトレーラを外しました。IP は宛先 IP アドレスがこのホストかを確かめ、IP ヘッダを外します。",
+   "x": "受信側では、各層が自分のヘッダを取り除き（カプセル化の解除）、残りを上の層に渡す。"
+  },
+  {
+   "t": "TCP がセグメントを並べ直す",
+   "r": "<b>ホスト B のトランスポート層。<\/b>セグメントは順番どおりに届くとは限りません。TCP はシーケンス番号を使ってメッセージを組み立て直し、確認応答 (ACK) を返し、足りないセグメントは送り直してもらいます。宛先ポート 80 が、データを渡すプログラム（Web サーバ）を表します。",
+   "x": "TCP はシーケンス番号を使ってセグメントを正しい順番に組み立て直し、受信を確認応答する。届かなかったセグメントは再送される。"
+  },
+  {
+   "t": "Web サーバがメッセージを読む",
+   "r": "<b>ホスト B のアプリケーション層。<\/b>Web サーバのプログラムは、ブラウザが書いたとおりの GET /index.html を受け取ります。どちらのプログラムも、ケーブルやルータや MAC アドレスのことを知る必要はありませんでした。これが層に分ける意味です。",
+   "x": "受信ホストのアプリケーション層は、データを正しいアプリケーションに渡す。"
+  },
+  {
+   "t": "返事も同じ道を戻る",
+   "r": "今度はホスト B が送信側です。Web サーバは Web ページの入った HTTP レスポンスを作り、それが B のスタックを下り、ルータを通り、A のスタックを上ります。Web ページもメールもダウンロードも、すべてこの旅をします。",
+   "x": "あるホストから別のホストへメッセージを送るとき、データは送信側の層を下り（カプセル化）、受信側の層を上る（カプセル化の解除）。"
+  }
+ ],
+ "protocols": [
+  {
+   "k": "http",
+   "n": "HTTP",
+   "f": "Hypertext Transfer Protocol",
+   "purpose": "Web ページを転送する。ブラウザ（クライアント）がリクエストを送り、Web サーバがページのファイルを返す。",
+   "type": "クライアント・サーバ型・リクエストとレスポンス",
+   "point": "HTTPS は同じプロトコルに暗号化を加えたもの。",
+   "use": "Web サイトを見る"
+  },
+  {
+   "k": "ftp",
+   "n": "FTP",
+   "f": "File Transfer Protocol",
+   "purpose": "クライアントとサーバの間で、両方向にファイルを転送する。Web サーバへのファイルのアップロードによく使う。",
+   "type": "クライアント・サーバ型・アップロードとダウンロード",
+   "point": "ファイル専用。ユーザ名とパスワードが必要な場合と、匿名で使える場合がある。",
+   "use": "Web サイトのファイルをサーバに置く"
+  },
+  {
+   "k": "smtp",
+   "n": "SMTP",
+   "f": "Simple Mail Transfer Protocol",
+   "purpose": "メールを送る。メールソフトから自分のメールサーバへ、そしてメールサーバから次のメールサーバへ。",
+   "type": "プッシュ型・送信専用",
+   "point": "シラバスで送信用のプロトコルは SMTP だけ。読む人の端末まで届けるのは別のプロトコル。",
+   "use": "添付ファイル付きのメールを送る"
+  },
+  {
+   "k": "pop3",
+   "n": "POP3",
+   "f": "Post Office Protocol 3",
+   "purpose": "メールを受け取る。メールサーバから 1 台の端末へメッセージをダウンロードする。その後、サーバのコピーは削除される。",
+   "type": "プル型・受信専用",
+   "point": "複数の端末の間でメールは同期されない。",
+   "use": "1 台の端末でメールを読む"
+  },
+  {
+   "k": "imap",
+   "n": "IMAP",
+   "f": "Internet Message Access Protocol",
+   "purpose": "メールを受け取るが、サーバに残す。各端末はコピーをダウンロードするので、どの端末でも同じメールボックスが見える。",
+   "type": "プル型・受信専用",
+   "point": "スマホで読むと、ノート PC でも既読になる。",
+   "use": "スマホと PC で同じメールボックス"
+  },
+  {
+   "k": "bt",
+   "n": "BitTorrent",
+   "f": "BitTorrent protocol",
+   "purpose": "大きなファイルをピアツーピアで共有する。ファイルはピースに分けられ、各ピアは多くのピアからピースをダウンロードしながら、同時にほかのピアへアップロードする。",
+   "type": "ピアツーピア型・中央のファイルサーバなし",
+   "point": "トラッカーがピアの一覧（スウォーム）を管理する。ファイル全体を持つピアをシードと呼ぶ。",
+   "use": "とても大きなファイルをダウンロードする"
+  }
+ ],
+ "psteps": {
+  "http": [
+   {
+    "l": [
+     "GET /index.html"
+    ],
+    "t": "ブラウザが HTTP リクエストを送る。メソッド GET と、ほしいファイルの名前が入っている。",
+    "a": "Ana が www.example.com と入力して Enter を押す。",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "読み込み中…"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + HTML"
+    ],
+    "t": "Web サーバが HTTP レスポンスを返す。ステータスコード（200 = 成功）と HTML ファイルが入っている。",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ 画像を読み込み中…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /photo.jpg"
+    ],
+    "t": "ブラウザは HTML を読み、画像があると分かる。追加のファイルごとに、リクエストをもう 1 回送る。",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ 画像を読み込み中…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + JPG"
+    ],
+    "t": "サーバが画像を返し、ブラウザが完成したページを表示する。ファイル 1 つにつき、リクエストとレスポンスが 1 組必要。",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "🖼 photo.jpg",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /menu.html"
+    ],
+    "t": "リンクをクリックすると新しいリクエストが始まる。ページを見るたびに、同じリクエストとレスポンスがくり返される。",
+    "a": "Ana がページ内のリンク「Menu」をクリックする。",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com/menu.html",
+     "読み込み中…"
+    ]
+   }
+  ],
+  "ftp": [
+   {
+    "l": [
+     "ユーザ名 + パスワード"
+    ],
+    "t": "クライアントが FTP サーバに接続し、ユーザ名とパスワードでログインする（匿名アクセスを許すサーバもある）。",
+    "a": "Web デザイナーの Tom が FTP ソフトを開き、ユーザ名とパスワードを入力する。",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "ユーザ名: tom",
+     "パスワード: ••••••"
+    ]
+   },
+   {
+    "l": [
+     "ログイン OK"
+    ],
+    "t": "サーバがログインを認める。クライアントはサーバ上のファイル一覧を見られるようになる。",
+    "a": "",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "接続しました ✓",
+     "サーバ上: prices.csv"
+    ]
+   },
+   {
+    "l": [
+     "index.html + photo.jpg"
+    ],
+    "t": "アップロード：クライアントからサーバへファイルを送る。これで Web サイトが公開される。",
+    "a": "Tom が新しい Web サイトの 2 つのファイルを、サーバのウィンドウへドラッグする。",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "アップロード完了 ✓ index.html",
+     "アップロード完了 ✓ photo.jpg"
+    ]
+   },
+   {
+    "l": [
+     "prices.csv"
+    ],
+    "t": "ダウンロード：サーバからクライアントへファイルを送る。FTP はファイルを両方向に運ぶ。",
+    "a": "Tom が古い価格表をサーバからダウンロードして、編集する。",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "ダウンロード完了 ✓ prices.csv"
+    ]
+   }
+  ],
+  "smtp": [
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "Mia のメールアプリが SMTP を使い、メールを Mia 自身のメールサーバへ送り出す（プッシュ）。添付した写真はメールの中に入って運ばれる。",
+    "a": "Mia が ken@b.com 宛のメールを書き、photo.jpg を添付して「送信」を押す。",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "宛先: ken@b.com",
+     "件名: Beach trip",
+     "📎 photo.jpg (2 MB)",
+     "[ 送信 ]"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "送信側メールサーバが、宛先ドメインのメールサーバを探し、もう一度 SMTP でメールを転送する。",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "送信済み ✓"
+    ]
+   },
+   {
+    "l": [],
+    "t": "メールは受信側サーバのメールボックスに保存される。SMTP の仕事はここまで。受信者の端末までは届けない。",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "送信済み ✓"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 POP3 / IMAP"
+    ],
+    "t": "受信者の端末が POP3 か IMAP を使い、メールをサーバから取りに行く（プル）。",
+    "a": "Ken がスマホでメールアプリを開く。",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ (1)",
+     "● Mia — Beach trip 📎"
+    ]
+   },
+   {
+    "l": [],
+    "t": "添付ファイルはメールと一緒に届いているので、写真は Ken のスマホで開く。送ったのは SMTP、取りに行ったのは POP3 か IMAP。",
+    "a": "Ken が添付ファイルをタップして写真を見る。",
+    "who": "Ken",
+    "scr": [
+     "✉ Mia — Beach trip",
+     "🖼 photo.jpg"
+    ]
+   }
+  ],
+  "pop3": [
+   {
+    "l": [
+     "ユーザ名 + パスワード"
+    ],
+    "t": "メールソフトがメールサーバに接続し、ログインする。",
+    "a": "Ken がノート PC でメールソフトを開き、「受信」をクリックする。",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ",
+     "接続中…"
+    ]
+   },
+   {
+    "l": [
+     "✉ ✉ ✉"
+    ],
+    "t": "サーバが新着メールをすべて送る。メールはこの 1 台の端末にダウンロードされる。",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "削除"
+    ],
+    "t": "ダウンロードが終わると、サーバ上のコピーは削除される。",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [],
+    "t": "メールはこの端末にしかない。オフラインでも読めるが、別の端末で開くとメールボックスは空になっている。",
+    "a": "あとで、インターネットにつながらない場所で、Ken がノート PC でメールを読む。",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ · オフライン",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "imap": [
+   {
+    "l": [
+     "ログイン"
+    ],
+    "t": "ノート PC がメールサーバに接続し、ログインする。",
+    "a": "Ken がノート PC でメールアプリを開く。",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ",
+     "接続中…"
+    ]
+   },
+   {
+    "l": [
+     "コピー ✉✉✉"
+    ],
+    "t": "サーバがメールのコピーを送る。元のメールはサーバに残る。",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "1 通目 = 既読"
+    ],
+    "t": "ノート PC で 1 通目を読む。ノート PC がサーバに知らせ、サーバは既読の印を付ける。",
+    "a": "Ken が Mia からのメールを開いて読む。",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "同期"
+    ],
+    "t": "あとでスマホが接続する。同じメールボックスが届き、1 通目はすでに既読になっている。",
+    "a": "バスの中で、Ken がスマホのメールアプリを開く。",
+    "who": "Ken",
+    "scr": [
+     "✉ 受信トレイ (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "bt": [
+   {
+    "l": [
+     "誰が持っている？"
+    ],
+    "t": "新しいピア（ピア A）がファイルをほしい。どのピアが共有しているかをトラッカーに聞く。",
+    "a": "Sam が BitTorrent ソフトで linux.iso（4 GB）のトレントを開く。",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "ピアを探しています…",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "ピア: B, C, D"
+    ],
+    "t": "トラッカーがスウォーム（swarm）内のピアの一覧を返す。トラッカー自身はファイルを持っていない。",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "ピア: 3",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "ピース 3",
+     "ピース 1"
+    ],
+    "t": "ピア A は複数のピアから別々のピースを同時にダウンロードする。そのためにファイルはピースに分割されている。",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "2 つのピアからダウンロード中",
+     "■□■□ 50%"
+    ]
+   },
+   {
+    "l": [
+     "ピース 1",
+     "ピース 4"
+    ],
+    "t": "ダウンロードの途中でも、ピア A は持っているピースをほかのピアへアップロードする。",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "ダウンロード ↓ とアップロード ↑",
+     "■□■■ 75%"
+    ]
+   },
+   {
+    "l": [
+     "ピース 2"
+    ],
+    "t": "ピア A は全ピースがそろい、1 つのファイルに組み立てる。その後もシード（seed）としてスウォームに残り、アップロードを続ける。",
+    "a": "ダウンロードが終わっても、Sam はソフトを動かしたままにする。",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB ✓",
+     "シード中 ↑（アップロード）",
+     "■■■■ 100%"
+    ]
+   }
+  ]
+ },
+ "exam": {
+  "h": "試験対策",
+  "tipsH": "試験のコツ",
+  "qH": "例題と模範解答",
+  "pitH": "よくある間違い",
+  "mcqH": "選択問題でチェック",
+  "marks": "点",
+  "ansL": "模範解答（1 項目につき 1 点）",
+  "scoreL": "正解数",
+  "why": "理由",
+  "tips": [
+   "まず層の名前を書き、次に働きを書く。「Transport 層がデータを segment に分割する」は得点になるが、「データが分割される」だけでは得点にならない。",
+   "上からの順番を覚える：Application → Transport → Internet → Link。送信側はこの順に下り、受信側は逆に上る。",
+   "アドレスと層を組にする：ポート番号 = Transport、IP アドレス = Internet、MAC アドレス = Link。",
+   "プロトコルは「目的」と「向き」を書く：SMTP は送信（プッシュ）、POP3 と IMAP は受信（プル）。",
+   "BitTorrent は用語を使う：peer、swarm、tracker、seed、pieces。",
+   "1 点には事実が 1 つ必要。4 点の「describe」問題には、異なる点を 4 つ書く。"
+  ],
+  "qs": [
+   {
+    "q": "コンピュータ間の通信にプロトコルが不可欠である理由を説明しなさい。",
+    "m": 2,
+    "a": [
+     "プロトコルは、両方のコンピュータが従うと決めた通信の規則の集まりである。",
+     "同じ規則がないと、受信側はデータを理解できない（例：形式、順序、誤り検査の方法）。"
+    ]
+   },
+   {
+    "q": "インターネット上で、あるホストから別のホストへメッセージを送る。Transport 層と Internet 層の働きを説明しなさい。",
+    "m": 4,
+    "a": [
+     "Transport 層はデータを segment に分割する。",
+     "各 segment にシーケンス番号とポート番号を付ける（すべての segment が届くことも保証する）。",
+     "Internet 層は送信元と宛先の IP アドレスを付けて packet にする。",
+     "各 packet をネットワークからネットワークへ、宛先ホストまで経路選択（ルーティング）する。"
+    ]
+   },
+   {
+    "q": "大きなファイルを BitTorrent プロトコルで共有している。新しいピアがファイルをダウンロードする方法を説明しなさい。",
+    "m": 4,
+    "a": [
+     "ピアは tracker に問い合わせ、swarm 内のピアの一覧を受け取る。",
+     "ファイルはピース（pieces）に分割されている。",
+     "ピアは複数のピアから別々のピースを同時にダウンロードする。",
+     "持っているピースをほかのピアへアップロードする（全部そろったらピースを 1 つに組み立てる）。"
+    ]
+   }
+  ],
+  "pits": [
+   {
+    "x": "「TCP/IP は 7 層である」",
+    "o": "TCP/IP は 4 層：Application、Transport、Internet、Link。"
+   },
+   {
+    "x": "「ルータが packet の IP アドレスを書き換える」",
+    "o": "ルータは新しい frame を作るので、MAC アドレスが区間ごとに変わる。IP アドレスは端から端まで同じ。"
+   },
+   {
+    "x": "「SMTP でメールを受信する」",
+    "o": "SMTP は送信だけ。受信は POP3 と IMAP。"
+   },
+   {
+    "x": "「POP3 と IMAP は同じ働きをする」",
+    "o": "POP3 は 1 台にダウンロードし、サーバのコピーを削除する。IMAP はメールをサーバに残すので、全端末が同期される。"
+   },
+   {
+    "x": "「packet、segment、frame は同じ意味」",
+    "o": "segment = Transport 層、packet = Internet 層、frame = Link 層。"
+   },
+   {
+    "x": "「BitTorrent ではファイルを tracker からダウンロードする」",
+    "o": "tracker が持つのはピアの一覧だけ。ピースはほかのピアから届く。"
+   }
+  ],
+  "mcq": [
+   {
+    "q": "送信元と宛先の IP アドレスを付けるのはどの層か。",
+    "w": "Internet 層が IP ヘッダを付ける。これで packet になる。",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 1
+   },
+   {
+    "q": "メールソフトからメールサーバへメールを送るプロトコルはどれか。",
+    "w": "SMTP は送信用のプッシュ型プロトコル。POP3 と IMAP は受信だけ。",
+    "o": [
+     "IMAP",
+     "POP3",
+     "HTTP",
+     "SMTP"
+    ],
+    "c": 3
+   },
+   {
+    "q": "Transport 層のデータ単位を何と呼ぶか。",
+    "w": "Transport = segment、Internet = packet、Link = frame。",
+    "o": [
+     "segment",
+     "packet",
+     "frame",
+     "message"
+    ],
+    "c": 0
+   },
+   {
+    "q": "スマホとノート PC で同じメールボックスを見たい。受信にはどのプロトコルを使うか。",
+    "w": "IMAP はメールをサーバに残すので、どの端末でも同じメールボックスが見える。",
+    "o": [
+     "HTTP",
+     "POP3",
+     "IMAP",
+     "SMTP"
+    ],
+    "c": 2
+   },
+   {
+    "q": "BitTorrent で、ファイル全体を持っているピアを何と呼ぶか。",
+    "w": "seed は全ピースを持ち、swarm にアップロードする。",
+    "o": [
+     "leech",
+     "swarm",
+     "host",
+     "seed"
+    ],
+    "c": 3
+   },
+   {
+    "q": "データが送信側のスタックを下る。データ単位はどの順に作られるか。",
+    "w": "Transport が segment、Internet が packet、Link が frame を作る。",
+    "o": [
+     "packet → segment → frame",
+     "segment → packet → frame",
+     "frame → packet → segment",
+     "segment → frame → packet"
+    ],
+    "c": 1
+   },
+   {
+    "q": "データを分割し、ポート番号を付けるのはどの層か。",
+    "w": "Transport 層（TCP）が、ポート番号とシーケンス番号の付いた segment を作る。",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 2
+   },
+   {
+    "q": "Web ページのファイルを転送するプロトコルはどれか。",
+    "w": "HTTP：ブラウザがリクエストを送り、Web サーバがレスポンスを返す。",
+    "o": [
+     "HTTP",
+     "SMTP",
+     "IMAP",
+     "POP3"
+    ],
+    "c": 0
+   }
+  ]
+ }
+}
+</script>
+<script type="application/json" id="tx-zh">
+{
+ "ui": {
+  "h1": "TCP/IP：一条消息怎样穿过互联网",
+  "lede": "浏览器向网页服务器请求一个页面。跟着数据沿发送方的四层向下、经过路由器、再沿接收方的四层向上。注意它的名称在变：消息 → 段 → 数据包 → 帧。",
+  "back": "← 后退",
+  "next": "下一步 →",
+  "play": "▶ 播放",
+  "pause": "❚❚ 暂停",
+  "restart": "从头开始",
+  "sender": "主机 A · 你的电脑",
+  "senderSub": "发送方：数据沿协议栈向下（封装）",
+  "receiver": "主机 B · 网页服务器",
+  "receiverSub": "接收方：数据沿协议栈向上（解封装）",
+  "router": "路由器",
+  "routerSub": "只使用最下面两层",
+  "inspH": "数据现在的样子",
+  "unitL": "数据单元的名称",
+  "layerL": "层",
+  "newTag": "在这里添加",
+  "changedTag": "被路由器改写",
+  "bitsNote": "整个帧一位一位地发送。",
+  "segNote": "第 1 段，共 3 段",
+  "reorderL": "到达的顺序：",
+  "reorderR": "TCP 重新排序：",
+  "ack": "向主机 A 发回 ACK",
+  "respData": "HTTP 200 OK + index.html",
+  "roleL": "这里发生了什么",
+  "examL": "考试中的写法",
+  "whyH": "为什么需要协议？为什么要分层？",
+  "tableH": "四层一览",
+  "tcol": [
+   "层",
+   "作用",
+   "数据单元",
+   "使用的地址",
+   "协议"
+  ],
+  "protoH": "日常场景中的协议",
+  "protoN": "每个协议都放在一个真实场景中。看看人做了什么，协议又做了什么。",
+  "purposeL": "用途",
+  "typeL": "类型",
+  "pointL": "要记住",
+  "nodes": {
+   "browser": "浏览器",
+   "web": "网页服务器",
+   "client": "客户端",
+   "ftp": "FTP 服务器",
+   "mailc": "邮件客户端",
+   "mailA": "发件方邮件服务器",
+   "mailB": "邮件服务器",
+   "laptop": "笔记本电脑",
+   "phone": "手机",
+   "peer": "对等方",
+   "tracker": "Tracker",
+   "mailR": "收件方邮件服务器",
+   "rdev": "收件人的设备"
+  },
+  "flows": {
+   "req": "请求",
+   "res": "网页",
+   "up": "上传",
+   "down": "下载",
+   "send": "发送",
+   "fetch": "下载",
+   "sync": "同步",
+   "piece": "分片"
+  },
+  "notes": {
+   "pop3": "下载后服务器上的副本被删除",
+   "imap": "● 未读   ○ 已读   ·   邮件保留在服务器上",
+   "bt": "■ = 该对等方已有的分片   ·   Tracker 只保存对等方列表"
+  },
+  "pseqH": "分步说明",
+  "tunnel": "隧道表示数据经过的路径。",
+  "scrL": "{n} 的屏幕",
+  "autoL": "自动进行：这一步不需要人操作"
+ },
+ "fields": {
+  "fh": "帧头",
+  "ft": "帧尾",
+  "ih": "IP 头",
+  "th": "TCP 头",
+  "data": "数据",
+  "dmac": "目的 MAC",
+  "smac": "源 MAC",
+  "sip": "源 IP",
+  "dip": "目的 IP",
+  "sport": "源端口",
+  "dport": "目的端口",
+  "seq": "序号",
+  "crc": "差错校验"
+ },
+ "units": {
+  "app": "消息（数据）",
+  "tra": "段 (segment)",
+  "int": "数据包 (packet / datagram)",
+  "lnk": "帧 (frame)",
+  "bits": "比特 (bits)"
+ },
+ "layers": [
+  {
+   "n": "Application",
+   "p": "HTTP, FTP, SMTP, POP3, IMAP, BitTorrent",
+   "purpose": "让程序按约定的格式交换数据。",
+   "addr": "无（使用 URL 等名称）"
+  },
+  {
+   "n": "Transport",
+   "p": "TCP",
+   "purpose": "把消息分成段，编号，并检查它们是否全部按顺序到达。",
+   "addr": "端口号"
+  },
+  {
+   "n": "Internet",
+   "p": "IP",
+   "purpose": "给每个数据包加上地址，并在网络之间选择路径转发。",
+   "addr": "IP 地址"
+  },
+  {
+   "n": "Link",
+   "p": "Ethernet, Wi-Fi",
+   "purpose": "在一段本地链路上传送帧，并以比特形式发送。",
+   "addr": "MAC 地址"
+  }
+ ],
+ "why": [
+  "<b>协议<\/b>是通信双方约定的一组规则。没有协议，两台计算机就无法在数据格式、消息顺序、地址以及出错时怎么办等问题上达成一致。",
+  "这些规则被组织成<b>分层的协议栈<\/b>。每一层只做一件事，只和紧邻的上一层、下一层交换数据。",
+  "所以可以只改某一层而不影响其他层：把网线换成 Wi-Fi（链路层），HTTP（应用层）照样工作。"
+ ],
+ "steps": [
+  {
+   "t": "浏览器生成消息",
+   "r": "<b>应用层。<\/b>你输入网址，浏览器用 HTTP 写出请求：GET /index.html。这一层决定“说什么、用什么格式”，并不知道消息怎样被送到。",
+   "x": "应用层提供应用程序交换数据所用的协议，例如用于网页的 HTTP。"
+  },
+  {
+   "t": "TCP 把它变成段",
+   "r": "<b>传输层。<\/b>TCP 把长消息分成若干段，并给每一段加上 TCP 头：端口号（每台主机上的哪个程序）和序号（顺序）。TCP 还会检查每一段是否到达。",
+   "x": "传输层把数据分成段，加上序号和端口号，并通过确认和重传提供可靠的传输。"
+  },
+  {
+   "t": "IP 把它变成数据包",
+   "r": "<b>网络层 (Internet layer)。<\/b>IP 加上含有源 IP 地址和目的 IP 地址的 IP 头。它们说明数据包来自整个互联网上的哪台主机、要去哪台主机。路由器读取这个头部。",
+   "x": "网络层加上源 IP 地址和目的 IP 地址形成数据包（数据报），并在网络之间进行路由。"
+  },
+  {
+   "t": "链路层把它变成帧",
+   "r": "<b>链路层。<\/b>数据包被放进帧里。帧头中的 MAC 地址只管“下一段路”（这里是：你的电脑 → 你的路由器）。帧尾含有差错校验值。",
+   "x": "链路层把数据包封装成带有 MAC 地址和差错校验的帧，并负责在本地网络上传输。"
+  },
+  {
+   "t": "帧以比特的形式传输",
+   "r": "帧以比特流的形式离开电脑：网线中的电信号、光纤中的光，或 Wi-Fi 的无线电波。直到这一刻，才有东西真正在物理上移动。",
+   "x": "链路层通过物理介质以比特形式发送帧。"
+  },
+  {
+   "t": "路由器读取 IP 头",
+   "r": "<b>路由器。<\/b>它拆掉旧的帧，读取目的 IP 地址，选择下一跳，然后用新的 MAC 地址组成新的帧。IP 地址、TCP 头和数据都不变。",
+   "x": "路由器根据目的 IP 地址把每个数据包向目的地转发。MAC 地址每一跳都会变，IP 地址保持不变。"
+  },
+  {
+   "t": "帧到达服务器",
+   "r": "<b>主机 B 的链路层。<\/b>它把比特重新组成帧，检查目的 MAC 地址是不是自己，以及差错校验是否正确。",
+   "x": "接收方的链路层检查帧是否有错，并把数据包交给网络层。"
+  },
+  {
+   "t": "去掉帧，又变回数据包",
+   "r": "<b>主机 B 的网络层。<\/b>链路层已经去掉了帧头和帧尾。IP 检查目的 IP 地址是不是本主机，然后去掉 IP 头。",
+   "x": "在接收方，每一层去掉自己的头部（解封装），把剩下的部分交给上一层。"
+  },
+  {
+   "t": "TCP 把段按顺序排好",
+   "r": "<b>主机 B 的传输层。<\/b>段可能不按顺序到达。TCP 用序号重组消息，发回确认 (ACK)，并要求重传丢失的段。目的端口 80 说明数据交给哪个程序：网页服务器。",
+   "x": "TCP 用序号把段按正确顺序重组，并确认收到；丢失的段会被重传。"
+  },
+  {
+   "t": "网页服务器读取消息",
+   "r": "<b>主机 B 的应用层。<\/b>网页服务器程序收到的正是浏览器写的内容：GET /index.html。两个程序都不需要了解网线、路由器或 MAC 地址。这就是分层的意义。",
+   "x": "接收主机的应用层把数据交给正确的应用程序。"
+  },
+  {
+   "t": "回复沿同样的路返回",
+   "r": "现在主机 B 成了发送方。网页服务器写出包含网页的 HTTP 响应，它沿 B 的协议栈向下、经过路由器、再沿 A 的协议栈向上。每个网页、每封邮件、每次下载都走这一趟。",
+   "x": "消息从一台主机发往另一台主机时，先沿发送方各层向下（封装），再沿接收方各层向上（解封装）。"
+  }
+ ],
+ "protocols": [
+  {
+   "k": "http",
+   "n": "HTTP",
+   "f": "Hypertext Transfer Protocol",
+   "purpose": "传输网页。浏览器（客户端）发送请求，网页服务器返回页面文件。",
+   "type": "客户端–服务器 · 请求与响应",
+   "point": "HTTPS 是加上加密的同一个协议。",
+   "use": "浏览网站"
+  },
+  {
+   "k": "ftp",
+   "n": "FTP",
+   "f": "File Transfer Protocol",
+   "purpose": "在客户端和服务器之间双向传输文件。常用于把文件上传到网页服务器。",
+   "type": "客户端–服务器 · 上传与下载",
+   "point": "只用于文件。访问可能需要用户名和密码，也可以匿名。",
+   "use": "把网站文件放到服务器上"
+  },
+  {
+   "k": "smtp",
+   "n": "SMTP",
+   "f": "Simple Mail Transfer Protocol",
+   "purpose": "发送电子邮件：从邮件客户端到你的邮件服务器，再从一个邮件服务器到下一个。",
+   "type": "推送协议 · 只负责发送",
+   "point": "SMTP 是大纲中唯一的发送协议。它不负责把邮件送到收件人的设备。",
+   "use": "发送带附件的邮件"
+  },
+  {
+   "k": "pop3",
+   "n": "POP3",
+   "f": "Post Office Protocol 3",
+   "purpose": "接收电子邮件：把邮件从邮件服务器下载到一台设备。之后服务器上的副本被删除。",
+   "type": "拉取协议 · 只负责接收",
+   "point": "邮件不会在你的多台设备之间同步。",
+   "use": "在一台设备上读邮件"
+  },
+  {
+   "k": "imap",
+   "n": "IMAP",
+   "f": "Internet Message Access Protocol",
+   "purpose": "接收电子邮件，但邮件保留在服务器上。每台设备下载一份副本，所以所有设备看到的邮箱相同。",
+   "type": "拉取协议 · 只负责接收",
+   "point": "在手机上读过的邮件，在笔记本电脑上也显示为已读。",
+   "use": "手机和电脑显示同一个邮箱"
+  },
+  {
+   "k": "bt",
+   "n": "BitTorrent",
+   "f": "BitTorrent protocol",
+   "purpose": "以对等方式 (peer-to-peer) 共享大文件。文件被分成许多分片。每个对等方从多个对等方下载分片，同时向其他对等方上传分片。",
+   "type": "对等网络 · 没有中央文件服务器",
+   "point": "Tracker 保存对等方列表（swarm）。拥有完整文件的对等方叫做种子 (seed)。",
+   "use": "下载很大的文件"
+  }
+ ],
+ "psteps": {
+  "http": [
+   {
+    "l": [
+     "GET /index.html"
+    ],
+    "t": "浏览器发送 HTTP 请求：方法 GET 和它想要的文件名。",
+    "a": "Ana 输入 www.example.com 并按下 Enter。",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "加载中…"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + HTML"
+    ],
+    "t": "网页服务器返回 HTTP 响应：状态码（200 = 成功）和 HTML 文件。",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ 图片加载中…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /photo.jpg"
+    ],
+    "t": "浏览器读取 HTML，发现里面有一张图片。每多一个文件，就再发送一次请求。",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ 图片加载中…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + JPG"
+    ],
+    "t": "服务器返回图片，浏览器显示完整的网页。每个文件都需要一次请求和一次响应。",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "🖼 photo.jpg",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /menu.html"
+    ],
+    "t": "点击链接会开始一次新的请求。Ana 每看一个网页，都会重复同样的请求和响应。",
+    "a": "Ana 点击网页上的链接“Menu”。",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com/menu.html",
+     "加载中…"
+    ]
+   }
+  ],
+  "ftp": [
+   {
+    "l": [
+     "用户名 + 密码"
+    ],
+    "t": "客户端连接 FTP 服务器，用用户名和密码登录（有些服务器允许匿名访问）。",
+    "a": "网页设计师 Tom 打开 FTP 软件，输入用户名和密码。",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "用户名: tom",
+     "密码: ••••••"
+    ]
+   },
+   {
+    "l": [
+     "登录成功"
+    ],
+    "t": "服务器接受登录。客户端现在可以看到服务器上的文件列表。",
+    "a": "",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "已连接 ✓",
+     "服务器上: prices.csv"
+    ]
+   },
+   {
+    "l": [
+     "index.html + photo.jpg"
+    ],
+    "t": "上传：客户端把文件发送到服务器。现在网站已经上线。",
+    "a": "Tom 把新网站的两个文件拖到服务器窗口中。",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "上传完成 ✓ index.html",
+     "上传完成 ✓ photo.jpg"
+    ]
+   },
+   {
+    "l": [
+     "prices.csv"
+    ],
+    "t": "下载：服务器把文件发送给客户端。FTP 可以双向传输文件。",
+    "a": "Tom 从服务器下载旧的价目表，以便修改。",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "下载完成 ✓ prices.csv"
+    ]
+   }
+  ],
+  "smtp": [
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "Mia 的邮件应用使用 SMTP，把邮件推送到她自己的邮件服务器。附带的照片包含在邮件里一起传输。",
+    "a": "Mia 给 ken@b.com 写邮件，添加附件 photo.jpg，然后按“发送”。",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "收件人: ken@b.com",
+     "主题: Beach trip",
+     "📎 photo.jpg (2 MB)",
+     "[ 发送 ]"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "发件方邮件服务器找到收件人域名的邮件服务器，再次使用 SMTP 转发邮件。",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "已发送 ✓"
+    ]
+   },
+   {
+    "l": [],
+    "t": "邮件保存在收件方服务器的邮箱里。SMTP 的工作到此结束：它不会把邮件送到收件人的设备。",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "已发送 ✓"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 POP3 / IMAP"
+    ],
+    "t": "收件人的设备使用 POP3 或 IMAP，从服务器取回邮件（拉取）。",
+    "a": "Ken 在手机上打开邮件应用。",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 (1)",
+     "● Mia — Beach trip 📎"
+    ]
+   },
+   {
+    "l": [],
+    "t": "附件是和邮件一起到达的，所以照片可以在 Ken 的手机上打开。发送靠 SMTP，取回靠 POP3 或 IMAP。",
+    "a": "Ken 点击附件查看照片。",
+    "who": "Ken",
+    "scr": [
+     "✉ Mia — Beach trip",
+     "🖼 photo.jpg"
+    ]
+   }
+  ],
+  "pop3": [
+   {
+    "l": [
+     "用户名 + 密码"
+    ],
+    "t": "邮件客户端连接邮件服务器并登录。",
+    "a": "Ken 在笔记本电脑上打开邮件软件，点击“收信”。",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱",
+     "连接中…"
+    ]
+   },
+   {
+    "l": [
+     "✉ ✉ ✉"
+    ],
+    "t": "服务器发送所有新邮件。邮件被下载到这一台设备上。",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "删除"
+    ],
+    "t": "下载完成后，服务器上的副本被删除。",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [],
+    "t": "邮件现在只存在于这台设备上。可以离线阅读，但用另一台设备打开时邮箱是空的。",
+    "a": "之后在没有网络的地方，Ken 在笔记本电脑上阅读邮件。",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 · 离线",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "imap": [
+   {
+    "l": [
+     "登录"
+    ],
+    "t": "笔记本电脑连接邮件服务器并登录。",
+    "a": "Ken 在笔记本电脑上打开邮件应用。",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱",
+     "连接中…"
+    ]
+   },
+   {
+    "l": [
+     "副本 ✉✉✉"
+    ],
+    "t": "服务器发送邮件的副本。原邮件仍保留在服务器上。",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "第 1 封 = 已读"
+    ],
+    "t": "用户在笔记本电脑上阅读第 1 封邮件。笔记本电脑通知服务器，服务器把它标记为已读。",
+    "a": "Ken 打开并阅读 Mia 发来的邮件。",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "同步"
+    ],
+    "t": "之后手机连接服务器。它得到同一个邮箱，第 1 封邮件已经显示为已读。",
+    "a": "在公交车上，Ken 打开手机上的邮件应用。",
+    "who": "Ken",
+    "scr": [
+     "✉ 收件箱 (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "bt": [
+   {
+    "l": [
+     "谁有这个文件？"
+    ],
+    "t": "一个新的对等方（对等方 A）想要一个文件。它询问 Tracker 哪些对等方正在共享这个文件。",
+    "a": "Sam 在 BitTorrent 软件中打开 linux.iso（4 GB）的种子文件。",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "正在查找对等方…",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "对等方: B, C, D"
+    ],
+    "t": "Tracker 返回群（swarm）中对等方的列表。Tracker 自己并不保存文件。",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "对等方: 3",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "分片 3",
+     "分片 1"
+    ],
+    "t": "对等方 A 同时从多个对等方下载不同的分片。文件被分成分片就是为了做到这一点。",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "正在从 2 个对等方下载",
+     "■□■□ 50%"
+    ]
+   },
+   {
+    "l": [
+     "分片 1",
+     "分片 4"
+    ],
+    "t": "在下载的同时，对等方 A 把已有的分片上传给另一个对等方。",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "下载 ↓ 同时上传 ↑",
+     "■□■■ 75%"
+    ]
+   },
+   {
+    "l": [
+     "分片 2"
+    ],
+    "t": "对等方 A 现在拥有全部分片，并把它们组合成完整的文件。它作为种子（seed）留在群中，继续上传。",
+    "a": "下载完成后，Sam 让软件继续运行。",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB ✓",
+     "做种中 ↑（上传）",
+     "■■■■ 100%"
+    ]
+   }
+  ]
+ },
+ "exam": {
+  "h": "考试练习",
+  "tipsH": "考试技巧",
+  "qH": "例题与参考答案",
+  "pitH": "常见错误",
+  "mcqH": "选择题自测",
+  "marks": "分",
+  "ansL": "参考答案（每个要点 1 分）",
+  "scoreL": "得分",
+  "why": "原因",
+  "tips": [
+   "先写层的名称，再写它的作用。“Transport 层把数据分成 segment”可以得分；只写“数据被分割”不能得分。",
+   "记住从上到下的顺序：Application → Transport → Internet → Link。发送方按这个顺序向下，接收方向上。",
+   "把地址和层对应起来：端口号 = Transport，IP 地址 = Internet，MAC 地址 = Link。",
+   "回答协议时写出用途和方向：SMTP 发送（推）；POP3 和 IMAP 接收（拉）。",
+   "回答 BitTorrent 时使用关键词：peer、swarm、tracker、seed、pieces。",
+   "一分需要一个事实。4 分的“describe”题需要四个不同的要点。"
+  ],
+  "qs": [
+   {
+    "q": "解释为什么协议对计算机之间的通信是必不可少的。",
+    "m": 2,
+    "a": [
+     "协议是双方计算机都同意遵守的一组通信规则。",
+     "如果没有相同的规则，接收方就无法理解数据（例如格式、顺序或检错方法）。"
+    ]
+   },
+   {
+    "q": "一条消息在互联网上从一台主机发送到另一台主机。描述 Transport 层和 Internet 层的功能。",
+    "m": 4,
+    "a": [
+     "Transport 层把数据分成 segment。",
+     "它给每个 segment 加上序号和端口号（并确保每个 segment 都到达）。",
+     "Internet 层加上源 IP 地址和目的 IP 地址，形成 packet。",
+     "它为每个 packet 选择路由，跨越多个网络送到目的主机。"
+    ]
+   },
+   {
+    "q": "一个大文件用 BitTorrent 协议共享。描述一个新的对等方如何下载这个文件。",
+    "m": 4,
+    "a": [
+     "对等方联系 tracker，得到 swarm 中对等方的列表。",
+     "文件已被分成多个分片（pieces）。",
+     "对等方同时从多个对等方下载不同的分片。",
+     "它把已有的分片上传给其他对等方（全部到齐后把分片组合起来）。"
+    ]
+   }
+  ],
+  "pits": [
+   {
+    "x": "“TCP/IP 有七层。”",
+    "o": "TCP/IP 协议族有四层：Application、Transport、Internet、Link。"
+   },
+   {
+    "x": "“路由器会修改 packet 的 IP 地址。”",
+    "o": "路由器会生成新的 frame，所以 MAC 地址每一跳都会改变。IP 地址从头到尾保持不变。"
+   },
+   {
+    "x": "“SMTP 用来接收邮件。”",
+    "o": "SMTP 只负责发送。POP3 和 IMAP 负责接收。"
+   },
+   {
+    "x": "“POP3 和 IMAP 的作用相同。”",
+    "o": "POP3 下载到一台设备并删除服务器上的副本。IMAP 把邮件留在服务器上，所以所有设备保持同步。"
+   },
+   {
+    "x": "“packet、segment 和 frame 是同一个意思。”",
+    "o": "segment = Transport 层，packet = Internet 层，frame = Link 层。"
+   },
+   {
+    "x": "“在 BitTorrent 中，文件是从 tracker 下载的。”",
+    "o": "tracker 只保存对等方列表。分片来自其他对等方。"
+   }
+  ],
+  "mcq": [
+   {
+    "q": "哪一层加上源 IP 地址和目的 IP 地址？",
+    "w": "Internet 层加上 IP 头部，形成 packet。",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 1
+   },
+   {
+    "q": "哪个协议把邮件从邮件客户端发送到邮件服务器？",
+    "w": "SMTP 是用于发送的推送协议。POP3 和 IMAP 只负责接收。",
+    "o": [
+     "IMAP",
+     "POP3",
+     "HTTP",
+     "SMTP"
+    ],
+    "c": 3
+   },
+   {
+    "q": "Transport 层的数据单元叫什么？",
+    "w": "Transport = segment，Internet = packet，Link = frame。",
+    "o": [
+     "segment",
+     "packet",
+     "frame",
+     "message"
+    ],
+    "c": 0
+   },
+   {
+    "q": "用户希望手机和笔记本电脑显示同一个邮箱。应该用哪个协议接收邮件？",
+    "w": "IMAP 把邮件留在服务器上，所以每台设备显示同一个邮箱。",
+    "o": [
+     "HTTP",
+     "POP3",
+     "IMAP",
+     "SMTP"
+    ],
+    "c": 2
+   },
+   {
+    "q": "在 BitTorrent 中，拥有完整文件的对等方叫什么？",
+    "w": "seed 拥有全部分片，并向 swarm 上传。",
+    "o": [
+     "leech",
+     "swarm",
+     "host",
+     "seed"
+    ],
+    "c": 3
+   },
+   {
+    "q": "数据沿发送方的协议栈向下。数据单元按什么顺序生成？",
+    "w": "Transport 生成 segment，Internet 生成 packet，Link 生成 frame。",
+    "o": [
+     "packet → segment → frame",
+     "segment → packet → frame",
+     "frame → packet → segment",
+     "segment → frame → packet"
+    ],
+    "c": 1
+   },
+   {
+    "q": "哪一层分割数据并加上端口号？",
+    "w": "Transport 层（TCP）生成带端口号和序号的 segment。",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 2
+   },
+   {
+    "q": "哪个协议传输网页的文件？",
+    "w": "HTTP：浏览器发送请求，网页服务器返回响应。",
+    "o": [
+     "HTTP",
+     "SMTP",
+     "IMAP",
+     "POP3"
+    ],
+    "c": 0
+   }
+  ]
+ }
+}
+</script>
+<script type="application/json" id="tx-th">
+{
+ "ui": {
+  "h1": "TCP/IP: ข้อความหนึ่งข้อความเดินทางข้ามอินเทอร์เน็ตอย่างไร",
+  "lede": "เบราว์เซอร์ขอหน้าเว็บจากเว็บเซิร์ฟเวอร์ ตามข้อมูลลงไปตาม 4 เลเยอร์ของผู้ส่ง ผ่านเราเตอร์ แล้วขึ้นไปตาม 4 เลเยอร์ของผู้รับ สังเกตชื่อที่เปลี่ยนไป: message → segment → packet → frame",
+  "back": "← ย้อน",
+  "next": "ถัดไป →",
+  "play": "▶ เล่น",
+  "pause": "❚❚ หยุดชั่วคราว",
+  "restart": "เริ่มใหม่",
+  "sender": "โฮสต์ A · คอมพิวเตอร์ของคุณ",
+  "senderSub": "ผู้ส่ง: ข้อมูลเดินทาง \"ลง\" ตามสแต็ก (encapsulation)",
+  "receiver": "โฮสต์ B · เว็บเซิร์ฟเวอร์",
+  "receiverSub": "ผู้รับ: ข้อมูลเดินทาง \"ขึ้น\" ตามสแต็ก (decapsulation)",
+  "router": "เราเตอร์",
+  "routerSub": "ใช้เฉพาะสองเลเยอร์ล่าง",
+  "inspH": "หน้าตาของข้อมูลตอนนี้",
+  "unitL": "ชื่อของหน่วยข้อมูล",
+  "layerL": "เลเยอร์",
+  "newTag": "เพิ่มที่นี่",
+  "changedTag": "เราเตอร์เปลี่ยนค่า",
+  "bitsNote": "เฟรมทั้งหมดถูกส่งทีละบิต",
+  "segNote": "segment ที่ 1 จาก 3",
+  "reorderL": "ลำดับที่มาถึง:",
+  "reorderR": "TCP เรียงใหม่:",
+  "ack": "ส่ง ACK กลับไปยังโฮสต์ A",
+  "respData": "HTTP 200 OK + index.html",
+  "roleL": "สิ่งที่เกิดขึ้นตรงนี้",
+  "examL": "วิธีเขียนในข้อสอบ",
+  "whyH": "ทำไมต้องมีโพรโทคอล และทำไมต้องแบ่งเป็นเลเยอร์",
+  "tableH": "สรุปทั้ง 4 เลเยอร์",
+  "tcol": [
+   "เลเยอร์",
+   "หน้าที่",
+   "หน่วยข้อมูล",
+   "แอดเดรสที่ใช้",
+   "โพรโทคอล"
+  ],
+  "protoH": "โพรโทคอลในชีวิตประจำวัน",
+  "protoN": "แต่ละโพรโทคอลแสดงในสถานการณ์จริง ดูว่าคนทำอะไร และโพรโทคอลทำอะไรตอบ",
+  "purposeL": "จุดประสงค์",
+  "typeL": "ประเภท",
+  "pointL": "ข้อควรจำ",
+  "nodes": {
+   "browser": "เบราว์เซอร์",
+   "web": "เว็บเซิร์ฟเวอร์",
+   "client": "ไคลเอนต์",
+   "ftp": "FTP เซิร์ฟเวอร์",
+   "mailc": "โปรแกรมอีเมล",
+   "mailA": "เมลเซิร์ฟเวอร์ผู้ส่ง",
+   "mailB": "เมลเซิร์ฟเวอร์",
+   "laptop": "แล็ปท็อป",
+   "phone": "โทรศัพท์",
+   "peer": "Peer",
+   "tracker": "Tracker",
+   "mailR": "เมลเซิร์ฟเวอร์ผู้รับ",
+   "rdev": "อุปกรณ์ของผู้รับ"
+  },
+  "flows": {
+   "req": "คำขอ",
+   "res": "หน้าเว็บ",
+   "up": "อัปโหลด",
+   "down": "ดาวน์โหลด",
+   "send": "ส่ง",
+   "fetch": "ดาวน์โหลด",
+   "sync": "ซิงก์",
+   "piece": "ชิ้นส่วน"
+  },
+  "notes": {
+   "pop3": "สำเนาบนเซิร์ฟเวอร์ถูกลบหลังดาวน์โหลด",
+   "imap": "● ยังไม่อ่าน   ○ อ่านแล้ว   ·   อีเมลยังอยู่บนเซิร์ฟเวอร์",
+   "bt": "■ = ชิ้นส่วนที่ peer นี้มี   ·   Tracker เก็บเฉพาะรายชื่อ peer"
+  },
+  "pseqH": "ทีละขั้นตอน",
+  "tunnel": "อุโมงค์แสดงเส้นทางที่ข้อมูลผ่าน",
+  "scrL": "หน้าจอของ {n}",
+  "autoL": "อัตโนมัติ: ขั้นตอนนี้ไม่มีการกระทำของคน"
+ },
+ "fields": {
+  "fh": "Frame header",
+  "ft": "Frame trailer",
+  "ih": "IP header",
+  "th": "TCP header",
+  "data": "ข้อมูล",
+  "dmac": "MAC ปลายทาง",
+  "smac": "MAC ต้นทาง",
+  "sip": "IP ต้นทาง",
+  "dip": "IP ปลายทาง",
+  "sport": "พอร์ตต้นทาง",
+  "dport": "พอร์ตปลายทาง",
+  "seq": "หมายเลขลำดับ",
+  "crc": "ตรวจข้อผิดพลาด"
+ },
+ "units": {
+  "app": "Message (ข้อมูล)",
+  "tra": "Segment",
+  "int": "Packet (datagram)",
+  "lnk": "Frame",
+  "bits": "Bits"
+ },
+ "layers": [
+  {
+   "n": "Application",
+   "p": "HTTP, FTP, SMTP, POP3, IMAP, BitTorrent",
+   "purpose": "ให้โปรแกรมแลกเปลี่ยนข้อมูลในรูปแบบที่ตกลงกันไว้",
+   "addr": "ไม่มี (ใช้ชื่อ เช่น URL)"
+  },
+  {
+   "n": "Transport",
+   "p": "TCP",
+   "purpose": "แบ่งข้อความเป็น segment ใส่หมายเลข และตรวจว่ามาถึงครบตามลำดับ",
+   "addr": "หมายเลขพอร์ต"
+  },
+  {
+   "n": "Internet",
+   "p": "IP",
+   "purpose": "ใส่แอดเดรสให้แต่ละ packet และเลือกเส้นทางจากเครือข่ายหนึ่งไปอีกเครือข่ายหนึ่ง",
+   "addr": "IP address"
+  },
+  {
+   "n": "Link",
+   "p": "Ethernet, Wi-Fi",
+   "purpose": "ส่ง frame ข้ามลิงก์ในเครือข่ายท้องถิ่นหนึ่งช่วง และส่งออกเป็นบิต",
+   "addr": "MAC address"
+  }
+ ],
+ "why": [
+  "<b>โพรโทคอล<\/b>คือชุดกฎที่ตกลงกันไว้สำหรับการสื่อสาร ถ้าไม่มี คอมพิวเตอร์สองเครื่องจะไม่ตรงกันเรื่องรูปแบบข้อมูล ลำดับข้อความ แอดเดรส และสิ่งที่ต้องทำเมื่อเกิดข้อผิดพลาด",
+  "กฎถูกจัดเป็น<b>สแต็กของเลเยอร์<\/b> แต่ละเลเยอร์ทำงานอย่างเดียว และส่งข้อมูลให้เฉพาะเลเยอร์ที่อยู่ติดกันด้านบนหรือด้านล่าง",
+  "จึงเปลี่ยนเลเยอร์หนึ่งได้โดยไม่ต้องเปลี่ยนเลเยอร์อื่น เช่น เปลี่ยนจากสายเป็น Wi-Fi (link layer) แล้ว HTTP (application layer) ยังทำงานได้เหมือนเดิม"
+ ],
+ "steps": [
+  {
+   "t": "เบราว์เซอร์เขียนข้อความ",
+   "r": "<b>Application layer<\/b> คุณพิมพ์ที่อยู่เว็บ เบราว์เซอร์ใช้ HTTP เขียนคำขอ GET /index.html เลเยอร์นี้ตัดสินว่าจะ \"พูดอะไร ในรูปแบบใด\" แต่ไม่รู้ว่าข้อความจะถูกส่งไปอย่างไร",
+   "x": "Application layer จัดเตรียมโพรโทคอลที่แอปพลิเคชันใช้แลกเปลี่ยนข้อมูล เช่น HTTP สำหรับหน้าเว็บ"
+  },
+  {
+   "t": "TCP ทำให้เป็น segment",
+   "r": "<b>Transport layer<\/b> TCP แบ่งข้อความยาวเป็น segment และเพิ่ม TCP header ให้แต่ละอัน: หมายเลขพอร์ต (โปรแกรมใดบนแต่ละโฮสต์) และหมายเลขลำดับ TCP ยังตรวจด้วยว่าทุก segment มาถึง",
+   "x": "Transport layer แบ่งข้อมูลเป็น segment เพิ่มหมายเลขลำดับและหมายเลขพอร์ต และส่งอย่างเชื่อถือได้ด้วยการตอบรับ (acknowledgement) และการส่งซ้ำ"
+  },
+  {
+   "t": "IP ทำให้เป็น packet",
+   "r": "<b>Internet layer<\/b> IP เพิ่ม IP header ที่มี IP address ต้นทางและปลายทาง ซึ่งบอกว่า packet มาจากโฮสต์ใดและจะไปโฮสต์ใดในอินเทอร์เน็ตทั้งหมด เราเตอร์อ่าน header นี้",
+   "x": "Internet layer เพิ่ม IP address ต้นทางและปลายทางเพื่อสร้าง packet (datagram) และหาเส้นทางระหว่างเครือข่าย"
+  },
+  {
+   "t": "Link layer ทำให้เป็น frame",
+   "r": "<b>Link layer<\/b> packet ถูกใส่ไว้ใน frame ส่วน frame header เก็บ MAC address สำหรับ \"ช่วงถัดไปเท่านั้น\" (ที่นี่คือ คอมพิวเตอร์ของคุณ → เราเตอร์ของคุณ) ส่วน trailer เก็บค่าตรวจข้อผิดพลาด",
+   "x": "Link layer ห่อ packet เป็น frame ที่มี MAC address และค่าตรวจข้อผิดพลาด และดูแลการส่งในเครือข่ายท้องถิ่น"
+  },
+  {
+   "t": "frame เดินทางเป็นบิต",
+   "r": "frame ออกจากคอมพิวเตอร์เป็นกระแสบิต: สัญญาณไฟฟ้าในสาย แสงในไฟเบอร์ หรือคลื่นวิทยุของ Wi-Fi นี่คือครั้งแรกที่มีบางอย่างเคลื่อนที่จริงทางกายภาพ",
+   "x": "Link layer ส่ง frame เป็นบิตผ่านสื่อทางกายภาพ"
+  },
+  {
+   "t": "เราเตอร์อ่าน IP header",
+   "r": "<b>เราเตอร์<\/b> ถอด frame เดิมออก อ่าน IP address ปลายทาง แล้วเลือกช่วงถัดไป จากนั้นสร้าง frame ใหม่ด้วย MAC address ใหม่ ส่วน IP address, TCP header และข้อมูลไม่เปลี่ยน",
+   "x": "เราเตอร์ใช้ IP address ปลายทางเพื่อส่งต่อแต่ละ packet ไปยังปลายทาง MAC address เปลี่ยนทุกช่วง แต่ IP address คงเดิม"
+  },
+  {
+   "t": "frame มาถึงเซิร์ฟเวอร์",
+   "r": "<b>Link layer ของโฮสต์ B<\/b> ประกอบ frame จากบิต ตรวจว่า MAC address ปลายทางเป็นของตัวเอง และค่าตรวจข้อผิดพลาดถูกต้อง",
+   "x": "Link layer ฝั่งรับตรวจข้อผิดพลาดของ frame และส่ง packet ขึ้นไปยัง internet layer"
+  },
+  {
+   "t": "ถอด frame ออก กลับเป็น packet",
+   "r": "<b>Internet layer ของโฮสต์ B<\/b> link layer ถอด frame header และ trailer ออกแล้ว IP ตรวจว่า IP address ปลายทางคือโฮสต์นี้ แล้วถอด IP header ออก",
+   "x": "ที่ฝั่งรับ แต่ละเลเยอร์ถอด header ของตัวเองออก (decapsulation) แล้วส่งส่วนที่เหลือขึ้นไปตามสแต็ก"
+  },
+  {
+   "t": "TCP เรียง segment ให้ถูกลำดับ",
+   "r": "<b>Transport layer ของโฮสต์ B<\/b> segment อาจมาถึงไม่ตามลำดับ TCP ใช้หมายเลขลำดับประกอบข้อความกลับ ส่งการตอบรับ (ACK) และขอ segment ที่หายไปอีกครั้ง พอร์ตปลายทาง 80 บอกว่าโปรแกรมใดได้รับข้อมูล: เว็บเซิร์ฟเวอร์",
+   "x": "TCP ประกอบ segment กลับตามลำดับที่ถูกต้องด้วยหมายเลขลำดับ และตอบรับว่าได้รับแล้ว segment ที่หายจะถูกส่งซ้ำ"
+  },
+  {
+   "t": "เว็บเซิร์ฟเวอร์อ่านข้อความ",
+   "r": "<b>Application layer ของโฮสต์ B<\/b> โปรแกรมเว็บเซิร์ฟเวอร์ได้รับสิ่งที่เบราว์เซอร์เขียนไว้ทุกประการ: GET /index.html ทั้งสองโปรแกรมไม่ต้องรู้เรื่องสาย เราเตอร์ หรือ MAC address เลย นี่คือประโยชน์ของการแบ่งเลเยอร์",
+   "x": "Application layer ของโฮสต์ผู้รับส่งข้อมูลให้แอปพลิเคชันที่ถูกต้อง"
+  },
+  {
+   "t": "คำตอบกลับไปทางเดิม",
+   "r": "ตอนนี้โฮสต์ B เป็นผู้ส่ง เว็บเซิร์ฟเวอร์เขียน HTTP response ที่มีหน้าเว็บ ซึ่งลงไปตามสแต็กของ B ผ่านเราเตอร์ และขึ้นไปตามสแต็กของ A หน้าเว็บ อีเมล และการดาวน์โหลดทุกครั้งเดินทางแบบนี้",
+   "x": "เมื่อส่งข้อความจากโฮสต์หนึ่งไปอีกโฮสต์หนึ่ง ข้อมูลจะลงไปตามเลเยอร์ของผู้ส่ง (encapsulation) และขึ้นไปตามเลเยอร์ของผู้รับ (decapsulation)"
+  }
+ ],
+ "protocols": [
+  {
+   "k": "http",
+   "n": "HTTP",
+   "f": "Hypertext Transfer Protocol",
+   "purpose": "ส่งหน้าเว็บ เบราว์เซอร์ (ไคลเอนต์) ส่งคำขอ และเว็บเซิร์ฟเวอร์ส่งไฟล์ของหน้าเว็บกลับมา",
+   "type": "client–server · คำขอและคำตอบ",
+   "point": "HTTPS คือโพรโทคอลเดียวกันที่เพิ่มการเข้ารหัส",
+   "use": "เปิดดูเว็บไซต์"
+  },
+  {
+   "k": "ftp",
+   "n": "FTP",
+   "f": "File Transfer Protocol",
+   "purpose": "ส่งไฟล์ระหว่างไคลเอนต์กับเซิร์ฟเวอร์ได้ทั้งสองทิศทาง มักใช้อัปโหลดไฟล์ขึ้นเว็บเซิร์ฟเวอร์",
+   "type": "client–server · อัปโหลดและดาวน์โหลด",
+   "point": "ใช้กับไฟล์เท่านั้น อาจต้องใช้ชื่อผู้ใช้และรหัสผ่าน หรือเข้าแบบไม่ระบุตัวตนได้",
+   "use": "นำไฟล์เว็บไซต์ขึ้นเซิร์ฟเวอร์"
+  },
+  {
+   "k": "smtp",
+   "n": "SMTP",
+   "f": "Simple Mail Transfer Protocol",
+   "purpose": "ส่งอีเมล: จากโปรแกรมอีเมลไปยังเมลเซิร์ฟเวอร์ของคุณ และจากเมลเซิร์ฟเวอร์หนึ่งไปยังอีกเครื่องหนึ่ง",
+   "type": "push protocol · ส่งอย่างเดียว",
+   "point": "SMTP เป็นโพรโทคอลสำหรับส่งเพียงตัวเดียวในหลักสูตร ไม่ได้นำอีเมลไปถึงอุปกรณ์ของผู้อ่าน",
+   "use": "ส่งอีเมลพร้อมไฟล์แนบ"
+  },
+  {
+   "k": "pop3",
+   "n": "POP3",
+   "f": "Post Office Protocol 3",
+   "purpose": "รับอีเมล: ดาวน์โหลดข้อความจากเมลเซิร์ฟเวอร์มายังอุปกรณ์เครื่องเดียว จากนั้นสำเนาบนเซิร์ฟเวอร์จะถูกลบ",
+   "type": "pull protocol · รับอย่างเดียว",
+   "point": "อีเมลไม่ซิงก์กันระหว่างอุปกรณ์หลายเครื่องของคุณ",
+   "use": "อ่านอีเมลบนอุปกรณ์เครื่องเดียว"
+  },
+  {
+   "k": "imap",
+   "n": "IMAP",
+   "f": "Internet Message Access Protocol",
+   "purpose": "รับอีเมลแต่เก็บไว้บนเซิร์ฟเวอร์ แต่ละอุปกรณ์ดาวน์โหลดสำเนา ทุกอุปกรณ์จึงเห็นกล่องจดหมายเหมือนกัน",
+   "type": "pull protocol · รับอย่างเดียว",
+   "point": "อ่านบนโทรศัพท์แล้ว บนแล็ปท็อปก็แสดงว่าอ่านแล้วเช่นกัน",
+   "use": "กล่องจดหมายเดียวกันบนโทรศัพท์และแล็ปท็อป"
+  },
+  {
+   "k": "bt",
+   "n": "BitTorrent",
+   "f": "BitTorrent protocol",
+   "purpose": "แชร์ไฟล์ขนาดใหญ่แบบ peer-to-peer ไฟล์ถูกแบ่งเป็นชิ้นส่วน แต่ละ peer ดาวน์โหลดชิ้นส่วนจากหลาย peer และอัปโหลดให้ peer อื่นไปพร้อมกัน",
+   "type": "peer-to-peer · ไม่มีไฟล์เซิร์ฟเวอร์กลาง",
+   "point": "Tracker เก็บรายชื่อ peer (swarm) ส่วน peer ที่มีไฟล์ครบเรียกว่า seed",
+   "use": "ดาวน์โหลดไฟล์ขนาดใหญ่มาก"
+  }
+ ],
+ "psteps": {
+  "http": [
+   {
+    "l": [
+     "GET /index.html"
+    ],
+    "t": "เบราว์เซอร์ส่ง HTTP request: เมธอด GET และชื่อไฟล์ที่ต้องการ",
+    "a": "Ana พิมพ์ www.example.com แล้วกด Enter",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "กำลังโหลด…"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + HTML"
+    ],
+    "t": "เว็บเซิร์ฟเวอร์ส่ง HTTP response กลับมา: รหัสสถานะ (200 = สำเร็จ) และไฟล์ HTML",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ กำลังโหลดรูป…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /photo.jpg"
+    ],
+    "t": "เบราว์เซอร์อ่าน HTML แล้วพบว่ามีรูปภาพ จึงส่งคำขอเพิ่มอีกหนึ่งครั้งต่อไฟล์เพิ่มหนึ่งไฟล์",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "▢ กำลังโหลดรูป…",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "200 OK + JPG"
+    ],
+    "t": "เซิร์ฟเวอร์ส่งรูปภาพกลับมา และเบราว์เซอร์แสดงหน้าเว็บที่สมบูรณ์ ทุกไฟล์ต้องมีคำขอและคำตอบของตัวเอง",
+    "a": "",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com",
+     "Beach Café",
+     "🖼 photo.jpg",
+     "Menu ›"
+    ]
+   },
+   {
+    "l": [
+     "GET /menu.html"
+    ],
+    "t": "การคลิกลิงก์เริ่มคำขอใหม่ ทุกหน้าที่ Ana เปิดดูจะทำคำขอและคำตอบแบบเดิมซ้ำอีก",
+    "a": "Ana คลิกลิงก์ \"Menu\" บนหน้าเว็บ",
+    "who": "Ana",
+    "scr": [
+     "🔎 www.example.com/menu.html",
+     "กำลังโหลด…"
+    ]
+   }
+  ],
+  "ftp": [
+   {
+    "l": [
+     "ชื่อผู้ใช้ + รหัสผ่าน"
+    ],
+    "t": "ไคลเอนต์เชื่อมต่อกับ FTP เซิร์ฟเวอร์ และเข้าสู่ระบบด้วยชื่อผู้ใช้และรหัสผ่าน (บางเซิร์ฟเวอร์อนุญาตให้เข้าแบบไม่ระบุตัวตน)",
+    "a": "Tom ซึ่งเป็นนักออกแบบเว็บ เปิดโปรแกรม FTP แล้วพิมพ์ชื่อผู้ใช้และรหัสผ่าน",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "ชื่อผู้ใช้: tom",
+     "รหัสผ่าน: ••••••"
+    ]
+   },
+   {
+    "l": [
+     "เข้าสู่ระบบสำเร็จ"
+    ],
+    "t": "เซิร์ฟเวอร์ยอมรับการเข้าสู่ระบบ ตอนนี้ไคลเอนต์เห็นรายชื่อไฟล์บนเซิร์ฟเวอร์ได้",
+    "a": "",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "เชื่อมต่อแล้ว ✓",
+     "บนเซิร์ฟเวอร์: prices.csv"
+    ]
+   },
+   {
+    "l": [
+     "index.html + photo.jpg"
+    ],
+    "t": "อัปโหลด: ไคลเอนต์ส่งไฟล์ไปยังเซิร์ฟเวอร์ ตอนนี้เว็บไซต์ออนไลน์แล้ว",
+    "a": "Tom ลากไฟล์สองไฟล์ของเว็บไซต์ใหม่ไปยังหน้าต่างของเซิร์ฟเวอร์",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "อัปโหลดแล้ว ✓ index.html",
+     "อัปโหลดแล้ว ✓ photo.jpg"
+    ]
+   },
+   {
+    "l": [
+     "prices.csv"
+    ],
+    "t": "ดาวน์โหลด: เซิร์ฟเวอร์ส่งไฟล์มายังไคลเอนต์ FTP ส่งไฟล์ได้ทั้งสองทิศทาง",
+    "a": "Tom ดาวน์โหลดรายการราคาเก่าจากเซิร์ฟเวอร์เพื่อนำมาแก้ไข",
+    "who": "Tom",
+    "scr": [
+     "FTP · ftp.example.com",
+     "ดาวน์โหลดแล้ว ✓ prices.csv"
+    ]
+   }
+  ],
+  "smtp": [
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "แอปอีเมลของ Mia ใช้ SMTP เพื่อส่ง (push) อีเมลไปยังเมลเซิร์ฟเวอร์ของเธอเอง รูปที่แนบเดินทางไปในอีเมลฉบับเดียวกัน",
+    "a": "Mia เขียนอีเมลถึง ken@b.com แนบไฟล์ photo.jpg แล้วกด \"ส่ง\"",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "ถึง: ken@b.com",
+     "เรื่อง: Beach trip",
+     "📎 photo.jpg (2 MB)",
+     "[ ส่ง ]"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 SMTP"
+    ],
+    "t": "เมลเซิร์ฟเวอร์ผู้ส่งค้นหาเมลเซิร์ฟเวอร์ของโดเมนผู้รับ แล้วใช้ SMTP อีกครั้งเพื่อส่งต่ออีเมล",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "ส่งแล้ว ✓"
+    ]
+   },
+   {
+    "l": [],
+    "t": "อีเมลถูกเก็บไว้ในกล่องจดหมายของผู้รับบนเซิร์ฟเวอร์นั้น งานของ SMTP จบที่นี่ ไม่ได้ส่งไปถึงอุปกรณ์ของผู้รับ",
+    "a": "",
+    "who": "Mia",
+    "scr": [
+     "✉ Mail",
+     "ส่งแล้ว ✓"
+    ]
+   },
+   {
+    "l": [
+     "✉ + 📎 POP3 / IMAP"
+    ],
+    "t": "อุปกรณ์ของผู้รับใช้ POP3 หรือ IMAP เพื่อไปรับ (pull) อีเมลจากเซิร์ฟเวอร์",
+    "a": "Ken เปิดแอปอีเมลบนโทรศัพท์",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย (1)",
+     "● Mia — Beach trip 📎"
+    ]
+   },
+   {
+    "l": [],
+    "t": "ไฟล์แนบมาถึงพร้อมกับอีเมล รูปจึงเปิดได้บนโทรศัพท์ของ Ken ผู้ส่งคือ SMTP ส่วนผู้ไปรับคือ POP3 หรือ IMAP",
+    "a": "Ken แตะไฟล์แนบเพื่อดูรูป",
+    "who": "Ken",
+    "scr": [
+     "✉ Mia — Beach trip",
+     "🖼 photo.jpg"
+    ]
+   }
+  ],
+  "pop3": [
+   {
+    "l": [
+     "ชื่อผู้ใช้ + รหัสผ่าน"
+    ],
+    "t": "โปรแกรมอีเมลเชื่อมต่อกับเมลเซิร์ฟเวอร์และเข้าสู่ระบบ",
+    "a": "Ken เปิดโปรแกรมอีเมลบนแล็ปท็อป แล้วคลิก \"รับอีเมล\"",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย",
+     "กำลังเชื่อมต่อ…"
+    ]
+   },
+   {
+    "l": [
+     "✉ ✉ ✉"
+    ],
+    "t": "เซิร์ฟเวอร์ส่งอีเมลใหม่ทั้งหมด อีเมลถูกดาวน์โหลดมายังอุปกรณ์เครื่องนี้เครื่องเดียว",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "ลบ"
+    ],
+    "t": "หลังดาวน์โหลดเสร็จ สำเนาบนเซิร์ฟเวอร์จะถูกลบ",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [],
+    "t": "ตอนนี้อีเมลมีอยู่บนอุปกรณ์เครื่องนี้เท่านั้น อ่านแบบออฟไลน์ได้ แต่ถ้าเปิดจากอุปกรณ์อื่นจะพบกล่องจดหมายว่าง",
+    "a": "ต่อมาในที่ที่ไม่มีอินเทอร์เน็ต Ken อ่านอีเมลบนแล็ปท็อป",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย · ออฟไลน์",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "imap": [
+   {
+    "l": [
+     "เข้าสู่ระบบ"
+    ],
+    "t": "แล็ปท็อปเชื่อมต่อกับเมลเซิร์ฟเวอร์และเข้าสู่ระบบ",
+    "a": "Ken เปิดแอปอีเมลบนแล็ปท็อป",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย",
+     "กำลังเชื่อมต่อ…"
+    ]
+   },
+   {
+    "l": [
+     "สำเนา ✉✉✉"
+    ],
+    "t": "เซิร์ฟเวอร์ส่งสำเนาของอีเมล ต้นฉบับยังอยู่บนเซิร์ฟเวอร์",
+    "a": "",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย (3)",
+     "● Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "ฉบับที่ 1 = อ่านแล้ว"
+    ],
+    "t": "ผู้ใช้อ่านอีเมลฉบับที่ 1 บนแล็ปท็อป แล็ปท็อปแจ้งเซิร์ฟเวอร์ และเซิร์ฟเวอร์ทำเครื่องหมายว่าอ่านแล้ว",
+    "a": "Ken เปิดอ่านอีเมลจาก Mia",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   },
+   {
+    "l": [
+     "ซิงก์"
+    ],
+    "t": "ต่อมาโทรศัพท์เชื่อมต่อ ได้กล่องจดหมายเดียวกัน และฉบับที่ 1 แสดงว่าอ่านแล้วอยู่แล้ว",
+    "a": "บนรถเมล์ Ken เปิดแอปอีเมลบนโทรศัพท์",
+    "who": "Ken",
+    "scr": [
+     "✉ กล่องจดหมาย (2)",
+     "○ Mia — Beach trip",
+     "● Bank — Statement",
+     "● Tom — New website"
+    ]
+   }
+  ],
+  "bt": [
+   {
+    "l": [
+     "ใครมีไฟล์นี้?"
+    ],
+    "t": "peer ใหม่ (Peer A) ต้องการไฟล์ จึงถาม tracker ว่า peer ใดกำลังแชร์ไฟล์นี้อยู่",
+    "a": "Sam เปิดทอร์เรนต์ของ linux.iso (4 GB) ในโปรแกรม BitTorrent",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "กำลังค้นหา peer…",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "peer: B, C, D"
+    ],
+    "t": "Tracker ตอบกลับด้วยรายชื่อ peer ใน swarm ตัว tracker เองไม่ได้เก็บไฟล์",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "Peer: 3",
+     "□□□□ 0%"
+    ]
+   },
+   {
+    "l": [
+     "ชิ้นที่ 3",
+     "ชิ้นที่ 1"
+    ],
+    "t": "Peer A ดาวน์โหลดชิ้นส่วนต่างกันจากหลาย peer พร้อมกัน ไฟล์ถูกแบ่งเป็นชิ้นส่วนเพื่อให้ทำแบบนี้ได้",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "กำลังดาวน์โหลดจาก 2 peer",
+     "■□■□ 50%"
+    ]
+   },
+   {
+    "l": [
+     "ชิ้นที่ 1",
+     "ชิ้นที่ 4"
+    ],
+    "t": "ระหว่างที่ยังดาวน์โหลดอยู่ Peer A อัปโหลดชิ้นส่วนที่มีแล้วให้ peer อื่น",
+    "a": "",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB",
+     "ดาวน์โหลด ↓ และอัปโหลด ↑",
+     "■□■■ 75%"
+    ]
+   },
+   {
+    "l": [
+     "ชิ้นที่ 2"
+    ],
+    "t": "ตอนนี้ Peer A มีครบทุกชิ้นส่วน และประกอบเป็นไฟล์ที่สมบูรณ์ จากนั้นอยู่ใน swarm ต่อในฐานะ seed และอัปโหลดต่อไป",
+    "a": "หลังดาวน์โหลดเสร็จ Sam เปิดโปรแกรมทิ้งไว้",
+    "who": "Sam",
+    "scr": [
+     "linux.iso · 4 GB ✓",
+     "กำลัง seed ↑ (อัปโหลด)",
+     "■■■■ 100%"
+    ]
+   }
+  ]
+ },
+ "exam": {
+  "h": "ฝึกทำข้อสอบ",
+  "tipsH": "เคล็ดลับการสอบ",
+  "qH": "ตัวอย่างคำถามและคำตอบ",
+  "pitH": "ข้อผิดพลาดที่พบบ่อย",
+  "mcqH": "ทดสอบแบบปรนัย",
+  "marks": "คะแนน",
+  "ansL": "ตัวอย่างคำตอบ (ข้อละ 1 คะแนน)",
+  "scoreL": "คะแนน",
+  "why": "เหตุผล",
+  "tips": [
+   "เขียนชื่อเลเยอร์ก่อน แล้วจึงบอกว่าทำอะไร \"Transport layer แบ่งข้อมูลเป็น segment\" ได้คะแนน แต่ \"ข้อมูลถูกแบ่ง\" ไม่ได้คะแนน",
+   "จำลำดับจากบนลงล่าง: Application → Transport → Internet → Link ผู้ส่งลงตามลำดับนี้ ผู้รับขึ้นย้อนกลับ",
+   "จับคู่ address กับเลเยอร์: port number = Transport, IP address = Internet, MAC address = Link",
+   "เมื่อตอบเรื่องโพรโทคอล ให้บอกจุดประสงค์และทิศทาง: SMTP ส่ง (push) ส่วน POP3 และ IMAP รับ (pull)",
+   "เรื่อง BitTorrent ให้ใช้คำสำคัญ: peer, swarm, tracker, seed, pieces",
+   "หนึ่งคะแนนต้องมีหนึ่งข้อเท็จจริง คำถาม \"describe\" 4 คะแนนต้องมีสี่ประเด็นที่ต่างกัน"
+  ],
+  "qs": [
+   {
+    "q": "จงอธิบายว่าทำไมโพรโทคอลจึงจำเป็นต่อการสื่อสารระหว่างคอมพิวเตอร์",
+    "m": 2,
+    "a": [
+     "โพรโทคอลคือชุดกฎของการสื่อสารที่คอมพิวเตอร์ทั้งสองฝ่ายตกลงปฏิบัติตาม",
+     "ถ้าไม่ใช้กฎเดียวกัน ผู้รับจะไม่เข้าใจข้อมูล (เช่น รูปแบบ ลำดับ หรือวิธีตรวจข้อผิดพลาด)"
+    ]
+   },
+   {
+    "q": "ข้อความถูกส่งจากโฮสต์หนึ่งไปยังอีกโฮสต์หนึ่งบนอินเทอร์เน็ต จงอธิบายหน้าที่ของ Transport layer และ Internet layer",
+    "m": 4,
+    "a": [
+     "Transport layer แบ่งข้อมูลเป็น segment",
+     "เพิ่มหมายเลขลำดับและหมายเลขพอร์ตให้แต่ละ segment (และดูแลให้ทุก segment มาถึง)",
+     "Internet layer เพิ่ม IP address ต้นทางและปลายทางเพื่อสร้าง packet",
+     "หาเส้นทาง (routing) ให้แต่ละ packet ข้ามเครือข่ายไปยังโฮสต์ปลายทาง"
+    ]
+   },
+   {
+    "q": "ไฟล์ขนาดใหญ่ถูกแชร์ด้วยโพรโทคอล BitTorrent จงอธิบายว่า peer ใหม่ดาวน์โหลดไฟล์นี้อย่างไร",
+    "m": 4,
+    "a": [
+     "peer ติดต่อ tracker เพื่อรับรายชื่อ peer ใน swarm",
+     "ไฟล์ถูกแบ่งเป็นชิ้นส่วน (pieces) ไว้แล้ว",
+     "peer ดาวน์โหลดชิ้นส่วนต่างกันจากหลาย peer พร้อมกัน",
+     "อัปโหลดชิ้นส่วนที่มีแล้วให้ peer อื่น (และประกอบชิ้นส่วนเข้าด้วยกันเมื่อได้ครบ)"
+    ]
+   }
+  ],
+  "pits": [
+   {
+    "x": "\"TCP/IP มีเจ็ดเลเยอร์\"",
+    "o": "TCP/IP มีสี่เลเยอร์: Application, Transport, Internet, Link"
+   },
+   {
+    "x": "\"เราเตอร์เปลี่ยน IP address ของ packet\"",
+    "o": "เราเตอร์สร้าง frame ใหม่ MAC address จึงเปลี่ยนทุกช่วง ส่วน IP address เหมือนเดิมตั้งแต่ต้นทางถึงปลายทาง"
+   },
+   {
+    "x": "\"SMTP ใช้รับอีเมล\"",
+    "o": "SMTP ใช้ส่งเท่านั้น ส่วน POP3 และ IMAP ใช้รับ"
+   },
+   {
+    "x": "\"POP3 กับ IMAP ทำงานเหมือนกัน\"",
+    "o": "POP3 ดาวน์โหลดมาที่อุปกรณ์เครื่องเดียวและลบสำเนาบนเซิร์ฟเวอร์ IMAP เก็บอีเมลไว้บนเซิร์ฟเวอร์ ทุกอุปกรณ์จึงซิงก์กัน"
+   },
+   {
+    "x": "\"packet, segment และ frame มีความหมายเหมือนกัน\"",
+    "o": "segment = Transport layer, packet = Internet layer, frame = Link layer"
+   },
+   {
+    "x": "\"ใน BitTorrent ไฟล์ถูกดาวน์โหลดจาก tracker\"",
+    "o": "tracker เก็บเฉพาะรายชื่อ peer ชิ้นส่วนมาจาก peer อื่น"
+   }
+  ],
+  "mcq": [
+   {
+    "q": "เลเยอร์ใดเพิ่ม IP address ต้นทางและปลายทาง",
+    "w": "Internet layer เพิ่ม IP header ทำให้กลายเป็น packet",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 1
+   },
+   {
+    "q": "โพรโทคอลใดส่งอีเมลจากโปรแกรมอีเมลไปยังเมลเซิร์ฟเวอร์",
+    "w": "SMTP เป็นโพรโทคอลแบบ push สำหรับส่ง ส่วน POP3 และ IMAP ใช้รับเท่านั้น",
+    "o": [
+     "IMAP",
+     "POP3",
+     "HTTP",
+     "SMTP"
+    ],
+    "c": 3
+   },
+   {
+    "q": "หน่วยข้อมูลของ Transport layer เรียกว่าอะไร",
+    "w": "Transport = segment, Internet = packet, Link = frame",
+    "o": [
+     "segment",
+     "packet",
+     "frame",
+     "message"
+    ],
+    "c": 0
+   },
+   {
+    "q": "ผู้ใช้ต้องการเห็นกล่องจดหมายเดียวกันบนโทรศัพท์และแล็ปท็อป ควรใช้โพรโทคอลใดรับอีเมล",
+    "w": "IMAP เก็บอีเมลไว้บนเซิร์ฟเวอร์ ทุกอุปกรณ์จึงเห็นกล่องจดหมายเดียวกัน",
+    "o": [
+     "HTTP",
+     "POP3",
+     "IMAP",
+     "SMTP"
+    ],
+    "c": 2
+   },
+   {
+    "q": "ใน BitTorrent peer ที่มีไฟล์ครบทั้งไฟล์เรียกว่าอะไร",
+    "w": "seed มีครบทุกชิ้นส่วน และอัปโหลดให้ swarm",
+    "o": [
+     "leech",
+     "swarm",
+     "host",
+     "seed"
+    ],
+    "c": 3
+   },
+   {
+    "q": "ข้อมูลลงไปตามสแต็กของผู้ส่ง หน่วยข้อมูลถูกสร้างตามลำดับใด",
+    "w": "Transport สร้าง segment, Internet สร้าง packet, Link สร้าง frame",
+    "o": [
+     "packet → segment → frame",
+     "segment → packet → frame",
+     "frame → packet → segment",
+     "segment → frame → packet"
+    ],
+    "c": 1
+   },
+   {
+    "q": "เลเยอร์ใดแบ่งข้อมูลและเพิ่มหมายเลขพอร์ต",
+    "w": "Transport layer (TCP) สร้าง segment ที่มีหมายเลขพอร์ตและหมายเลขลำดับ",
+    "o": [
+     "Application layer",
+     "Internet layer",
+     "Transport layer",
+     "Link layer"
+    ],
+    "c": 2
+   },
+   {
+    "q": "โพรโทคอลใดส่งไฟล์ของหน้าเว็บ",
+    "w": "HTTP: เบราว์เซอร์ส่งคำขอ และเว็บเซิร์ฟเวอร์ส่งคำตอบกลับ",
+    "o": [
+     "HTTP",
+     "SMTP",
+     "IMAP",
+     "POP3"
+    ],
+    "c": 0
+   }
+  ]
+ }
+}
+</script>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const LANGS=['en','ja','zh','th'],TX={};
+LANGS.forEach(l=>TX[l]=JSON.parse($('tx-'+l).textContent));
+const KEYS=['app','tra','int','lnk'];
+/* values that are not translated */
+const V={mac1:{dmac:'BB-BB-BB-00-00-01',smac:'AA-AA-AA-00-00-0A'},mac2:{dmac:'CC-CC-CC-00-00-0B',smac:'BB-BB-BB-00-00-02'},
+  sip:'192.168.1.10',dip:'203.0.113.5',sport:'51000',dport:'80',seq:'1',crc:'CRC 0x3F2A',data:'GET /index.html'};
+/* pos = slot id, parts = what is wrapped around the data, unit = name, hot = highlighted boxes, nw = parts added in this step */
+const STEPS=[
+ {pos:'s-0',parts:['data'],unit:'app',hot:['A0'],nw:[]},
+ {pos:'s-1',parts:['th','data'],unit:'tra',hot:['A1'],nw:['th'],seg:1},
+ {pos:'s-2',parts:['ih','th','data'],unit:'int',hot:['A2'],nw:['ih'],seg:1},
+ {pos:'s-3',parts:['fh','ih','th','data','ft'],unit:'lnk',hot:['A3'],nw:['fh','ft'],mac:'mac1',seg:1},
+ {pos:'p-wire1',parts:'bits',unit:'bits',hot:['A3','R3'],nw:[]},
+ {pos:'p-router',parts:['fh','ih','th','data','ft'],unit:'lnk',hot:['R2','R3'],nw:[],mac:'mac2',chg:true,seg:1},
+ {pos:'r-3',parts:['fh','ih','th','data','ft'],unit:'lnk',hot:['B3'],nw:[],mac:'mac2',seg:1},
+ {pos:'r-2',parts:['ih','th','data'],unit:'int',hot:['B2'],nw:[],seg:1},
+ {pos:'r-1',parts:['th','data'],unit:'tra',hot:['B1'],nw:[],seg:1,reorder:true},
+ {pos:'r-0',parts:['data'],unit:'app',hot:['B0'],nw:[]},
+ {pos:'r-0',parts:['data'],unit:'app',hot:['B0','B1','B2','B3'],nw:[],resp:true}
+];
+let lang='en',k=0,timer=null,proto='http';
+const tok=document.createElement('span');tok.className='tok';
+const T=()=>TX[lang];
+const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function staticText(){
+  const t=T();document.documentElement.lang=lang==='zh'?'zh-Hans':lang;document.body.className=lang;
+  document.querySelectorAll('[data-t]').forEach(e=>{const v=t.ui[e.dataset.t];if(v!==undefined)e.textContent=v;});
+  LANGS.forEach(l=>$('lg-'+l).setAttribute('aria-pressed',l===lang));
+  KEYS.forEach((key,i)=>{['A','B'].forEach(s=>{const el=$(s+i);el.querySelector('.ln').textContent=t.layers[i].n;el.querySelector('.lp').textContent=t.layers[i].p;});});
+  $('R2').querySelector('.rn').textContent=t.layers[2].n;$('R3').querySelector('.rn').textContent=t.layers[3].n;
+  $('why').innerHTML=t.why.map(w=>'<li>'+w+'</li>').join('');
+  $('ltab').innerHTML='<thead><tr>'+t.ui.tcol.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+t.layers.map((L,i)=>
+    '<tr class="'+KEYS[i]+'"><td class="l">'+L.n+'</td><td>'+L.purpose+'</td><td class="u">'+t.units[KEYS[i]]+'</td><td>'+L.addr+'</td><td class="m">'+L.p+'</td></tr>').join('')+'</tbody>';
+  $('steps').innerHTML=STEPS.map((s,i)=>'<button data-i="'+i+'">'+i+'</button>').join('');
+  $('steps').querySelectorAll('button').forEach(b=>b.onclick=()=>{stop();go(+b.dataset.i,true);});
+  $('pbtns').innerHTML=t.protocols.map(p=>'<button data-k="'+p.k+'" aria-pressed="'+(p.k===proto)+'"><b>'+p.n+'</b><small>'+p.use+'</small></button>').join('');
+  $('pbtns').querySelectorAll('button').forEach(b=>b.onclick=()=>{pstop();proto=b.dataset.k;pk=0;drawProto(true);});
+  drawProto(false);drawExam();
+}
+
+function partHTML(p,s,t){
+  const F=t.fields,mac=V[s.mac||'mac1'];let rows=[];
+  if(p==='fh')rows=[['dmac',mac.dmac],['smac',mac.smac]];
+  if(p==='ih')rows=[['sip',V.sip],['dip',V.dip]];
+  if(p==='th')rows=[['sport',V.sport],['dport',V.dport],['seq',V.seq]];
+  if(p==='ft')rows=[['crc',V.crc]];
+  if(p==='data')rows=[['',s.resp?t.ui.respData:V.data]];
+  const isNew=s.nw.includes(p),chg=s.chg&&p==='fh';
+  return '<div class="part c-'+p+(p==='data'?' data':'')+(isNew?' new':'')+(chg?' chg':'')+'">'+
+    (isNew?'<span class="tg">'+t.ui.newTag+'</span>':chg?'<span class="tg">'+t.ui.changedTag+'</span>':'')+
+    '<span class="pt">'+F[p]+'</span><dl>'+rows.map(r=>(r[0]?'<dt>'+F[r[0]]+'</dt>':'')+'<dd class="v">'+r[1]+'</dd>').join('')+
+    (p==='data'&&s.seg?'<dt>'+t.ui.segNote+'</dt>':'')+'</dl></div>';
+}
+
+function go(n,anim){
+  k=Math.max(0,Math.min(STEPS.length-1,n));
+  const t=T(),s=STEPS[k];
+  // token
+  const first=tok.isConnected?tok.getBoundingClientRect():null;
+  tok.className='tok'+(/^[sr]-/.test(s.pos)?' v':'');
+  tok.innerHTML=s.parts==='bits'?'<span class="bitsT">0110…</span>':s.parts.map(p=>'<i class="c-'+p+(p==='data'?' d':'')+'"></i>').join('');
+  $(s.pos).appendChild(tok);
+  if(anim&&first&&!reduce()){const l=tok.getBoundingClientRect(),dx=first.left-l.left,dy=first.top-l.top;
+    if(Math.abs(dx)>1||Math.abs(dy)>1)tok.animate([{transform:'translate('+dx+'px,'+dy+'px)'},{transform:'none'}],{duration:750,easing:'cubic-bezier(.3,.7,.2,1)'});}
+  drawTube();
+  // highlight
+  document.querySelectorAll('.layer,.rbox').forEach(e=>{e.classList.toggle('hot',s.hot.includes(e.id));});
+  document.querySelectorAll('.layer').forEach(e=>e.classList.toggle('dim',!s.hot.includes(e.id)&&((k<5&&e.id[0]==='B')||(k>5&&k<10&&e.id[0]==='A'))));
+  // inspector
+  const u=$('unit');u.className='unit '+s.unit;$('unitN').textContent=t.units[s.unit];
+  const li={app:0,tra:1,int:2,lnk:3,bits:3}[s.unit];$('unitY').textContent=t.layers[li].n+' '+t.ui.layerL;
+  $('pdu').innerHTML=s.parts==='bits'?'<div class="bitsrow">01001000 11010110 00101101 10100011 01110100 10010111 00011010 11100101 …<small>'+t.ui.bitsNote+'</small></div>':s.parts.map(p=>partHTML(p,s,t)).join('');
+  const ex=$('extra');ex.hidden=!s.reorder;
+  if(s.reorder)ex.innerHTML='<span>'+t.ui.reorderL+'</span><span class="sq"><b>seq 1</b><b>seq 3</b><b>seq 2</b></span><span>→ '+t.ui.reorderR+'</span><span class="sq"><b>seq 1</b><b>seq 2</b><b>seq 3</b></span><span class="ack">'+t.ui.ack+'</span>';
+  // message
+  const m=t.steps[k];
+  $('mTag').textContent='STEP '+k+' · '+t.units[s.unit];
+  $('mT').textContent=m.t;$('mR').innerHTML=m.r;$('mX').textContent=m.x;
+  $('back').disabled=k===0;$('next').disabled=k===STEPS.length-1;
+  $('steps').querySelectorAll('button').forEach((b,i)=>{b.classList.toggle('now',i===k);b.classList.toggle('seen',i<k);});
+  $('play').textContent=timer?t.ui.pause:t.ui.play;
+}
+
+/* the tunnel through both stacks, drawn from the real positions of the slots */
+const TM=['s-0','s-1','s-2','s-3','p-wire1','R3','p-wire2','r-3','r-2','r-1','r-0'],TI=[0,1,2,3,4,5,7,8,9,10,10];
+function roundPath(p,r){
+  let d='M'+p[0][0].toFixed(1)+' '+p[0][1].toFixed(1);
+  for(let i=1;i<p.length-1;i++){
+    const a=p[i-1],c=p[i],b=p[i+1],l1=Math.hypot(a[0]-c[0],a[1]-c[1]),l2=Math.hypot(b[0]-c[0],b[1]-c[1]);
+    if(l1<1||l2<1)continue;
+    const u=[(a[0]-c[0])/l1,(a[1]-c[1])/l1],v=[(b[0]-c[0])/l2,(b[1]-c[1])/l2];
+    if(Math.abs(u[0]*v[1]-u[1]*v[0])<.05){d+=' L'+c[0].toFixed(1)+' '+c[1].toFixed(1);continue;}
+    const q=Math.min(r,l1/2,l2/2);
+    d+=' L'+(c[0]+u[0]*q).toFixed(1)+' '+(c[1]+u[1]*q).toFixed(1)+' Q'+c[0].toFixed(1)+' '+c[1].toFixed(1)+' '+(c[0]+v[0]*q).toFixed(1)+' '+(c[1]+v[1]*q).toFixed(1);
+  }
+  const e=p[p.length-1];return d+' L'+e[0].toFixed(1)+' '+e[1].toFixed(1);
+}
+function drawTube(){
+  const net=$('net').getBoundingClientRect();if(!net.width)return;
+  const c=id=>{const r=$(id).getBoundingClientRect();return [r.left+r.width/2-net.left,r.top+r.height/2-net.top];};
+  const pt=TM.map(c),small=net.width<520,w=small?24:34,R=small?12:20;
+  // one straight run along the bottom, and a short branch up into the router's Internet layer
+  const yb=pt[5][1];[3,4,6,7].forEach(i=>pt[i][1]=yb);pt[0][0]=pt[1][0]=pt[2][0]=pt[3][0];pt[8][0]=pt[9][0]=pt[10][0]=pt[7][0];
+  const up=c('p-router'),br=[[pt[5][0],yb],[pt[5][0],up[1]]];
+  const all=roundPath(pt,R),brd='M'+br[0][0].toFixed(1)+' '+br[0][1].toFixed(1)+' L'+br[1][0].toFixed(1)+' '+br[1][1].toFixed(1);
+  const n=TI[k],done=pt.slice(0,n+1);if(done.length<2)done.push(pt[0]);
+  const part=roundPath(done,R),withBr=k>=5;
+  const P=(cls,d,sw)=>'<path class="'+cls+'" d="'+d+'"'+(sw?' stroke-width="'+sw+'"':'')+'/>';
+  $('tube').setAttribute('viewBox','0 0 '+net.width+' '+net.height);
+  $('tube').innerHTML=P('to',all,w+3)+P('to',brd,w+3)+P('ti',all,w)+P('ti',brd,w)+P('tp',part,w)+(withBr?P('tp',brd,w):'')+P('tg',all)+P('tf',part)+(k===5?P('tf',brd):'');
+}
+addEventListener('resize',drawTube);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawTube);
+
+/* step-by-step animation for each of the six protocols.
+   n = nodes [name key, x, y, kind, suffix]; init = text under each node before step 1;
+   s = steps: m = messages [from, to], st = text under each node after the step, hl = nodes to highlight when nothing moves */
+const PW=150,PH=52;
+/* a node may carry a person: [name key, x, y, kind, suffix, person]; "by" = the node whose person acts in that step */
+const PD={
+ http:{h:160,n:[['browser',85,88,0,'','Ana'],['web',475,88,1]],init:['—',''],s:[
+  {by:0,m:[[0,1]],st:['—','']},{m:[[1,0]],st:['HTML','']},{m:[[0,1]],st:['HTML','']},{m:[[1,0]],st:['HTML + JPG','']},{by:0,m:[[0,1]],st:['HTML + JPG','']}]},
+ ftp:{h:160,n:[['client',85,88,0,'','Tom'],['ftp',475,88,1]],init:['📄 2','📄 1'],s:[
+  {by:0,m:[[0,1]],st:['📄 2','📄 1']},{m:[[1,0]],st:['📄 2','📄 1']},
+  {by:0,m:[[0,1]],st:['📄 2','📄 3']},{by:0,m:[[1,0]],st:['📄 3','📄 3']}]},
+ smtp:{h:240,n:[['mailc',85,64,0,'','Mia'],['mailA',475,64,1],['mailR',475,190,1],['rdev',85,190,0,'','Ken']],init:['✉ 1','✉ 0','✉ 0','✉ 0'],s:[
+  {by:0,m:[[0,1]],st:['✉ 0','✉ 1','✉ 0','✉ 0']},{m:[[1,2]],st:['✉ 0','✉ 0','✉ 1','✉ 0']},
+  {m:[],hl:[2],st:['✉ 0','✉ 0','✉ 1','✉ 0']},{by:3,m:[[2,3]],st:['✉ 0','✉ 0','✉ 1','✉ 1']},{by:3,m:[],hl:[3],st:['✉ 0','✉ 0','✉ 1','✉ 1 · 🖼']}]},
+ pop3:{h:190,note:'pop3',n:[['mailB',85,88,1],['laptop',475,88,0,'','Ken']],init:['✉ 3','✉ 0'],s:[
+  {by:1,m:[[1,0]],st:['✉ 3','✉ 0']},{m:[[0,1]],st:['✉ 3','✉ 3']},{m:[[1,0]],st:['✉ 0','✉ 3']},{by:1,m:[],hl:[1],st:['✉ 0','✉ 3']}]},
+ imap:{h:250,note:'imap',n:[['mailB',280,42,1],['laptop',85,175,0,'','Ken'],['phone',475,175,0,'','Ken']],init:['●●●','—','—'],s:[
+  {by:1,m:[[1,0]],st:['●●●','—','—']},{m:[[0,1]],st:['●●●','●●●','—']},{by:1,m:[[1,0]],st:['○●●','○●●','—']},{by:2,m:[[0,2]],st:['○●●','○●●','○●●']}]},
+ bt:{h:322,note:'bt',n:[['tracker',85,38,2],['peer',85,160,0,'A','Sam'],['peer',475,45,0,'B'],['peer',475,152,0,'C'],['peer',475,259,0,'D']],init:['','□□□□','■■■■','■■□□','□□□■'],s:[
+  {by:1,m:[[1,0]],st:['','□□□□','■■■■','■■□□','□□□■']},{m:[[0,1]],st:['','□□□□','■■■■','■■□□','□□□■']},
+  {m:[[2,1],[3,1]],st:['','■□■□','■■■■','■■□□','□□□■']},{m:[[1,4],[2,1]],st:['','■□■■','■■■■','■■□□','■□□■']},
+  {by:1,m:[[3,1]],st:['','■■■■ seed','■■■■','■■□□','■□□■']}]}
+};
+const PERSON='<circle r="11"/><path d="M0 -6.2a3.2 3.2 0 1 0 .01 0zM-6.2 6.6c.6-4 3-5.6 6.2-5.6s5.6 1.600 6.2 5.6z"/>';
+let pk=0,ptimer=null,pRun=0;
+function pEnds(d,a,b){
+  const A=d.n[a],B=d.n[b],dx=B[1]-A[1],dy=B[2]-A[2],len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len;
+  const e=Math.min(Math.abs(ux)>0.001?(PW/2)/Math.abs(ux):1e9,Math.abs(uy)>0.001?(PH/2)/Math.abs(uy):1e9);
+  return [A[1]+ux*(e+4),A[2]+uy*(e+4),B[1]-ux*(e+10),B[2]-uy*(e+10),Math.abs(dx)<1];
+}
+function drawProto(anim){
+  const t=T(),p=t.protocols.find(x=>x.k===proto),d=PD[proto],tx=t.psteps[proto];
+  pk=Math.max(0,Math.min(d.s.length-1,pk));
+  const cur=d.s[pk],prev=pk?d.s[pk-1].st:d.init,f=v=>v.toFixed(1);
+  $('pbtns').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===proto));
+  $('pN').innerHTML=p.use+'<small>'+p.n+' · '+p.f+'</small>';$('pP').textContent=p.purpose;$('pT').textContent=p.type;$('pK').textContent=p.point;
+  let s='<svg viewBox="0 0 560 '+d.h+'" role="img" aria-label="'+p.n+'"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3B6FD4"/></marker></defs>';
+  // every pair of nodes that talks gets a tunnel
+  const seen={},ln=(c,a,b)=>'<line class="tb '+c+'" x1="'+d.n[a][1]+'" y1="'+d.n[a][2]+'" x2="'+d.n[b][1]+'" y2="'+d.n[b][2]+'"/>';
+  let outer='',inner='';
+  d.s.forEach(x=>x.m.forEach(([a,b])=>{const key=Math.min(a,b)+'-'+Math.max(a,b);if(seen[key])return;seen[key]=1;outer+=ln('o',a,b);inner+=ln('i',a,b);}));
+  s+=outer+inner;
+  const runs=[];let labs='';
+  cur.m.forEach(([a,b],j)=>{
+    const [x1,y1,x2,y2,vert]=pEnds(d,a,b),lab=tx[pk].l[j]||'';runs.push([x1,y1,x2,y2,lab]);
+    s+=ln('on',a,b)+'<path class="fl on" d="M'+f(x1)+' '+f(y1)+' L'+f(x2)+' '+f(y2)+'" marker-end="url(#ah)"/>';
+    if(lab)labs+=vert?'<text class="fll" x="'+f(x1+20)+'" y="'+f((y1+y2)/2+4)+'">'+lab+'</text>':'<text class="fll" text-anchor="middle" x="'+f((x1+x2)/2)+'" y="'+f((y1+y2)/2-20)+'">'+lab+'</text>';
+  });
+  d.n.forEach(([key,x,y,kind,suf],ni)=>{
+    s+='<rect id="pn'+ni+'" class="nb'+(kind===1?' srv':kind===2?' dash':'')+'" x="'+(x-PW/2)+'" y="'+(y-PH/2)+'" width="'+PW+'" height="'+PH+'" rx="10"/>'+
+      '<text class="nm" text-anchor="middle" x="'+x+'" y="'+(y-3)+'">'+t.ui.nodes[key]+(suf?' '+suf:'')+'</text><text class="stt" id="ps'+ni+'" text-anchor="middle" x="'+x+'" y="'+(y+16)+'"></text>';});
+  d.n.forEach(([key,x,y,kind,suf,per],ni)=>{if(!per)return;
+    s+='<g class="pp'+(cur.by===ni&&tx[pk].a?' act':'')+'" transform="translate('+(x-PW/2+13)+','+(y-PH/2-15)+')"><circle class="ring" r="11"/>'+PERSON+'<text x="16" y="4.5">'+per+'</text></g>';});
+  s+=labs;
+  const act=tx[pk].a,showScr=()=>{$('scrL').textContent=t.ui.scrL.replace('{n}',tx[pk].who);$('scrB').innerHTML=tx[pk].scr.map(x=>'<div>'+x+'</div>').join('');};
+  $('pact').className='pact'+(act?'':' auto');
+  $('pwho').innerHTML=act?'<svg viewBox="-11 -11 22 22" aria-hidden="true"><g fill="#fff" opacity=".95"><path d="M0 -6.2a3.2 3.2 0 1 0 .01 0zM-6.2 6.6c.6-4 3-5.6 6.2-5.6s5.6 1.6 6.2 5.6z"/></g></svg>'+d.n[cur.by][5]:'⚙';
+  $('pdo').textContent=act||t.ui.autoL;
+  if(d.note)s+='<text class="nt" text-anchor="middle" x="280" y="'+(d.h-10)+'">'+t.ui.notes[d.note]+'</text>';
+  $('pdiag').innerHTML=s+'</svg>';
+  const setSt=st=>st.forEach((v,ni)=>{$('ps'+ni).textContent=v;});
+  const done=()=>{showScr();setSt(cur.st);cur.m.forEach(m=>$('pn'+m[1]).classList.add('got'));(cur.hl||[]).forEach(i=>$('pn'+i).classList.add('got'));};
+  const run=++pRun;
+  if(!anim||reduce()||!runs.length)done();
+  else{
+    setSt(prev);if(act||!pk)showScr();
+    const NS='http://www.w3.org/2000/svg',svg=$('pdiag').firstChild;
+    const pills=runs.map(r=>{const g=document.createElementNS(NS,'g'),rc=document.createElementNS(NS,'rect'),tt=document.createElementNS(NS,'text');
+      g.setAttribute('class','pill');tt.textContent=r[4]||'●';tt.setAttribute('text-anchor','middle');tt.setAttribute('y',4.5);g.appendChild(rc);g.appendChild(tt);svg.appendChild(g);
+      let w=30;try{w=Math.max(30,tt.getComputedTextLength()+18);}catch(e){}
+      rc.setAttribute('x',-w/2);rc.setAttribute('y',-11.5);rc.setAttribute('width',w);rc.setAttribute('height',23);rc.setAttribute('rx',11.5);return g;});
+    const t0=performance.now()+(act?700:0),D=1400;
+    const fr=now=>{if(run!==pRun)return;const u=Math.max(0,Math.min(1,(now-t0)/D)),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+      pills.forEach((g,j)=>{const r=runs[j];g.setAttribute('transform','translate('+f(r[0]+(r[2]-r[0])*e)+','+f(r[1]+(r[3]-r[1])*e)+')');});
+      if(u<1)requestAnimationFrame(fr);else{pills.forEach(g=>g.remove());done();}};
+    fr(t0);
+  }
+  $('pseq').innerHTML=tx.map((x,i)=>'<li><button data-i="'+i+'" class="'+(i===pk?'now':i>pk?'todo':'')+'"><b>'+(i+1)+'</b><span>'+(x.a?'<span class="ha">👤 '+x.a+'</span>':'')+x.t+'</span></button></li>').join('');
+  $('pseq').querySelectorAll('button').forEach(b=>b.onclick=()=>{pstop();pk=+b.dataset.i;drawProto(true);});
+  $('pback').disabled=pk===0;$('pnext').disabled=pk===d.s.length-1;$('pplay').textContent=ptimer?t.ui.pause:t.ui.play;
+}
+function pstop(){if(ptimer){clearInterval(ptimer);ptimer=null;}$('pplay').textContent=T().ui.play;}
+$('pback').onclick=()=>{pstop();pk--;drawProto(true);};
+$('pnext').onclick=()=>{pstop();pk++;drawProto(true);};
+$('pplay').onclick=()=>{if(ptimer){pstop();return;}const n=PD[proto].s.length;if(pk>=n-1)pk=-1;
+  const step=()=>{if(pk>=PD[proto].s.length-1){pstop();return;}pk++;drawProto(true);};
+  ptimer=setInterval(step,4200);step();};
+
+/* practice block: tips, sample questions, pitfalls, MCQs */
+const ans={};
+function drawExam(){
+  const e=T().exam,L='ABCD';
+  $('exH').textContent=e.h;$('exTipsH').textContent=e.tipsH;$('exQH').textContent=e.qH;$('exPitH').textContent=e.pitH;$('exMcqH').textContent=e.mcqH;
+  $('exTips').innerHTML=e.tips.map(x=>'<li>'+x+'</li>').join('');
+  $('exQs').innerHTML=e.qs.map((q,i)=>'<div class="exq"><p><b>Q'+(i+1)+'</b> '+q.q+' <span class="mk">['+q.m+' '+e.marks+']</span></p><p class="al">'+e.ansL+'</p><ul>'+q.a.map(a=>'<li>'+a+'</li>').join('')+'</ul></div>').join('');
+  $('exPits').innerHTML=e.pits.map(p=>'<li><span class="bad">✗ '+p.x+'</span><span class="good">✓ '+p.o+'</span></li>').join('');
+  $('exMcq').innerHTML=e.mcq.map((q,i)=>{const a=ans[i],open=a===undefined;
+    return '<div class="mq"><p><b>'+(i+1)+'.</b> '+q.q+'</p><div class="mo">'+q.o.map((o,j)=>'<button data-q="'+i+'" data-j="'+j+'" class="'+(open?'':j===q.c?'ok':j===a?'no':'')+'"'+(open?'':' disabled')+'><b>'+L[j]+'</b>'+o+'</button>').join('')+'</div>'+
+      (open?'':'<p class="mw '+(a===q.c?'ok':'no')+'">'+(a===q.c?'✓ ':'✗ → '+L[q.c]+' · ')+q.w+'</p>')+'</div>';}).join('');
+  $('exMcq').querySelectorAll('button').forEach(b=>b.onclick=()=>{ans[+b.dataset.q]=+b.dataset.j;drawExam();});
+  const done=Object.keys(ans).length,ok=Object.keys(ans).filter(i=>ans[i]===e.mcq[i].c).length;
+  $('exScore').textContent=done?e.scoreL+': '+ok+' / '+e.mcq.length:'';
+}
+
+function stop(){if(timer){clearInterval(timer);timer=null;}$('play').textContent=T().ui.play;}
+$('back').onclick=()=>{stop();go(k-1,true);};
+$('next').onclick=()=>{stop();go(k+1,true);};
+$('restart').onclick=()=>{stop();go(0,true);};
+$('play').onclick=()=>{if(timer){stop();return;}if(k>=STEPS.length-1)go(0,false);timer=setInterval(()=>{if(k>=STEPS.length-1){stop();return;}go(k+1,true);},3200);$('play').textContent=T().ui.pause;};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){stop();go(k+1,true);}if(e.key==='ArrowLeft'){stop();go(k-1,true);}});
+LANGS.forEach(l=>$('lg-'+l).onclick=()=>{lang=l;staticText();go(k,false);try{localStorage.setItem('lang4',l)}catch(e){};try{history.replaceState(null,'','#'+l)}catch(e){}});
+try{const s=localStorage.getItem('lang4');if(TX[s])lang=s}catch(e){}
+const h=location.hash.slice(1);if(TX[h])lang=h;
+staticText();go(0,false);
+})();
+</script>
+</body>
+</html>
