@@ -1024,6 +1024,38 @@ tr.on td:first-child{box-shadow:inset 4px 0 0 var(--accent)}
   #sRun .pc .nm{font-size:1rem}
   .pc{max-width:100%}
 }
+/* Practice block (exam tips, sample questions, pitfalls, MCQs) */
+.xwrap{display:grid;gap:18px}
+.xb{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:12px;min-width:0}
+.xb h2{font-size:1.25rem}
+.xeyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.xtips{margin:0;padding-left:1.2em;display:grid;gap:6px;max-width:80ch}
+.xsamples,.xmcqs,.xpits{display:grid;gap:12px}
+.xq{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px}
+.xqh{margin:0}
+.xmk{font-family:var(--f-mono);font-size:.85rem;color:var(--muted);white-space:nowrap}
+.xans{background:#E6F6EC;border-left:4px solid #3E9E5C;border-radius:8px;padding:8px 12px}
+.xansh{margin:0 0 4px;font-size:.78rem;font-weight:700;color:#23774A;letter-spacing:.03em}
+.xans ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.xnote{margin:0;font-size:.85rem;color:var(--muted)}
+.xpit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:640px){.xpit{grid-template-columns:minmax(0,1fr)}}
+.xpit&gt;div{border-radius:8px;padding:8px 12px}
+.xpit p{margin:4px 0 0}
+.xw{background:#FDECEA}.xw .xk{color:#B42318}
+.xr{background:#E6F6EC}.xr .xk{color:#23774A}
+.xk{font-size:.78rem;font-weight:700}
+.xm{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px}
+.xopts{display:grid;gap:6px}
+.xopt{text-align:left;font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
+.xopt:not(:disabled):hover{border-color:var(--accent)}
+.xopt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.xopt:disabled{cursor:default;opacity:1}
+.xopt.right{background:#E6F6EC;border-color:#3E9E5C;font-weight:700}
+.xopt.wrong{background:#FDECEA;border-color:#D05A5A}
+.xfb{margin:0;font-size:.92rem;min-height:1.2em}
+.xfb .ok{color:#23774A}.xfb .no{color:#B42318}
+.xscore{margin:0;font-family:var(--f-mono);font-size:1.1rem;font-weight:600;color:var(--accent-ink)}
 &lt;/style&gt;
 
 &lt;div class=&quot;wrap&quot;&gt;
@@ -1070,6 +1102,7 @@ tr.on td:first-child{box-shadow:inset 4px 0 0 var(--accent)}
     &lt;div class=&quot;legend&quot; id=&quot;leg&quot;&gt;&lt;/div&gt;&lt;/div&gt;
 
   &lt;div class=&quot;panel&quot; style=&quot;display:grid;gap:10px&quot;&gt;&lt;h2 id=&quot;nvH&quot;&gt;&lt;/h2&gt;&lt;div class=&quot;never&quot; id=&quot;never&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div id=&quot;examBlock&quot; class=&quot;xwrap&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;script&gt;
@@ -1447,6 +1480,170 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{const d=(e.data||{}).states;i
 makeChips();staticText();go(0,false);
 if(EMB){document.body.classList.add(&#x27;emb&#x27;);const h=()=&gt;parent.postMessage({h:document.documentElement.scrollHeight},&#x27;*&#x27;);addEventListener(&#x27;load&#x27;,h);new ResizeObserver(h).observe(document.body);setInterval(h,800);setTimeout(arrows,300);}
 if(document.fonts)document.fonts.ready.then(arrows);
+})();
+&lt;/script&gt;
+&lt;script&gt;
+const EXAM={
+en:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;Exam tips&#x27;,sampleH:&#x27;Sample exam questions&#x27;,pitH:&#x27;Common pitfalls&#x27;,mcqH:&#x27;Check your understanding&#x27;,
+  ans:&#x27;Model answer&#x27;,note:&#x27;Study answers written for this page, not an official Cambridge mark scheme. Each bullet is one mark point.&#x27;,
+  wrong:&#x27;Common answer&#x27;,right:&#x27;Better answer&#x27;,correct:&#x27;Correct.&#x27;,notq:&#x27;Not quite. The answer is &#x27;},
+ tips:[
+  &#x27;Use the three state names exactly: &lt;b&gt;running&lt;/b&gt;, &lt;b&gt;ready&lt;/b&gt;, &lt;b&gt;blocked&lt;/b&gt;. &quot;Waiting&quot; on its own is too vague.&#x27;,
+  &#x27;For every move, give the state before, the state after and the event: &quot;moves from running to blocked &lt;i&gt;because it requests an I/O operation&lt;/i&gt;&quot;.&#x27;,
+  &#x27;Name the interrupt where there is one: a &lt;b&gt;timer interrupt&lt;/b&gt; ends a time slice; an &lt;b&gt;I/O interrupt&lt;/b&gt; tells the OS that a device has finished.&#x27;,
+  &#x27;When I/O finishes, the process goes to &lt;b&gt;ready&lt;/b&gt;, not straight to running. The scheduler decides when it runs.&#x27;,
+  &#x27;Mention the &lt;b&gt;PCB&lt;/b&gt;: the state field changes, and the registers are saved there when a process leaves the CPU.&#x27;],
+ sample:[
+  {q:&#x27;Describe what is meant by the &lt;b&gt;blocked&lt;/b&gt; state.&#x27;,m:2,a:[&#x27;The process cannot continue until an event happens / an I/O operation completes.&#x27;,&#x27;It does not use the CPU and cannot be chosen by the scheduler until the event has happened.&#x27;]},
+  {q:&#x27;A process can move between the running, ready and blocked states. Explain the condition that causes each of these moves: running → ready, running → blocked, blocked → ready, ready → running.&#x27;,m:4,a:[
+   &#x27;&lt;b&gt;Running → ready:&lt;/b&gt; its time slice (quantum) runs out; a timer interrupt pre-empts it.&#x27;,
+   &#x27;&lt;b&gt;Running → blocked:&lt;/b&gt; it requests an I/O operation or must wait for another event.&#x27;,
+   &#x27;&lt;b&gt;Blocked → ready:&lt;/b&gt; the I/O operation or event it was waiting for has completed.&#x27;,
+   &#x27;&lt;b&gt;Ready → running:&lt;/b&gt; it is at the front of the queue / it is its turn, and the scheduler allocates it the CPU.&#x27;]},
+  {q:&#x27;A photo app asks to read a 4 MB photo from the disk. Explain why the OS moves the photo app to the blocked state instead of letting it keep the CPU.&#x27;,m:3,a:[
+   &#x27;Reading from the disk is much slower than the CPU, so the CPU would sit idle while it waited.&#x27;,
+   &#x27;Moving the photo app to blocked frees the CPU for another ready process, so the CPU stays busy / multitasking is more efficient.&#x27;,
+   &#x27;When the disk finishes it sends an interrupt and the photo app moves to the ready state.&#x27;]}],
+ pit:[
+  [&#x27;&quot;The process waits for the disk.&quot;&#x27;,&#x27;&quot;The process moves from running to blocked because it requests an I/O operation (reading from the disk).&quot;&#x27;],
+  [&#x27;&quot;When the I/O finishes, the process starts running again.&quot;&#x27;,&#x27;&quot;When the I/O finishes, the process moves from blocked to ready. It runs when the scheduler next chooses it.&quot;&#x27;],
+  [&#x27;&quot;A ready process is waiting for its data.&quot;&#x27;,&#x27;&quot;A ready process has everything it needs except the CPU. A process waiting for data is blocked.&quot;&#x27;],
+  [&#x27;&quot;A process can go from ready to blocked.&quot;&#x27;,&#x27;&quot;Only a running process can ask for I/O, so the only way into blocked is from running.&quot;&#x27;]],
+ mcq:[
+  {q:&#x27;A process is waiting for data to arrive from the disk. Which state is it in?&#x27;,o:[&#x27;Ready&#x27;,&#x27;Running&#x27;,&#x27;Blocked&#x27;,&#x27;Finished&#x27;],a:2,ex:&#x27;It cannot continue until the I/O operation completes, so it is blocked.&#x27;},
+  {q:&#x27;Which event moves a process from running to ready?&#x27;,o:[&#x27;Its time slice runs out&#x27;,&#x27;It requests a file from disk&#x27;,&#x27;The key it waited for is pressed&#x27;,&#x27;It finishes all of its work&#x27;],a:0,ex:&#x27;A timer interrupt ends the time slice; the process is not finished, so it goes back to the ready queue.&#x27;},
+  {q:&#x27;A disk read finishes while another process is using the CPU. What happens to the process that was waiting?&#x27;,o:[&#x27;It goes straight to running&#x27;,&#x27;It stays in the blocked state&#x27;,&#x27;It is removed from memory&#x27;,&#x27;It moves to the ready queue&#x27;],a:3,ex:&#x27;Blocked → ready. It has to wait for the scheduler because the CPU is busy.&#x27;},
+  {q:&#x27;Which of these transitions can never happen?&#x27;,o:[&#x27;Ready → Running&#x27;,&#x27;Blocked → Running&#x27;,&#x27;Running → Blocked&#x27;,&#x27;Blocked → Ready&#x27;],a:1,ex:&#x27;A blocked process must go through the ready state first; the scheduler only dispatches ready processes.&#x27;},
+  {q:&#x27;Where does the OS save a process\&#x27;s register values when it leaves the CPU?&#x27;,o:[&#x27;In the interrupt register&#x27;,&#x27;In the ready queue&#x27;,&#x27;In its PCB&#x27;,&#x27;In the IDT&#x27;],a:2,ex:&#x27;The PCB holds the process state, register values, priority and other scheduling information.&#x27;}]},
+ja:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;試験のコツ&#x27;,sampleH:&#x27;試験問題の例&#x27;,pitH:&#x27;よくある間違い&#x27;,mcqH:&#x27;理解度チェック&#x27;,
+  ans:&#x27;解答例&#x27;,note:&#x27;このページ用に書いた学習用の解答です。Cambridge の公式採点基準ではありません。箇条書き 1 つが 1 点の目安です。&#x27;,
+  wrong:&#x27;よくある答え&#x27;,right:&#x27;よりよい答え&#x27;,correct:&#x27;正解。&#x27;,notq:&#x27;惜しい。正解は &#x27;},
+ tips:[
+  &#x27;3 つの状態名を正確に使う：&lt;b&gt;running（実行）&lt;/b&gt;、&lt;b&gt;ready（レディ）&lt;/b&gt;、&lt;b&gt;blocked（ブロック）&lt;/b&gt;。「待っている」だけではあいまい。&#x27;,
+  &#x27;移動ごとに、前の状態・後の状態・きっかけを書く：「&lt;i&gt;I/O 操作を要求したので&lt;/i&gt;実行からブロックに移る」。&#x27;,
+  &#x27;割り込みがあるときは名前を書く：タイムスライスの終わりは&lt;b&gt;タイマー割り込み&lt;/b&gt;、装置の作業終了は&lt;b&gt;I/O 割り込み&lt;/b&gt;。&#x27;,
+  &#x27;I/O が終わったプロセスは&lt;b&gt;レディ&lt;/b&gt;に移る。いきなり実行にはならない。いつ実行するかはスケジューラが決める。&#x27;,
+  &#x27;&lt;b&gt;PCB&lt;/b&gt; にも触れる：状態の欄が書き換わり、CPU を離れるときにレジスタがそこに保存される。&#x27;],
+ sample:[
+  {q:&#x27;&lt;b&gt;ブロック状態&lt;/b&gt;とは何かを説明しなさい。&#x27;,m:2,a:[&#x27;イベントが起きる／I/O 操作が終わるまで、プロセスは先に進めない。&#x27;,&#x27;その間は CPU を使わず、イベントが起きるまでスケジューラに選ばれない。&#x27;]},
+  {q:&#x27;プロセスは実行・レディ・ブロックの状態の間を移る。次の移動が起きる条件をそれぞれ説明しなさい：実行 → レディ、実行 → ブロック、ブロック → レディ、レディ → 実行。&#x27;,m:4,a:[
+   &#x27;&lt;b&gt;実行 → レディ：&lt;/b&gt;タイムスライス（クォンタム）を使い切り、タイマー割り込みで中断される。&#x27;,
+   &#x27;&lt;b&gt;実行 → ブロック：&lt;/b&gt;I/O 操作を要求する、またはほかのイベントを待つ必要がある。&#x27;,
+   &#x27;&lt;b&gt;ブロック → レディ：&lt;/b&gt;待っていた I/O 操作やイベントが完了する。&#x27;,
+   &#x27;&lt;b&gt;レディ → 実行：&lt;/b&gt;キューの先頭になり／順番が来て、スケジューラが CPU を割り当てる。&#x27;]},
+  {q:&#x27;写真アプリがディスクから 4 MB の写真を読み込もうとしている。OS が写真アプリに CPU を持たせたままにせず、ブロック状態にする理由を説明しなさい。&#x27;,m:3,a:[
+   &#x27;ディスクの読み込みは CPU よりずっと遅いので、待っている間 CPU が何もしなくなる。&#x27;,
+   &#x27;写真アプリをブロックにすると CPU が空き、ほかのレディのプロセスが使えるので、CPU が休まず働ける／マルチタスクの効率が上がる。&#x27;,
+   &#x27;ディスクが終わると割り込みを送り、写真アプリはレディ状態に移る。&#x27;]}],
+ pit:[
+  [&#x27;「プロセスはディスクを待つ。」&#x27;,&#x27;「プロセスは I/O 操作（ディスクからの読み込み）を要求したので、実行からブロックに移る。」&#x27;],
+  [&#x27;「I/O が終わると、プロセスはまた実行される。」&#x27;,&#x27;「I/O が終わると、プロセスはブロックからレディに移る。実行されるのは、次にスケジューラに選ばれたとき。」&#x27;],
+  [&#x27;「レディのプロセスはデータを待っている。」&#x27;,&#x27;「レディのプロセスは CPU 以外はすべてそろっている。データを待っているプロセスはブロック。」&#x27;],
+  [&#x27;「プロセスはレディからブロックに移ることがある。」&#x27;,&#x27;「I/O を要求できるのは実行中のプロセスだけなので、ブロックに入る道は実行からだけ。」&#x27;]],
+ mcq:[
+  {q:&#x27;ディスクからデータが届くのを待っているプロセスは、どの状態か？&#x27;,o:[&#x27;レディ&#x27;,&#x27;実行中&#x27;,&#x27;ブロック&#x27;,&#x27;終了済み&#x27;],a:2,ex:&#x27;I/O 操作が終わるまで先に進めないので、ブロック状態。&#x27;},
+  {q:&#x27;プロセスを実行からレディに移すのはどのイベントか？&#x27;,o:[&#x27;タイムスライスが終わる&#x27;,&#x27;ディスクのファイルを要求する&#x27;,&#x27;待っていたキーが押される&#x27;,&#x27;すべての仕事を終える&#x27;],a:0,ex:&#x27;タイマー割り込みでタイムスライスが終わる。まだ終わっていないので、レディキューに戻る。&#x27;},
+  {q:&#x27;ほかのプロセスが CPU を使っている間にディスクの読み込みが終わった。待っていたプロセスはどうなるか？&#x27;,o:[&#x27;すぐに実行になる&#x27;,&#x27;ブロックのままになる&#x27;,&#x27;メモリから消される&#x27;,&#x27;レディキューに入る&#x27;],a:3,ex:&#x27;ブロック → レディ。CPU が使われているので、スケジューラを待つ。&#x27;},
+  {q:&#x27;決して起きない状態遷移はどれか？&#x27;,o:[&#x27;レディ → 実行&#x27;,&#x27;ブロック → 実行&#x27;,&#x27;実行 → ブロック&#x27;,&#x27;ブロック → レディ&#x27;],a:1,ex:&#x27;ブロックのプロセスはまずレディを通る。スケジューラが選ぶのはレディのプロセスだけ。&#x27;},
+  {q:&#x27;プロセスが CPU を離れるとき、OS はレジスタの値をどこに保存するか？&#x27;,o:[&#x27;割り込みレジスタ&#x27;,&#x27;レディキュー&#x27;,&#x27;その PCB&#x27;,&#x27;IDT&#x27;],a:2,ex:&#x27;PCB には状態、レジスタの値、優先度などのスケジューリング情報が入っている。&#x27;}]},
+zh:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;考试提示&#x27;,sampleH:&#x27;考试题示例&#x27;,pitH:&#x27;常见错误&#x27;,mcqH:&#x27;检查理解&#x27;,
+  ans:&#x27;参考答案&#x27;,note:&#x27;这些是为本页写的学习用答案，不是 Cambridge 官方评分标准。每个要点大约 1 分。&#x27;,
+  wrong:&#x27;常见答案&#x27;,right:&#x27;更好的答案&#x27;,correct:&#x27;正确。&#x27;,notq:&#x27;不太对。答案是 &#x27;},
+ tips:[
+  &#x27;准确使用三个状态名：&lt;b&gt;running（运行）&lt;/b&gt;、&lt;b&gt;ready（就绪）&lt;/b&gt;、&lt;b&gt;blocked（阻塞）&lt;/b&gt;。只写&quot;等待&quot;太含糊。&#x27;,
+  &#x27;每次移动都写出之前的状态、之后的状态和原因：&quot;&lt;i&gt;因为请求 I/O 操作&lt;/i&gt;，从运行变为阻塞&quot;。&#x27;,
+  &#x27;有中断时写出名称：时间片结束是&lt;b&gt;定时器中断&lt;/b&gt;，设备完成工作是&lt;b&gt;I/O 中断&lt;/b&gt;。&#x27;,
+  &#x27;I/O 完成后进程进入&lt;b&gt;就绪&lt;/b&gt;，不是直接运行。什么时候运行由调度程序决定。&#x27;,
+  &#x27;提到 &lt;b&gt;PCB&lt;/b&gt;：状态字段会改变，进程离开 CPU 时寄存器保存在那里。&#x27;],
+ sample:[
+  {q:&#x27;描述&lt;b&gt;阻塞&lt;/b&gt;状态的含义。&#x27;,m:2,a:[&#x27;在某个事件发生／I/O 操作完成之前，进程不能继续。&#x27;,&#x27;这段时间它不使用 CPU，在事件发生前不会被调度程序选中。&#x27;]},
+  {q:&#x27;进程可以在运行、就绪和阻塞状态之间移动。分别解释引起下列移动的条件：运行 → 就绪，运行 → 阻塞，阻塞 → 就绪，就绪 → 运行。&#x27;,m:4,a:[
+   &#x27;&lt;b&gt;运行 → 就绪：&lt;/b&gt;时间片（quantum）用完，定时器中断抢占它。&#x27;,
+   &#x27;&lt;b&gt;运行 → 阻塞：&lt;/b&gt;它请求 I/O 操作，或必须等待其他事件。&#x27;,
+   &#x27;&lt;b&gt;阻塞 → 就绪：&lt;/b&gt;它等待的 I/O 操作或事件已完成。&#x27;,
+   &#x27;&lt;b&gt;就绪 → 运行：&lt;/b&gt;它在队首／轮到它，调度程序把 CPU 分配给它。&#x27;]},
+  {q:&#x27;照片应用请求从磁盘读取一张 4 MB 的照片。解释为什么操作系统把照片应用移到阻塞状态，而不让它继续占用 CPU。&#x27;,m:3,a:[
+   &#x27;从磁盘读取比 CPU 慢得多，等待期间 CPU 会闲着。&#x27;,
+   &#x27;把照片应用移到阻塞可以让出 CPU 给其他就绪进程，使 CPU 保持忙碌／多任务更高效。&#x27;,
+   &#x27;磁盘完成后发出中断，照片应用进入就绪状态。&#x27;]}],
+ pit:[
+  [&#x27;&quot;进程在等磁盘。&quot;&#x27;,&#x27;&quot;进程因为请求 I/O 操作（从磁盘读取），从运行变为阻塞。&quot;&#x27;],
+  [&#x27;&quot;I/O 完成后，进程重新开始运行。&quot;&#x27;,&#x27;&quot;I/O 完成后，进程从阻塞变为就绪。等调度程序下次选中它时才运行。&quot;&#x27;],
+  [&#x27;&quot;就绪的进程在等它的数据。&quot;&#x27;,&#x27;&quot;就绪的进程除了 CPU 什么都有了。在等数据的进程是阻塞的。&quot;&#x27;],
+  [&#x27;&quot;进程可以从就绪变为阻塞。&quot;&#x27;,&#x27;&quot;只有正在运行的进程才能请求 I/O，所以进入阻塞只能从运行状态。&quot;&#x27;]],
+ mcq:[
+  {q:&#x27;一个进程在等待磁盘送来数据。它处于哪种状态？&#x27;,o:[&#x27;就绪&#x27;,&#x27;运行&#x27;,&#x27;阻塞&#x27;,&#x27;已完成&#x27;],a:2,ex:&#x27;I/O 操作完成前它不能继续，所以是阻塞。&#x27;},
+  {q:&#x27;哪个事件使进程从运行变为就绪？&#x27;,o:[&#x27;它的时间片用完&#x27;,&#x27;它请求磁盘上的文件&#x27;,&#x27;它等待的按键被按下&#x27;,&#x27;它完成了全部工作&#x27;],a:0,ex:&#x27;定时器中断结束时间片。进程还没完成，所以回到就绪队列。&#x27;},
+  {q:&#x27;另一个进程正在使用 CPU 时，磁盘读取完成了。等待的进程会怎样？&#x27;,o:[&#x27;直接变为运行&#x27;,&#x27;继续保持阻塞&#x27;,&#x27;被移出内存&#x27;,&#x27;进入就绪队列&#x27;],a:3,ex:&#x27;阻塞 → 就绪。CPU 正忙，它要等调度程序。&#x27;},
+  {q:&#x27;下面哪种转换永远不会发生？&#x27;,o:[&#x27;就绪 → 运行&#x27;,&#x27;阻塞 → 运行&#x27;,&#x27;运行 → 阻塞&#x27;,&#x27;阻塞 → 就绪&#x27;],a:1,ex:&#x27;阻塞的进程必须先进入就绪。调度程序只调度就绪的进程。&#x27;},
+  {q:&#x27;进程离开 CPU 时，操作系统把寄存器值保存在哪里？&#x27;,o:[&#x27;中断寄存器&#x27;,&#x27;就绪队列&#x27;,&#x27;进程控制块&#x27;,&#x27;IDT&#x27;],a:2,ex:&#x27;PCB 保存进程状态、寄存器值、优先级等调度信息。&#x27;}]},
+th:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;เคล็ดลับการสอบ&#x27;,sampleH:&#x27;ตัวอย่างข้อสอบ&#x27;,pitH:&#x27;ข้อผิดพลาดที่พบบ่อย&#x27;,mcqH:&#x27;ทดสอบความเข้าใจ&#x27;,
+  ans:&#x27;ตัวอย่างคำตอบ&#x27;,note:&#x27;คำตอบเพื่อการทบทวนที่เขียนสำหรับหน้านี้ ไม่ใช่เกณฑ์การให้คะแนนทางการของ Cambridge แต่ละข้อย่อยประมาณ 1 คะแนน&#x27;,
+  wrong:&#x27;คำตอบที่พบบ่อย&#x27;,right:&#x27;คำตอบที่ดีกว่า&#x27;,correct:&#x27;ถูกต้อง&#x27;,notq:&#x27;ยังไม่ถูก คำตอบคือ &#x27;},
+ tips:[
+  &#x27;ใช้ชื่อสถานะทั้งสามให้ถูกต้อง: &lt;b&gt;running&lt;/b&gt;, &lt;b&gt;ready&lt;/b&gt;, &lt;b&gt;blocked&lt;/b&gt; คำว่า &quot;รอ&quot; อย่างเดียวคลุมเครือเกินไป&#x27;,
+  &#x27;ทุกครั้งที่ย้าย ให้บอกสถานะก่อน สถานะหลัง และเหตุการณ์: &quot;ย้ายจาก running ไป blocked &lt;i&gt;เพราะร้องขอการทำงาน I/O&lt;/i&gt;&quot;&#x27;,
+  &#x27;ถ้ามีอินเทอร์รัปต์ให้บอกชื่อ: การหมดช่วงเวลาคือ &lt;b&gt;timer interrupt&lt;/b&gt; อุปกรณ์ทำงานเสร็จคือ &lt;b&gt;I/O interrupt&lt;/b&gt;&#x27;,
+  &#x27;เมื่อ I/O เสร็จ โปรเซสไปที่ &lt;b&gt;ready&lt;/b&gt; ไม่ใช่ไปทำงานทันที ตัวจัดลำดับเป็นผู้ตัดสินว่าจะทำงานเมื่อไร&#x27;,
+  &#x27;กล่าวถึง &lt;b&gt;PCB&lt;/b&gt;: ช่องสถานะเปลี่ยน และรีจิสเตอร์ถูกบันทึกไว้ที่นั่นเมื่อโปรเซสออกจาก CPU&#x27;],
+ sample:[
+  {q:&#x27;อธิบายความหมายของสถานะ &lt;b&gt;blocked&lt;/b&gt;&#x27;,m:2,a:[&#x27;โปรเซสทำต่อไม่ได้จนกว่าเหตุการณ์จะเกิดขึ้น / การทำงาน I/O จะเสร็จ&#x27;,&#x27;ระหว่างนั้นไม่ใช้ CPU และตัวจัดลำดับจะไม่เลือกจนกว่าเหตุการณ์จะเกิดขึ้น&#x27;]},
+  {q:&#x27;โปรเซสย้ายระหว่างสถานะ running, ready และ blocked ได้ อธิบายเงื่อนไขของการย้ายแต่ละแบบ: running → ready, running → blocked, blocked → ready, ready → running&#x27;,m:4,a:[
+   &#x27;&lt;b&gt;Running → ready:&lt;/b&gt; ช่วงเวลา (quantum) หมด timer interrupt ขัดจังหวะ&#x27;,
+   &#x27;&lt;b&gt;Running → blocked:&lt;/b&gt; ร้องขอการทำงาน I/O หรือต้องรอเหตุการณ์อื่น&#x27;,
+   &#x27;&lt;b&gt;Blocked → ready:&lt;/b&gt; การทำงาน I/O หรือเหตุการณ์ที่รอเสร็จแล้ว&#x27;,
+   &#x27;&lt;b&gt;Ready → running:&lt;/b&gt; อยู่หัวคิว / ถึงคิว และตัวจัดลำดับจัดสรร CPU ให้&#x27;]},
+  {q:&#x27;แอปรูปภาพขออ่านรูปขนาด 4 MB จากดิสก์ อธิบายว่าทำไม OS จึงย้ายแอปรูปภาพไปสถานะ blocked แทนที่จะให้ใช้ CPU ต่อ&#x27;,m:3,a:[
+   &#x27;การอ่านดิสก์ช้ากว่า CPU มาก CPU จะว่างเปล่าระหว่างรอ&#x27;,
+   &#x27;การย้ายไป blocked ทำให้ CPU ว่างให้โปรเซสอื่นที่ ready ใช้ CPU จึงทำงานตลอด / การทำงานหลายงานมีประสิทธิภาพขึ้น&#x27;,
+   &#x27;เมื่อดิสก์เสร็จจะส่งอินเทอร์รัปต์ และแอปรูปภาพย้ายไปสถานะ ready&#x27;]}],
+ pit:[
+  [&#x27;&quot;โปรเซสรอดิสก์&quot;&#x27;,&#x27;&quot;โปรเซสย้ายจาก running ไป blocked เพราะร้องขอการทำงาน I/O (อ่านจากดิสก์)&quot;&#x27;],
+  [&#x27;&quot;เมื่อ I/O เสร็จ โปรเซสกลับมาทำงานอีกครั้ง&quot;&#x27;,&#x27;&quot;เมื่อ I/O เสร็จ โปรเซสย้ายจาก blocked ไป ready และจะทำงานเมื่อตัวจัดลำดับเลือกครั้งถัดไป&quot;&#x27;],
+  [&#x27;&quot;โปรเซสที่ ready กำลังรอข้อมูล&quot;&#x27;,&#x27;&quot;โปรเซสที่ ready มีทุกอย่างพร้อมยกเว้น CPU โปรเซสที่รอข้อมูลคือ blocked&quot;&#x27;],
+  [&#x27;&quot;โปรเซสย้ายจาก ready ไป blocked ได้&quot;&#x27;,&#x27;&quot;มีแต่โปรเซสที่ running เท่านั้นที่ร้องขอ I/O ได้ จึงเข้า blocked ได้จาก running เท่านั้น&quot;&#x27;]],
+ mcq:[
+  {q:&#x27;โปรเซสกำลังรอข้อมูลจากดิสก์ อยู่ในสถานะใด&#x27;,o:[&#x27;Ready&#x27;,&#x27;Running&#x27;,&#x27;Blocked&#x27;,&#x27;เสร็จแล้ว&#x27;],a:2,ex:&#x27;ทำต่อไม่ได้จนกว่า I/O จะเสร็จ จึงเป็น blocked&#x27;},
+  {q:&#x27;เหตุการณ์ใดทำให้โปรเซสย้ายจาก running ไป ready&#x27;,o:[&#x27;ช่วงเวลาหมด&#x27;,&#x27;ขอไฟล์จากดิสก์&#x27;,&#x27;ปุ่มที่รอถูกกด&#x27;,&#x27;ทำงานเสร็จทั้งหมด&#x27;],a:0,ex:&#x27;timer interrupt ทำให้ช่วงเวลาหมด โปรเซสยังไม่เสร็จจึงกลับไปคิวพร้อม&#x27;},
+  {q:&#x27;ดิสก์อ่านเสร็จขณะที่โปรเซสอื่นใช้ CPU อยู่ โปรเซสที่รออยู่จะเป็นอย่างไร&#x27;,o:[&#x27;ไปทำงานทันที&#x27;,&#x27;ยังคง blocked&#x27;,&#x27;ถูกลบออกจากหน่วยความจำ&#x27;,&#x27;เข้าคิวพร้อม&#x27;],a:3,ex:&#x27;Blocked → ready CPU ไม่ว่าง จึงต้องรอตัวจัดลำดับ&#x27;},
+  {q:&#x27;การเปลี่ยนสถานะใดไม่มีวันเกิดขึ้น&#x27;,o:[&#x27;Ready → Running&#x27;,&#x27;Blocked → Running&#x27;,&#x27;Running → Blocked&#x27;,&#x27;Blocked → Ready&#x27;],a:1,ex:&#x27;โปรเซสที่ blocked ต้องผ่าน ready ก่อน ตัวจัดลำดับเลือกเฉพาะโปรเซสที่ ready&#x27;},
+  {q:&#x27;เมื่อโปรเซสออกจาก CPU OS บันทึกค่ารีจิสเตอร์ไว้ที่ใด&#x27;,o:[&#x27;รีจิสเตอร์อินเทอร์รัปต์&#x27;,&#x27;คิวพร้อม&#x27;,&#x27;PCB ของโปรเซส&#x27;,&#x27;IDT&#x27;],a:2,ex:&#x27;PCB เก็บสถานะ ค่ารีจิสเตอร์ ลำดับความสำคัญ และข้อมูลการจัดลำดับอื่น ๆ&#x27;}]}
+};
+
+/* Practice block: exam tips, sample questions with study answers, common pitfalls, MCQ quiz.
+   Reads EXAM[lang]; re-renders when the page changes &lt;html lang&gt;. */
+(function(){
+const root=document.getElementById(&#x27;examBlock&#x27;);if(!root||typeof EXAM===&#x27;undefined&#x27;)return;
+const L=()=&gt;{const l=(document.documentElement.lang||&#x27;en&#x27;).slice(0,2);return EXAM[l]?l:&#x27;en&#x27;;};
+let shown=&#x27;&#x27;;
+function esc(s){return s;}
+function render(){
+  const l=L();if(l===shown)return;shown=l;
+  const E=EXAM[l],U=E.ui;let score=0,answered=0;
+  root.innerHTML=
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;p class=&quot;xeyebrow&quot;&gt;&#x27;+U.eyebrow+&#x27;&lt;/p&gt;&lt;h2&gt;&#x27;+U.tipsH+&#x27;&lt;/h2&gt;&lt;ul class=&quot;xtips&quot;&gt;&#x27;+E.tips.map(t=&gt;&#x27;&lt;li&gt;&#x27;+t+&#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/ul&gt;&lt;/section&gt;&#x27;+
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;h2&gt;&#x27;+U.sampleH+&#x27;&lt;/h2&gt;&lt;div class=&quot;xsamples&quot;&gt;&#x27;+E.sample.map((s,i)=&gt;
+      &#x27;&lt;div class=&quot;xq&quot;&gt;&lt;p class=&quot;xqh&quot;&gt;&lt;b&gt;Q&#x27;+(i+1)+&#x27;.&lt;/b&gt; &#x27;+s.q+&#x27; &lt;span class=&quot;xmk&quot;&gt;[&#x27;+s.m+&#x27;]&lt;/span&gt;&lt;/p&gt;&lt;div class=&quot;xans&quot;&gt;&lt;p class=&quot;xansh&quot;&gt;&#x27;+U.ans+&#x27;&lt;/p&gt;&lt;ul&gt;&#x27;+s.a.map(a=&gt;&#x27;&lt;li&gt;&#x27;+a+&#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+
+      &#x27;&lt;/div&gt;&lt;p class=&quot;xnote&quot;&gt;&#x27;+U.note+&#x27;&lt;/p&gt;&lt;/section&gt;&#x27;+
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;h2&gt;&#x27;+U.pitH+&#x27;&lt;/h2&gt;&lt;div class=&quot;xpits&quot;&gt;&#x27;+E.pit.map(p=&gt;
+      &#x27;&lt;div class=&quot;xpit&quot;&gt;&lt;div class=&quot;xw&quot;&gt;&lt;span class=&quot;xk&quot;&gt;✕ &#x27;+U.wrong+&#x27;&lt;/span&gt;&lt;p&gt;&#x27;+p[0]+&#x27;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;xr&quot;&gt;&lt;span class=&quot;xk&quot;&gt;○ &#x27;+U.right+&#x27;&lt;/span&gt;&lt;p&gt;&#x27;+p[1]+&#x27;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;/section&gt;&#x27;+
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;h2&gt;&#x27;+U.mcqH+&#x27;&lt;/h2&gt;&lt;div class=&quot;xmcqs&quot;&gt;&#x27;+E.mcq.map((q,i)=&gt;
+      &#x27;&lt;div class=&quot;xm&quot; data-i=&quot;&#x27;+i+&#x27;&quot;&gt;&lt;p class=&quot;xqh&quot;&gt;&lt;b&gt;Q&#x27;+(i+1)+&#x27;.&lt;/b&gt; &#x27;+q.q+&#x27;&lt;/p&gt;&lt;div class=&quot;xopts&quot;&gt;&#x27;+q.o.map((o,j)=&gt;&#x27;&lt;button class=&quot;xopt&quot; data-j=&quot;&#x27;+j+&#x27;&quot;&gt;&#x27;+&#x27;ABCD&#x27;[j]+&#x27;. &#x27;+o+&#x27;&lt;/button&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;p class=&quot;xfb&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+
+      &#x27;&lt;/div&gt;&lt;p class=&quot;xscore&quot; id=&quot;xscore&quot;&gt;0 / &#x27;+E.mcq.length+&#x27;&lt;/p&gt;&lt;/section&gt;&#x27;;
+  root.querySelectorAll(&#x27;.xm&#x27;).forEach(box=&gt;{
+    const q=E.mcq[+box.dataset.i];let done=false;
+    box.querySelectorAll(&#x27;.xopt&#x27;).forEach(b=&gt;b.onclick=()=&gt;{
+      if(done)return;done=true;answered++;
+      const j=+b.dataset.j;box.querySelectorAll(&#x27;.xopt&#x27;)[q.a].classList.add(&#x27;right&#x27;);
+      if(j!==q.a)b.classList.add(&#x27;wrong&#x27;);else score++;
+      box.querySelectorAll(&#x27;.xopt&#x27;).forEach(x=&gt;x.disabled=true);
+      box.querySelector(&#x27;.xfb&#x27;).innerHTML=(j===q.a?&#x27;&lt;b class=&quot;ok&quot;&gt;&#x27;+U.correct+&#x27;&lt;/b&gt; &#x27;:&#x27;&lt;b class=&quot;no&quot;&gt;&#x27;+U.notq+&#x27;ABCD&#x27;[q.a]+&#x27;.&lt;/b&gt; &#x27;)+q.ex;
+      root.querySelector(&#x27;#xscore&#x27;).textContent=score+&#x27; / &#x27;+E.mcq.length;
+    });
+  });
+}
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:[&#x27;lang&#x27;]});
+render();
 })();
 &lt;/script&gt;
 
@@ -1990,6 +2187,7 @@ body.emb header{padding-block:40px 0}
 .mono{font-family:var(--f-mono)}
 button,select,input{font:inherit;font-size:.92rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px}
 button,select{padding:7px 12px;min-height:38px;cursor:pointer}
+select{max-width:100%;text-overflow:ellipsis}
 button:hover,select:hover{border-color:var(--accent)}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 button:disabled{opacity:.45;cursor:default}
@@ -2156,6 +2354,38 @@ tfoot td{border-bottom:0;font-weight:700}
 .hint{font-size:.86rem;color:var(--accent-ink);background:var(--accent-soft);border-radius:8px;padding:8px 12px}
 .hint button{margin-left:8px;min-height:30px;padding:2px 10px}
 @media (prefers-reduced-motion:reduce){.pc .bar i{transition:none}}
+/* Practice block (exam tips, sample questions, pitfalls, MCQs) */
+.xwrap{display:grid;gap:18px}
+.xb{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:12px;min-width:0}
+.xb h2{font-size:1.25rem}
+.xeyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.xtips{margin:0;padding-left:1.2em;display:grid;gap:6px;max-width:80ch}
+.xsamples,.xmcqs,.xpits{display:grid;gap:12px}
+.xq{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px}
+.xqh{margin:0}
+.xmk{font-family:var(--f-mono);font-size:.85rem;color:var(--muted);white-space:nowrap}
+.xans{background:#E6F6EC;border-left:4px solid #3E9E5C;border-radius:8px;padding:8px 12px}
+.xansh{margin:0 0 4px;font-size:.78rem;font-weight:700;color:#23774A;letter-spacing:.03em}
+.xans ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.xnote{margin:0;font-size:.85rem;color:var(--muted)}
+.xpit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:640px){.xpit{grid-template-columns:minmax(0,1fr)}}
+.xpit&gt;div{border-radius:8px;padding:8px 12px}
+.xpit p{margin:4px 0 0}
+.xw{background:#FDECEA}.xw .xk{color:#B42318}
+.xr{background:#E6F6EC}.xr .xk{color:#23774A}
+.xk{font-size:.78rem;font-weight:700}
+.xm{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px}
+.xopts{display:grid;gap:6px}
+.xopt{text-align:left;font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
+.xopt:not(:disabled):hover{border-color:var(--accent)}
+.xopt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.xopt:disabled{cursor:default;opacity:1}
+.xopt.right{background:#E6F6EC;border-color:#3E9E5C;font-weight:700}
+.xopt.wrong{background:#FDECEA;border-color:#D05A5A}
+.xfb{margin:0;font-size:.92rem;min-height:1.2em}
+.xfb .ok{color:#23774A}.xfb .no{color:#B42318}
+.xscore{margin:0;font-family:var(--f-mono);font-size:1.1rem;font-weight:600;color:var(--accent-ink)}
 &lt;/style&gt;
 
 &lt;div class=&quot;wrap&quot;&gt;
@@ -2234,6 +2464,7 @@ tfoot td{border-bottom:0;font-weight:700}
     &lt;p class=&quot;note&quot; id=&quot;eN&quot;&gt;&lt;/p&gt;
   &lt;/section&gt;
 
+  &lt;div id=&quot;examBlock&quot; class=&quot;xwrap&quot;&gt;&lt;/div&gt;
   &lt;p class=&quot;note&quot; id=&quot;foot&quot;&gt;&lt;/p&gt;
 &lt;/div&gt;
 
@@ -2762,6 +2993,178 @@ lang=l0;alg=a0;if(FIG[alg]!==preset)loadPreset(FIG[alg]);
 [&#x27;en&#x27;,&#x27;ja&#x27;,&#x27;zh&#x27;,&#x27;th&#x27;].forEach(c=&gt;$(&#x27;lg-&#x27;+c).setAttribute(&#x27;aria-pressed&#x27;,c===lang));
 sim=simulate(alg,procs,q);staticText();rebuild(false);
 if(EMB){const h=()=&gt;parent.postMessage({h:document.documentElement.scrollHeight},&#x27;*&#x27;);addEventListener(&#x27;load&#x27;,h);new ResizeObserver(h).observe(document.body);setInterval(h,800);}
+})();
+&lt;/script&gt;
+&lt;script&gt;
+const EXAM={
+en:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;Exam tips&#x27;,sampleH:&#x27;Sample exam questions&#x27;,pitH:&#x27;Common pitfalls&#x27;,mcqH:&#x27;Check your understanding&#x27;,
+  ans:&#x27;Model answer&#x27;,note:&#x27;Study answers written for this page, not an official Cambridge mark scheme. Each bullet is one mark point.&#x27;,
+  wrong:&#x27;Common answer&#x27;,right:&#x27;Better answer&#x27;,correct:&#x27;Correct.&#x27;,notq:&#x27;Not quite. The answer is &#x27;},
+ tips:[
+  &#x27;In a calculation, draw the Gantt chart first, then make a table: arrival, burst, finish, turnaround, waiting. Show the sum for the average.&#x27;,
+  &#x27;Waiting time = finish − arrival − burst (= turnaround − burst). It counts every wait, including waits after being pre-empted.&#x27;,
+  &#x27;For each routine say &lt;b&gt;what is compared&lt;/b&gt;, &lt;b&gt;when the decision is made&lt;/b&gt; and &lt;b&gt;whether it is preemptive&lt;/b&gt;.&#x27;,
+  &#x27;SRTF compares the new process\&#x27;s burst with the &lt;b&gt;remaining&lt;/b&gt; time of the running process, not its original burst.&#x27;,
+  &#x27;For round robin, mention the &lt;b&gt;fixed time quantum&lt;/b&gt;, the &lt;b&gt;timer interrupt&lt;/b&gt;, and that the process goes to the &lt;b&gt;back of the ready queue&lt;/b&gt;.&#x27;],
+ sample:[
+  {q:&#x27;Four processes arrive at t = 0 in the order P1 (23 ms), P2 (4 ms), P3 (9 ms), P4 (3 ms). Calculate the average waiting time for (a) first come first served and (b) shortest job first. Show your working.&#x27;,m:4,a:[
+   &#x27;(a) FCFS order P1, P2, P3, P4: waiting times 0, 23, 27, 36 ms.&#x27;,
+   &#x27;Average = (0 + 23 + 27 + 36) ÷ 4 = &lt;b&gt;21.5 ms&lt;/b&gt;.&#x27;,
+   &#x27;(b) SJF order P4, P2, P3, P1: waiting times P4 0, P2 3, P3 7, P1 16 ms.&#x27;,
+   &#x27;Average = (0 + 3 + 7 + 16) ÷ 4 = &lt;b&gt;6.5 ms&lt;/b&gt;.&#x27;]},
+  {q:&#x27;Describe how the round robin scheduling routine works.&#x27;,m:3,a:[
+   &#x27;Each process in the ready queue is given the CPU in turn for a fixed time slice (quantum).&#x27;,
+   &#x27;If it has not finished when the quantum ends, a timer interrupt pre-empts it and its state is saved in its PCB.&#x27;,
+   &#x27;It goes to the back of the ready queue and the next process is dispatched; this repeats until all processes finish.&#x27;]},
+  {q:&#x27;State one benefit and one drawback of the shortest job first routine.&#x27;,m:2,a:[
+   &#x27;&lt;b&gt;Benefit:&lt;/b&gt; it gives the lowest average waiting time of the non-preemptive routines.&#x27;,
+   &#x27;&lt;b&gt;Drawback:&lt;/b&gt; burst times must be known or estimated in advance / long jobs can be starved if short jobs keep arriving.&#x27;]}],
+ pit:[
+  [&#x27;&quot;SJF: the shortest job is processed first.&quot;&#x27;,&#x27;&quot;When the CPU is free, the process in the ready queue with the shortest burst time is run next; it is non-preemptive, so it runs to completion.&quot; (The 2022 examiner report says the short version is not enough.)&#x27;],
+  [&#x27;&quot;SRTF pre-empts if the new process\&#x27;s burst is shorter than the running process\&#x27;s burst.&quot;&#x27;,&#x27;&quot;…shorter than the running process\&#x27;s &lt;b&gt;remaining&lt;/b&gt; time.&quot; Textbook Figure 16.7 makes this mistake.&#x27;],
+  [&#x27;&quot;In round robin, a process always uses its whole quantum.&quot;&#x27;,&#x27;&quot;The quantum is a maximum. A process that finishes early gives the CPU back straight away.&quot;&#x27;],
+  [&#x27;&quot;Waiting time = the time when the process first starts.&quot;&#x27;,&#x27;&quot;Waiting time = finish − arrival − burst. A pre-empted process waits again later, and that time counts too.&quot;&#x27;]],
+ mcq:[
+  {q:&#x27;Which routine runs processes strictly in the order they arrive?&#x27;,o:[&#x27;Shortest job first&#x27;,&#x27;Round robin&#x27;,&#x27;First come first served&#x27;,&#x27;Shortest remaining time&#x27;],a:2,ex:&#x27;FCFS is a FIFO queue; burst time is ignored.&#x27;},
+  {q:&#x27;Which of these routines is preemptive?&#x27;,o:[&#x27;SRTF&#x27;,&#x27;FCFS&#x27;,&#x27;SJF&#x27;,&#x27;None of these&#x27;],a:0,ex:&#x27;SRTF can take the CPU from a running process when a shorter one arrives. FCFS and SJF never do.&#x27;},
+  {q:&#x27;Round robin, quantum 5 ms. A process needs 12 ms of CPU time. How many turns on the CPU does it need?&#x27;,o:[&#x27;2&#x27;,&#x27;3&#x27;,&#x27;5&#x27;,&#x27;12&#x27;],a:1,ex:&#x27;5 ms + 5 ms + 2 ms: three turns. In the last turn it gives the CPU back after 2 ms.&#x27;},
+  {q:&#x27;SRTF. The running process has 6 ms left. A new process arrives needing 4 ms. What happens?&#x27;,o:[&#x27;The new process is blocked&#x27;,&#x27;Both processes share the CPU&#x27;,&#x27;The new one joins the queue end&#x27;,&#x27;The running one is pre-empted&#x27;],a:3,ex:&#x27;4 ms is less than the 6 ms remaining, so the running process goes back to the ready queue and the new one runs.&#x27;},
+  {q:&#x27;Which formula gives the waiting time of a process?&#x27;,o:[&#x27;burst − arrival&#x27;,&#x27;finish + arrival&#x27;,&#x27;finish − arrival − burst&#x27;,&#x27;finish − burst + arrival&#x27;],a:2,ex:&#x27;Turnaround (finish − arrival) minus the time it actually spent on the CPU (burst).&#x27;}]},
+ja:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;試験のコツ&#x27;,sampleH:&#x27;試験問題の例&#x27;,pitH:&#x27;よくある間違い&#x27;,mcqH:&#x27;理解度チェック&#x27;,
+  ans:&#x27;解答例&#x27;,note:&#x27;このページ用に書いた学習用の解答です。Cambridge の公式採点基準ではありません。箇条書き 1 つが 1 点の目安です。&#x27;,
+  wrong:&#x27;よくある答え&#x27;,right:&#x27;よりよい答え&#x27;,correct:&#x27;正解。&#x27;,notq:&#x27;惜しい。正解は &#x27;},
+ tips:[
+  &#x27;計算問題では、まずガントチャートをかき、表を作る：到着、バースト、終了、ターンアラウンド、待ち時間。平均は式も書く。&#x27;,
+  &#x27;待ち時間 = 終了 − 到着 − バースト（= ターンアラウンド − バースト）。プリエンプトされた後の待ちも含む。&#x27;,
+  &#x27;各方式について、&lt;b&gt;何を比べるか&lt;/b&gt;、&lt;b&gt;いつ決めるか&lt;/b&gt;、&lt;b&gt;プリエンプティブかどうか&lt;/b&gt;を書く。&#x27;,
+  &#x27;SRTF が比べるのは、新しいプロセスのバーストと、実行中のプロセスの&lt;b&gt;残り時間&lt;/b&gt;。元のバーストではない。&#x27;,
+  &#x27;ラウンドロビンでは、&lt;b&gt;一定のタイムクォンタム&lt;/b&gt;、&lt;b&gt;タイマー割り込み&lt;/b&gt;、&lt;b&gt;レディキューの最後&lt;/b&gt;に戻ることを書く。&#x27;],
+ sample:[
+  {q:&#x27;4 つのプロセスが t = 0 に P1 (23 ms)、P2 (4 ms)、P3 (9 ms)、P4 (3 ms) の順に到着する。(a) 先着順 (FCFS) と (b) 最短ジョブ優先 (SJF) の平均待ち時間を求めなさい。途中の計算も書くこと。&#x27;,m:4,a:[
+   &#x27;(a) FCFS の順番 P1, P2, P3, P4：待ち時間 0, 23, 27, 36 ms。&#x27;,
+   &#x27;平均 = (0 + 23 + 27 + 36) ÷ 4 = &lt;b&gt;21.5 ms&lt;/b&gt;。&#x27;,
+   &#x27;(b) SJF の順番 P4, P2, P3, P1：待ち時間 P4 0、P2 3、P3 7、P1 16 ms。&#x27;,
+   &#x27;平均 = (0 + 3 + 7 + 16) ÷ 4 = &lt;b&gt;6.5 ms&lt;/b&gt;。&#x27;]},
+  {q:&#x27;ラウンドロビン方式のしくみを説明しなさい。&#x27;,m:3,a:[
+   &#x27;レディキューの各プロセスに、順番に一定のタイムスライス（クォンタム）だけ CPU を与える。&#x27;,
+   &#x27;クォンタムが終わってもまだ終わっていなければ、タイマー割り込みで中断され、状態が PCB に保存される。&#x27;,
+   &#x27;そのプロセスはレディキューの最後に並び、次のプロセスがディスパッチされる。すべてのプロセスが終わるまでくり返す。&#x27;]},
+  {q:&#x27;最短ジョブ優先 (SJF) の利点と欠点を 1 つずつ書きなさい。&#x27;,m:2,a:[
+   &#x27;&lt;b&gt;利点：&lt;/b&gt;ノンプリエンプティブの方式の中で平均待ち時間が最も短い。&#x27;,
+   &#x27;&lt;b&gt;欠点：&lt;/b&gt;バースト時間を前もって知る（推定する）必要がある／短い仕事が来続けると長い仕事が飢餓状態になる。&#x27;]}],
+ pit:[
+  [&#x27;「SJF：いちばん短いジョブを先に処理する。」&#x27;,&#x27;「CPU が空いたとき、レディキューの中でバースト時間が最も短いプロセスを次に実行する。ノンプリエンプティブなので最後まで実行する。」（2022 年の試験官レポートは、短い言い方では不十分としている。）&#x27;],
+  [&#x27;「SRTF は、新しいプロセスのバーストが実行中のプロセスのバーストより短ければ中断する。」&#x27;,&#x27;「…実行中のプロセスの&lt;b&gt;残り時間&lt;/b&gt;より短ければ。」教科書の図 16.7 はこの間違いをしている。&#x27;],
+  [&#x27;「ラウンドロビンでは、プロセスはいつもクォンタムを全部使う。」&#x27;,&#x27;「クォンタムは上限。早く終わったプロセスはすぐに CPU を返す。」&#x27;],
+  [&#x27;「待ち時間 = プロセスが最初に始まった時刻。」&#x27;,&#x27;「待ち時間 = 終了 − 到着 − バースト。プリエンプトされたプロセスは後でまた待つので、その時間も数える。」&#x27;]],
+ mcq:[
+  {q:&#x27;到着した順番どおりにプロセスを実行する方式はどれか？&#x27;,o:[&#x27;最短ジョブ優先&#x27;,&#x27;ラウンドロビン&#x27;,&#x27;先着順&#x27;,&#x27;最短残り時間優先&#x27;],a:2,ex:&#x27;FCFS は FIFO キュー。バースト時間は見ない。&#x27;},
+  {q:&#x27;次のうちプリエンプティブな方式はどれか？&#x27;,o:[&#x27;SRTF&#x27;,&#x27;FCFS&#x27;,&#x27;SJF&#x27;,&#x27;どれでもない&#x27;],a:0,ex:&#x27;SRTF は、より短いプロセスが来ると実行中のプロセスから CPU を取り上げられる。FCFS と SJF は取り上げない。&#x27;},
+  {q:&#x27;ラウンドロビン、クォンタム 5 ms。CPU 時間が 12 ms 必要なプロセスは、何回 CPU を使う番が必要か？&#x27;,o:[&#x27;2&#x27;,&#x27;3&#x27;,&#x27;5&#x27;,&#x27;12&#x27;],a:1,ex:&#x27;5 ms + 5 ms + 2 ms で 3 回。最後の回は 2 ms で CPU を返す。&#x27;},
+  {q:&#x27;SRTF。実行中のプロセスの残りは 6 ms。4 ms 必要な新しいプロセスが到着した。どうなるか？&#x27;,o:[&#x27;新しい方がブロックされる&#x27;,&#x27;2 つで CPU を分け合う&#x27;,&#x27;新しい方がキューの最後に並ぶ&#x27;,&#x27;実行中の方が中断される&#x27;],a:3,ex:&#x27;4 ms は残り 6 ms より短いので、実行中のプロセスはレディキューに戻り、新しいプロセスが実行される。&#x27;},
+  {q:&#x27;プロセスの待ち時間を求める式はどれか？&#x27;,o:[&#x27;バースト − 到着&#x27;,&#x27;終了 + 到着&#x27;,&#x27;終了 − 到着 − バースト&#x27;,&#x27;終了 − バースト + 到着&#x27;],a:2,ex:&#x27;ターンアラウンド（終了 − 到着）から、実際に CPU を使った時間（バースト）を引く。&#x27;}]},
+zh:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;考试提示&#x27;,sampleH:&#x27;考试题示例&#x27;,pitH:&#x27;常见错误&#x27;,mcqH:&#x27;检查理解&#x27;,
+  ans:&#x27;参考答案&#x27;,note:&#x27;这些是为本页写的学习用答案，不是 Cambridge 官方评分标准。每个要点大约 1 分。&#x27;,
+  wrong:&#x27;常见答案&#x27;,right:&#x27;更好的答案&#x27;,correct:&#x27;正确。&#x27;,notq:&#x27;不太对。答案是 &#x27;},
+ tips:[
+  &#x27;计算题先画甘特图，再列表：到达、突发、完成、周转、等待。平均值要写出算式。&#x27;,
+  &#x27;等待时间 = 完成 − 到达 − 突发（= 周转 − 突发）。被抢占后的等待也要算进去。&#x27;,
+  &#x27;每种算法都写出&lt;b&gt;比较什么&lt;/b&gt;、&lt;b&gt;什么时候决定&lt;/b&gt;、&lt;b&gt;是否抢占式&lt;/b&gt;。&#x27;,
+  &#x27;SRTF 比较的是新进程的突发时间和正在运行进程的&lt;b&gt;剩余&lt;/b&gt;时间，不是它原来的突发时间。&#x27;,
+  &#x27;时间片轮转要写出&lt;b&gt;固定的时间片&lt;/b&gt;、&lt;b&gt;定时器中断&lt;/b&gt;，以及进程回到&lt;b&gt;就绪队列末尾&lt;/b&gt;。&#x27;],
+ sample:[
+  {q:&#x27;四个进程在 t = 0 按顺序到达：P1 (23 ms)、P2 (4 ms)、P3 (9 ms)、P4 (3 ms)。计算 (a) 先来先服务和 (b) 短作业优先的平均等待时间，写出过程。&#x27;,m:4,a:[
+   &#x27;(a) FCFS 顺序 P1, P2, P3, P4：等待时间 0, 23, 27, 36 ms。&#x27;,
+   &#x27;平均 = (0 + 23 + 27 + 36) ÷ 4 = &lt;b&gt;21.5 ms&lt;/b&gt;。&#x27;,
+   &#x27;(b) SJF 顺序 P4, P2, P3, P1：等待时间 P4 0、P2 3、P3 7、P1 16 ms。&#x27;,
+   &#x27;平均 = (0 + 3 + 7 + 16) ÷ 4 = &lt;b&gt;6.5 ms&lt;/b&gt;。&#x27;]},
+  {q:&#x27;描述时间片轮转调度算法怎样工作。&#x27;,m:3,a:[
+   &#x27;就绪队列中的每个进程轮流获得 CPU，每次一个固定的时间片 (quantum)。&#x27;,
+   &#x27;如果时间片结束时还没完成，定时器中断抢占它，并把它的状态保存到 PCB。&#x27;,
+   &#x27;它回到就绪队列末尾，下一个进程被调度；如此重复直到所有进程完成。&#x27;]},
+  {q:&#x27;写出短作业优先算法的一个优点和一个缺点。&#x27;,m:2,a:[
+   &#x27;&lt;b&gt;优点：&lt;/b&gt;在非抢占式算法中平均等待时间最短。&#x27;,
+   &#x27;&lt;b&gt;缺点：&lt;/b&gt;必须事先知道或估计突发时间／如果短作业不断到达，长作业可能饥饿。&#x27;]}],
+ pit:[
+  [&#x27;&quot;SJF：最短的作业先处理。&quot;&#x27;,&#x27;&quot;CPU 空闲时，在就绪队列中选择突发时间最短的进程下一个运行；它是非抢占式的，所以运行到结束。&quot;（2022 年考官报告指出简短的说法不够。）&#x27;],
+  [&#x27;&quot;如果新进程的突发时间比正在运行进程的突发时间短，SRTF 就抢占。&quot;&#x27;,&#x27;&quot;……比正在运行进程的&lt;b&gt;剩余&lt;/b&gt;时间短。&quot;课本图 16.7 犯了这个错误。&#x27;],
+  [&#x27;&quot;时间片轮转中，进程总是用完整个时间片。&quot;&#x27;,&#x27;&quot;时间片是上限。提前完成的进程会马上交还 CPU。&quot;&#x27;],
+  [&#x27;&quot;等待时间 = 进程第一次开始的时间。&quot;&#x27;,&#x27;&quot;等待时间 = 完成 − 到达 − 突发。被抢占的进程之后还会再等待，那段时间也要算。&quot;&#x27;]],
+ mcq:[
+  {q:&#x27;哪种算法严格按到达顺序运行进程？&#x27;,o:[&#x27;短作业优先&#x27;,&#x27;时间片轮转&#x27;,&#x27;先来先服务&#x27;,&#x27;最短剩余时间&#x27;],a:2,ex:&#x27;FCFS 是 FIFO 队列，不考虑突发时间。&#x27;},
+  {q:&#x27;下面哪种算法是抢占式的？&#x27;,o:[&#x27;SRTF&#x27;,&#x27;FCFS&#x27;,&#x27;SJF&#x27;,&#x27;都不是&#x27;],a:0,ex:&#x27;更短的进程到达时，SRTF 可以从正在运行的进程手中收回 CPU。FCFS 和 SJF 不会。&#x27;},
+  {q:&#x27;时间片轮转，时间片 5 ms。一个进程需要 12 ms 的 CPU 时间。它需要轮到几次？&#x27;,o:[&#x27;2&#x27;,&#x27;3&#x27;,&#x27;5&#x27;,&#x27;12&#x27;],a:1,ex:&#x27;5 ms + 5 ms + 2 ms，共 3 次。最后一次 2 ms 后就交还 CPU。&#x27;},
+  {q:&#x27;SRTF。正在运行的进程还剩 6 ms，一个需要 4 ms 的新进程到达。会发生什么？&#x27;,o:[&#x27;新进程被阻塞&#x27;,&#x27;两个进程共用 CPU&#x27;,&#x27;新进程排到队尾&#x27;,&#x27;正在运行的被抢占&#x27;],a:3,ex:&#x27;4 ms 少于剩余的 6 ms，所以正在运行的进程回到就绪队列，新进程运行。&#x27;},
+  {q:&#x27;哪个公式给出进程的等待时间？&#x27;,o:[&#x27;突发 − 到达&#x27;,&#x27;完成 + 到达&#x27;,&#x27;完成 − 到达 − 突发&#x27;,&#x27;完成 − 突发 + 到达&#x27;],a:2,ex:&#x27;周转时间（完成 − 到达）减去实际使用 CPU 的时间（突发）。&#x27;}]},
+th:{ui:{eyebrow:&#x27;Practice&#x27;,tipsH:&#x27;เคล็ดลับการสอบ&#x27;,sampleH:&#x27;ตัวอย่างข้อสอบ&#x27;,pitH:&#x27;ข้อผิดพลาดที่พบบ่อย&#x27;,mcqH:&#x27;ทดสอบความเข้าใจ&#x27;,
+  ans:&#x27;ตัวอย่างคำตอบ&#x27;,note:&#x27;คำตอบเพื่อการทบทวนที่เขียนสำหรับหน้านี้ ไม่ใช่เกณฑ์การให้คะแนนทางการของ Cambridge แต่ละข้อย่อยประมาณ 1 คะแนน&#x27;,
+  wrong:&#x27;คำตอบที่พบบ่อย&#x27;,right:&#x27;คำตอบที่ดีกว่า&#x27;,correct:&#x27;ถูกต้อง&#x27;,notq:&#x27;ยังไม่ถูก คำตอบคือ &#x27;},
+ tips:[
+  &#x27;ข้อคำนวณ ให้วาดแผนภูมิแกนต์ก่อน แล้วทำตาราง: มาถึง เบิร์สต์ เสร็จ ครบรอบ รอ และเขียนวิธีหาค่าเฉลี่ย&#x27;,
+  &#x27;เวลารอ = เสร็จ − มาถึง − เบิร์สต์ (= ครบรอบ − เบิร์สต์) นับทุกช่วงที่รอ รวมถึงหลังถูกขัดจังหวะ&#x27;,
+  &#x27;สำหรับแต่ละแบบ บอกว่า&lt;b&gt;เทียบอะไร&lt;/b&gt; &lt;b&gt;ตัดสินใจเมื่อไร&lt;/b&gt; และ&lt;b&gt;เป็น preemptive หรือไม่&lt;/b&gt;&#x27;,
+  &#x27;SRTF เทียบเบิร์สต์ของโปรเซสใหม่กับเวลา&lt;b&gt;ที่เหลือ&lt;/b&gt;ของโปรเซสที่กำลังทำงาน ไม่ใช่เบิร์สต์เดิม&#x27;,
+  &#x27;สำหรับ round robin ให้กล่าวถึง&lt;b&gt;ควอนตัมคงที่&lt;/b&gt; &lt;b&gt;timer interrupt&lt;/b&gt; และการไป&lt;b&gt;ต่อท้ายคิวพร้อม&lt;/b&gt;&#x27;],
+ sample:[
+  {q:&#x27;โปรเซสสี่ตัวมาถึงที่ t = 0 ตามลำดับ P1 (23 ms), P2 (4 ms), P3 (9 ms), P4 (3 ms) จงหาเวลารอเฉลี่ยของ (a) มาก่อนได้ก่อน และ (b) งานสั้นที่สุดก่อน แสดงวิธีทำ&#x27;,m:4,a:[
+   &#x27;(a) ลำดับ FCFS: P1, P2, P3, P4 เวลารอ 0, 23, 27, 36 ms&#x27;,
+   &#x27;เฉลี่ย = (0 + 23 + 27 + 36) ÷ 4 = &lt;b&gt;21.5 ms&lt;/b&gt;&#x27;,
+   &#x27;(b) ลำดับ SJF: P4, P2, P3, P1 เวลารอ P4 0, P2 3, P3 7, P1 16 ms&#x27;,
+   &#x27;เฉลี่ย = (0 + 3 + 7 + 16) ÷ 4 = &lt;b&gt;6.5 ms&lt;/b&gt;&#x27;]},
+  {q:&#x27;อธิบายการทำงานของการจัดลำดับแบบ round robin&#x27;,m:3,a:[
+   &#x27;แต่ละโปรเซสในคิวพร้อมได้ใช้ CPU ตามลำดับ ครั้งละหนึ่งช่วงเวลาคงที่ (quantum)&#x27;,
+   &#x27;ถ้ายังไม่เสร็จเมื่อควอนตัมหมด timer interrupt จะขัดจังหวะ และบันทึกสถานะไว้ใน PCB&#x27;,
+   &#x27;โปรเซสไปต่อท้ายคิวพร้อม แล้วโปรเซสถัดไปถูก dispatch ทำซ้ำจนทุกโปรเซสเสร็จ&#x27;]},
+  {q:&#x27;บอกข้อดีหนึ่งข้อและข้อเสียหนึ่งข้อของงานสั้นที่สุดก่อน (SJF)&#x27;,m:2,a:[
+   &#x27;&lt;b&gt;ข้อดี:&lt;/b&gt; เวลารอเฉลี่ยต่ำที่สุดในกลุ่ม non-preemptive&#x27;,
+   &#x27;&lt;b&gt;ข้อเสีย:&lt;/b&gt; ต้องรู้หรือประมาณเวลาเบิร์สต์ล่วงหน้า / ถ้างานสั้นมาเรื่อย ๆ งานยาวอาจอดอยาก&#x27;]}],
+ pit:[
+  [&#x27;&quot;SJF: งานที่สั้นที่สุดทำก่อน&quot;&#x27;,&#x27;&quot;เมื่อ CPU ว่าง เลือกโปรเซสในคิวพร้อมที่มีเวลาเบิร์สต์สั้นที่สุดทำต่อไป เป็น non-preemptive จึงทำจนเสร็จ&quot; (รายงานผู้ตรวจปี 2022 บอกว่าคำตอบสั้น ๆ ไม่พอ)&#x27;],
+  [&#x27;&quot;SRTF ขัดจังหวะถ้าเบิร์สต์ของโปรเซสใหม่สั้นกว่าเบิร์สต์ของโปรเซสที่กำลังทำงาน&quot;&#x27;,&#x27;&quot;…สั้นกว่าเวลา&lt;b&gt;ที่เหลือ&lt;/b&gt;ของโปรเซสที่กำลังทำงาน&quot; รูปที่ 16.7 ในตำราผิดตรงนี้&#x27;],
+  [&#x27;&quot;ใน round robin โปรเซสใช้ควอนตัมเต็มทุกครั้ง&quot;&#x27;,&#x27;&quot;ควอนตัมคือขีดจำกัดบน โปรเซสที่เสร็จก่อนจะคืน CPU ทันที&quot;&#x27;],
+  [&#x27;&quot;เวลารอ = เวลาที่โปรเซสเริ่มครั้งแรก&quot;&#x27;,&#x27;&quot;เวลารอ = เสร็จ − มาถึง − เบิร์สต์ โปรเซสที่ถูกขัดจังหวะจะรออีกในภายหลัง และต้องนับเวลานั้นด้วย&quot;&#x27;]],
+ mcq:[
+  {q:&#x27;แบบใดทำงานโปรเซสตามลำดับการมาถึงอย่างเคร่งครัด&#x27;,o:[&#x27;งานสั้นที่สุดก่อน&#x27;,&#x27;Round robin&#x27;,&#x27;มาก่อนได้ก่อน&#x27;,&#x27;เวลาเหลือน้อยสุดก่อน&#x27;],a:2,ex:&#x27;FCFS คือคิว FIFO ไม่สนใจเวลาเบิร์สต์&#x27;},
+  {q:&#x27;แบบใดต่อไปนี้เป็น preemptive&#x27;,o:[&#x27;SRTF&#x27;,&#x27;FCFS&#x27;,&#x27;SJF&#x27;,&#x27;ไม่มีข้อใดถูก&#x27;],a:0,ex:&#x27;SRTF เอา CPU คืนจากโปรเซสที่กำลังทำงานได้เมื่อโปรเซสที่สั้นกว่ามาถึง FCFS และ SJF ทำไม่ได้&#x27;},
+  {q:&#x27;Round robin ควอนตัม 5 ms โปรเซสต้องใช้ CPU 12 ms ต้องได้คิวใช้ CPU กี่ครั้ง&#x27;,o:[&#x27;2&#x27;,&#x27;3&#x27;,&#x27;5&#x27;,&#x27;12&#x27;],a:1,ex:&#x27;5 ms + 5 ms + 2 ms รวม 3 ครั้ง ครั้งสุดท้ายคืน CPU หลัง 2 ms&#x27;},
+  {q:&#x27;SRTF โปรเซสที่กำลังทำงานเหลือ 6 ms โปรเซสใหม่ที่ต้องใช้ 4 ms มาถึง จะเกิดอะไรขึ้น&#x27;,o:[&#x27;โปรเซสใหม่ถูกบล็อก&#x27;,&#x27;ใช้ CPU ร่วมกัน&#x27;,&#x27;โปรเซสใหม่ต่อท้ายคิว&#x27;,&#x27;ตัวเดิมถูกขัดจังหวะ&#x27;],a:3,ex:&#x27;4 ms น้อยกว่า 6 ms ที่เหลือ โปรเซสที่กำลังทำงานจึงกลับไปคิวพร้อม และโปรเซสใหม่ได้ทำงาน&#x27;},
+  {q:&#x27;สูตรใดให้เวลารอของโปรเซส&#x27;,o:[&#x27;เบิร์สต์ − มาถึง&#x27;,&#x27;เสร็จ + มาถึง&#x27;,&#x27;เสร็จ − มาถึง − เบิร์สต์&#x27;,&#x27;เสร็จ − เบิร์สต์ + มาถึง&#x27;],a:2,ex:&#x27;เวลาครบรอบ (เสร็จ − มาถึง) ลบเวลาที่ใช้ CPU จริง (เบิร์สต์)&#x27;}]}
+};
+
+/* Practice block: exam tips, sample questions with study answers, common pitfalls, MCQ quiz.
+   Reads EXAM[lang]; re-renders when the page changes &lt;html lang&gt;. */
+(function(){
+const root=document.getElementById(&#x27;examBlock&#x27;);if(!root||typeof EXAM===&#x27;undefined&#x27;)return;
+const L=()=&gt;{const l=(document.documentElement.lang||&#x27;en&#x27;).slice(0,2);return EXAM[l]?l:&#x27;en&#x27;;};
+let shown=&#x27;&#x27;;
+function esc(s){return s;}
+function render(){
+  const l=L();if(l===shown)return;shown=l;
+  const E=EXAM[l],U=E.ui;let score=0,answered=0;
+  root.innerHTML=
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;p class=&quot;xeyebrow&quot;&gt;&#x27;+U.eyebrow+&#x27;&lt;/p&gt;&lt;h2&gt;&#x27;+U.tipsH+&#x27;&lt;/h2&gt;&lt;ul class=&quot;xtips&quot;&gt;&#x27;+E.tips.map(t=&gt;&#x27;&lt;li&gt;&#x27;+t+&#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/ul&gt;&lt;/section&gt;&#x27;+
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;h2&gt;&#x27;+U.sampleH+&#x27;&lt;/h2&gt;&lt;div class=&quot;xsamples&quot;&gt;&#x27;+E.sample.map((s,i)=&gt;
+      &#x27;&lt;div class=&quot;xq&quot;&gt;&lt;p class=&quot;xqh&quot;&gt;&lt;b&gt;Q&#x27;+(i+1)+&#x27;.&lt;/b&gt; &#x27;+s.q+&#x27; &lt;span class=&quot;xmk&quot;&gt;[&#x27;+s.m+&#x27;]&lt;/span&gt;&lt;/p&gt;&lt;div class=&quot;xans&quot;&gt;&lt;p class=&quot;xansh&quot;&gt;&#x27;+U.ans+&#x27;&lt;/p&gt;&lt;ul&gt;&#x27;+s.a.map(a=&gt;&#x27;&lt;li&gt;&#x27;+a+&#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+
+      &#x27;&lt;/div&gt;&lt;p class=&quot;xnote&quot;&gt;&#x27;+U.note+&#x27;&lt;/p&gt;&lt;/section&gt;&#x27;+
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;h2&gt;&#x27;+U.pitH+&#x27;&lt;/h2&gt;&lt;div class=&quot;xpits&quot;&gt;&#x27;+E.pit.map(p=&gt;
+      &#x27;&lt;div class=&quot;xpit&quot;&gt;&lt;div class=&quot;xw&quot;&gt;&lt;span class=&quot;xk&quot;&gt;✕ &#x27;+U.wrong+&#x27;&lt;/span&gt;&lt;p&gt;&#x27;+p[0]+&#x27;&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;xr&quot;&gt;&lt;span class=&quot;xk&quot;&gt;○ &#x27;+U.right+&#x27;&lt;/span&gt;&lt;p&gt;&#x27;+p[1]+&#x27;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;/section&gt;&#x27;+
+    &#x27;&lt;section class=&quot;xb&quot;&gt;&lt;h2&gt;&#x27;+U.mcqH+&#x27;&lt;/h2&gt;&lt;div class=&quot;xmcqs&quot;&gt;&#x27;+E.mcq.map((q,i)=&gt;
+      &#x27;&lt;div class=&quot;xm&quot; data-i=&quot;&#x27;+i+&#x27;&quot;&gt;&lt;p class=&quot;xqh&quot;&gt;&lt;b&gt;Q&#x27;+(i+1)+&#x27;.&lt;/b&gt; &#x27;+q.q+&#x27;&lt;/p&gt;&lt;div class=&quot;xopts&quot;&gt;&#x27;+q.o.map((o,j)=&gt;&#x27;&lt;button class=&quot;xopt&quot; data-j=&quot;&#x27;+j+&#x27;&quot;&gt;&#x27;+&#x27;ABCD&#x27;[j]+&#x27;. &#x27;+o+&#x27;&lt;/button&gt;&#x27;).join(&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;p class=&quot;xfb&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;)+
+      &#x27;&lt;/div&gt;&lt;p class=&quot;xscore&quot; id=&quot;xscore&quot;&gt;0 / &#x27;+E.mcq.length+&#x27;&lt;/p&gt;&lt;/section&gt;&#x27;;
+  root.querySelectorAll(&#x27;.xm&#x27;).forEach(box=&gt;{
+    const q=E.mcq[+box.dataset.i];let done=false;
+    box.querySelectorAll(&#x27;.xopt&#x27;).forEach(b=&gt;b.onclick=()=&gt;{
+      if(done)return;done=true;answered++;
+      const j=+b.dataset.j;box.querySelectorAll(&#x27;.xopt&#x27;)[q.a].classList.add(&#x27;right&#x27;);
+      if(j!==q.a)b.classList.add(&#x27;wrong&#x27;);else score++;
+      box.querySelectorAll(&#x27;.xopt&#x27;).forEach(x=&gt;x.disabled=true);
+      box.querySelector(&#x27;.xfb&#x27;).innerHTML=(j===q.a?&#x27;&lt;b class=&quot;ok&quot;&gt;&#x27;+U.correct+&#x27;&lt;/b&gt; &#x27;:&#x27;&lt;b class=&quot;no&quot;&gt;&#x27;+U.notq+&#x27;ABCD&#x27;[q.a]+&#x27;.&lt;/b&gt; &#x27;)+q.ex;
+      root.querySelector(&#x27;#xscore&#x27;).textContent=score+&#x27; / &#x27;+E.mcq.length;
+    });
+  });
+}
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:[&#x27;lang&#x27;]});
+render();
 })();
 &lt;/script&gt;
 
