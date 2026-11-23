@@ -1,0 +1,2651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algo 3D Lab</title>
+<style>
+:root{
+  --bg:#F7F9FC; --panel:#FFFFFF; --ink:#22304A; --muted:#5B6B86; --line:#DCE4F0; --accent:#3B6FD4; --accent-soft:#E6EEFC;
+  --hl:#FFF1C9; --hl-edge:#E0A020; --err:#C2414D; --err-soft:#FCE6E8;
+  --idle:#A9CCEA; --cmp:#F6C667; --swap:#F29E8E; --sorted:#9ED9B8; --part:#CDEBDC; --pivot:#C3A6E8; --key:#B7D3A8; --dim:#DDE3EC;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI","Noto Sans Thai","PingFang SC","Hiragino Sans",sans-serif}
+button,input,select{font:inherit;color:inherit}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:12px 16px 6px}
+.brand h1{margin:0;font-size:21px;letter-spacing:.2px}
+.brand p{margin:0;font-size:12.5px;color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.seg button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 13px;cursor:pointer;line-height:1.3}
+.seg button:hover{border-color:var(--accent)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#tabs button{font-weight:600;padding:6px 16px}
+#langs{margin-left:auto}
+.subbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;padding:6px 16px 10px}
+.grp{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.glabel{font-size:12.5px;color:var(--muted)}
+.subbar input[type=text],.subbar input[type=number]{width:6.5rem;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:#fff}
+.subbar .opbtn,.subbar .tool{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:5px 13px;cursor:pointer;font-weight:600}
+.subbar .opbtn.main{background:var(--accent-soft);border-color:#B8CDF3}
+.subbar .opbtn:hover:not(:disabled),.subbar .tool:hover:not(:disabled){border-color:var(--accent)}
+.subbar button:disabled{opacity:.45;cursor:not-allowed}
+.subbar label.chk{display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 440px;grid-template-areas:"stage side" "msg side" "player side";gap:12px;padding:0 16px 28px;align-items:start}
+.stage{grid-area:stage;position:relative;height:clamp(340px,58vh,640px);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.views{position:absolute;right:10px;top:10px;display:flex;gap:4px}
+.views button{border:1px solid var(--line);background:rgba(255,255,255,.92);border-radius:8px;padding:3px 10px;cursor:pointer;font-size:12.5px}
+.views button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.legend{position:absolute;left:10px;right:10px;bottom:8px;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);pointer-events:none}
+.legend span{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.85);border-radius:999px;padding:1px 8px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block;border:1px solid rgba(34,48,74,.25)}
+.nogl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);background:var(--panel)}
+.nogl[hidden]{display:none}
+.msg{grid-area:msg;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 16px}
+.msgtxt{margin:0;font-size:17px;font-weight:600;min-height:3.1em}
+.msgtxt.err{color:var(--err)}
+.note{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+.player{grid-area:player;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.plbtns{display:flex;gap:6px}
+.pb{border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 14px;cursor:pointer;font-weight:600;min-width:3rem}
+.pb.primary{background:var(--accent);border-color:var(--accent);color:#fff;min-width:5.6rem}
+.pb:hover:not(:disabled){border-color:var(--accent)}
+.pb:disabled{opacity:.4;cursor:not-allowed}
+.spd{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.spd b{color:var(--ink);min-width:2.6em}
+.scrub{display:flex;align-items:center;gap:10px;flex:1 1 220px;min-width:200px}
+.scrub input{flex:1}
+#stepno{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);min-width:5.5em;text-align:right}
+.side{grid-area:side;display:flex;flex-direction:column;gap:10px;min-width:0}
+.code{font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 0;max-height:min(60vh,560px);overflow:auto}
+.code .ln{white-space:pre;padding:0 12px;border-left:4px solid transparent;min-height:1.6em}
+.code .ln.hl{background:var(--hl);border-left-color:var(--hl-edge)}
+.watch{display:flex;flex-wrap:wrap;gap:6px}
+.watch .v{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2px 10px;font:13px ui-monospace,Menlo,Consolas,monospace}
+.watch .v b{color:var(--accent)}
+.watch .t{font-size:12.5px;color:var(--muted);width:100%}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stats .s{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 12px;font-size:13.5px}
+.stats .s b{font-variant-numeric:tabular-nums;font-size:16px}
+.race table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13.5px}
+.race th,.race td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--line)}
+.race th:first-child,.race td:first-child{text-align:left}
+.race th{background:var(--accent-soft);font-weight:600}
+.race tr.done td{background:#EEF9F3}
+.race caption{caption-side:top;text-align:left;font-weight:600;padding:0 0 6px}
+.race td.rk{font-weight:700}
+@media (max-width:860px){
+  .grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"stage" "msg" "player" "side"}
+  .stage{height:46vh;min-height:300px}
+  #langs{margin-left:0}
+  .msgtxt{font-size:16px}
+  .code{max-height:50vh}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+:focus-visible{outline:3px solid #8FB2F0;outline-offset:2px}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand"><h1 id="ttl">Algo 3D Lab</h1><p id="sub"></p></div>
+    <nav id="tabs" class="seg" role="tablist" aria-label="Topic"></nav>
+    <div id="langs" class="seg" aria-label="Language"></div>
+  </header>
+  <div id="subbar" class="subbar"></div>
+  <main class="grid">
+    <section class="stage" id="stage">
+      <canvas id="cv" aria-label="3D view"></canvas>
+      <div class="views" id="views"></div>
+      <div class="legend" id="legend"></div>
+      <div class="nogl" id="nogl" hidden></div>
+    </section>
+    <section class="msg" id="msg" aria-live="polite">
+      <p id="msgtxt" class="msgtxt"></p>
+      <p id="note" class="note"></p>
+    </section>
+    <section class="player" id="player">
+      <div class="plbtns">
+        <button type="button" id="bFirst" class="pb"></button>
+        <button type="button" id="bPrev" class="pb"></button>
+        <button type="button" id="bPlay" class="pb primary"></button>
+        <button type="button" id="bNext" class="pb"></button>
+      </div>
+      <label class="spd"><span id="spdL"></span><input type="range" id="spd" min="0" max="5" step="1" value="2"><b id="spdV">1×</b></label>
+      <div class="scrub"><input type="range" id="scrub" min="0" max="0" value="0" aria-label="Step"><span id="stepno">0 / 0</span></div>
+    </section>
+    <aside class="side">
+      <div class="seg" id="codeseg"></div>
+      <div class="code" id="code" tabindex="0"></div>
+      <div class="watch" id="watch"></div>
+      <div class="stats" id="stats"></div>
+      <div class="race" id="race"></div>
+    </aside>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* i18n.js — EN / JA / ZH / TH. Exam terms (push, pop, Top, Front, Rear, Count, pivot, pass, StartPointer, FreePointer,
+   overflow, underflow, LIFO, FIFO) stay in English in every language. {n} are step arguments.
+   ZH and TH have not been checked by native speakers. */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+  var T = A.T = { en: {}, ja: {}, zh: {}, th: {} };
+
+  /* ============================== English ============================== */
+  T.en = {
+    'ui.title': 'Algo 3D Lab',
+    'ui.sub': 'Sorting, stacks, queues and linked lists in 3D (9618 Ch 19–20)',
+    'tab.sort': 'Sort', 'tab.stack': 'Stack', 'tab.queue': 'Queue', 'tab.list': 'Linked list',
+    'ui.algo': 'Algorithm', 'algo.bubble': 'Bubble', 'algo.insertion': 'Insertion', 'algo.quick': 'Quick', 'algo.merge': 'Merge', 'algo.race': 'Race (all 4)',
+    'ui.data': 'Data', 'data.random': 'Random', 'data.nearly': 'Nearly sorted', 'data.reversed': 'Reversed', 'data.few': 'Few unique',
+    'ui.n': 'Bars', 'ui.shuffle': 'New data',
+    'ui.view': 'View', 'view.front': 'Front', 'view.angle': 'Angle', 'view.top': 'Top',
+    'ui.python': 'Python', 'ui.pseudo': 'Pseudocode',
+    'ui.watch': 'Variables', 'ui.stats': 'Count', 'stats.cmp': 'Comparisons', 'stats.writes': 'Writes',
+    'ui.first': 'Back to start', 'ui.prev': 'Back', 'ui.next': 'Next', 'ui.play': 'Play', 'ui.pause': 'Pause', 'ui.speed': 'Speed', 'ui.step': 'Step',
+    'ui.stepmode': 'Step mode (one line at a time)',
+    'ui.reset': 'Reset', 'ui.demo': 'Demo', 'ui.value': 'Value',
+    'op.push': 'Push', 'op.pop': 'Pop', 'op.peek': 'Peek', 'op.enqueue': 'Enqueue', 'op.dequeue': 'Dequeue', 'op.insert': 'Insert', 'op.delete': 'Delete', 'op.search': 'Search',
+    'mode.circular': 'Circular', 'mode.linear': 'Linear', 'mode.table': 'Table (arrays)', 'mode.node': 'Nodes',
+    'ui.model': 'Model',
+    'race.title': 'Race results', 'race.algo': 'Algorithm', 'race.ticks': 'Ticks', 'race.rank': 'Rank', 'race.running': 'running…', 'race.final': 'Final',
+    'ui.nowebgl': 'The 3D view is not available in this browser. The code and the step messages still work.',
+    'ui.lang': 'Language', 'ui.code': 'Code', 'ui.true': 'True', 'ui.false': 'False',
+    'legend.cmp': 'comparing', 'legend.swap': 'moving / written', 'legend.sorted': 'final place ✓', 'legend.part': 'sorted so far', 'legend.pivot': 'pivot', 'legend.key': 'key (lifted)', 'legend.dim': 'outside this range',
+    'note.a.bubble': 'Bubble sort: compare neighbours and swap if out of order. The largest value bubbles to the right on every pass. A pass with no swap means "sorted" — stop early. Worst case O(n²).',
+    'note.a.insertion': 'Insertion sort: the left part is already sorted. Lift the next bar (key), shift bigger ones right, drop it in the gap. Very fast on nearly sorted data. Worst case O(n²).',
+    'note.a.quick': 'Quick sort: pick the last bar as pivot, move smaller bars to the left, then put the pivot in its final place and sort both sides recursively. Average O(n log n).',
+    'note.a.merge': 'Merge sort: split in halves, sort each half, then merge them using a copy in the back row. Always O(n log n); needs extra space.',
+    'note.inplace': 'Here quick sort and merge sort work in place (a, lo, hi) so the bars can move. The Ch20 guide shows list-returning versions.',
+    'note.race': 'Same data in four lanes. One tick = one comparison or one write in each lane, so a lane that needs fewer operations finishes first. Merge sort counts only writes to the front row.',
+    'note.stack': 'LIFO — Last In, First Out. The last item pushed is the first one popped; the output tray shows the order the items come out (reverse of the order they went in).',
+    'note.queue.c': 'FIFO — First In, First Out. Items join at Rear and leave from Front. In a circular queue Front and Rear wrap round with MOD, so freed cells are reused. Count tells full from empty.',
+    'note.queue.l': 'A linear queue only moves Front and Rear forward. After dequeues, the empty cells at the front are never reused — try the Demo to see the queue become "full" with free cells.',
+    'note.list': 'Follow the pointers from StartPointer to read the list in order — the row order does not matter. Unused rows form their own chain, the free list (FreePointer). Insert and delete only change pointers.',
+    's.start': 'Start: {0} bars. Press ▶ or step through one line at a time.',
+    's.done': 'Sorted! Every bar is in its final place.',
+    's.b.pass': 'Pass {0}: compare neighbours from the left.',
+    's.b.gt': 'a[{0}] = {1} > a[{2}] = {3} → wrong order, so swap.',
+    's.b.le': 'a[{0}] = {1} ≤ a[{2}] = {3} → already in order, no swap.',
+    's.b.swap': 'Swap: {1} moves left and {0} moves right.',
+    's.b.passend': 'End of pass {0}: the largest unsorted value is now in its final place ✓.',
+    's.b.exit': 'No swap in this pass → the list is sorted. Stop early (swapped is False).',
+    's.i.start': 'The left part is the sorted "hand". Take the next bar and slide it in.',
+    's.i.take': 'Lift key = {0} out of a[{1}].',
+    's.i.edge': 'Reached the left end of the list — nothing left to compare.',
+    's.i.gt': 'a[{0}] = {1} > key = {2} → shift it one place to the right.',
+    's.i.le': 'a[{0}] = {1} ≤ key = {2} → the gap is in the right place. Stop.',
+    's.i.shift': 'Shift {0} from a[{1}] to a[{2}].',
+    's.i.insert': 'Drop key = {0} into the gap at a[{1}].',
+    's.q.single': 'Only one bar left in this part: a[{0}] is already in place ✓.',
+    's.q.base': 'Sort a[{0}..{1}]: more than one bar, so partition it.',
+    's.q.call': 'Partition: the last bar is the pivot; the other bars are split into smaller and larger.',
+    's.q.pivot': 'pivot = {0} (a[{1}]). i marks the end of the "smaller than pivot" zone; it starts just before the range.',
+    's.q.lt': 'a[{0}] = {1} < pivot {2} → belongs on the small side: i + 1, then swap it into the small zone.',
+    's.q.ge': 'a[{0}] = {1} ≥ pivot {2} → stays on the large side.',
+    's.q.swap': 'Swap a[{0}] and a[{1}].',
+    's.q.self': 'i and j are the same bar, a[{0}] — nothing moves.',
+    's.q.place': 'Swap the pivot {0} into a[{1}]: it is now in its final place ✓.',
+    's.q.left': 'Recursively sort the left part a[{0}..{1}].',
+    's.q.right': 'Recursively sort the right part a[{0}..{1}].',
+    's.m.base': 'Sort a[{0}..{1}]: more than one bar, so split it in half.',
+    's.m.split': 'mid = {0}: left half a[{1}..{2}], right half a[{3}..{4}].',
+    's.m.left': 'First sort the left half a[{0}..{1}].',
+    's.m.right': 'Now sort the right half a[{0}..{1}].',
+    's.m.call': 'Both halves are sorted: merge a[{0}..{1}] and a[{2}..{3}].',
+    's.m.copy': 'Copy both halves to the back row (left[] and right[]).',
+    's.m.le': '{0} ≤ {1} → take {0} from the left half.',
+    's.m.gt': '{0} > {1} → take {1} from the right half.',
+    's.m.write': 'Write {0} back to a[{1}] in the front row.',
+    's.m.rest': 'One half is used up: copy the remaining {0} to a[{1}].',
+    's.race.tick': 'Tick {0}: each lane does one comparison or write. {1} of 4 finished.',
+    'd.init': 'Empty. Use the buttons below or press Demo.',
+    'd.push.chk': 'push({0}): is the stack full? Top = {1}, MaxSize − 1 = 5.',
+    'd.overflow': 'Stack overflow! Top = {0} = MaxSize − 1: no space, so the item is rejected.',
+    'd.push.inc': 'Top moves up: Top = {0}.',
+    'd.push.put': 'Store {0} in Stack[{1}]: the newest item sits on top.',
+    'd.pop.chk': 'pop(): is the stack empty? Top = {0}.',
+    'd.underflow': 'Stack underflow! Top = -1: there is nothing to pop.',
+    'd.pop.get': 'Read {0} from Stack[{1}]: the last item pushed comes out first (LIFO).',
+    'd.pop.dec': 'Top moves down: Top = {0}. The item leaves the stack.',
+    'd.pop.ret': 'pop() returns {0}.',
+    'd.peek': 'peek(): look at {0} in Stack[{1}] without removing it.',
+    'd.peek.empty': 'peek(): the stack is empty, nothing to see.',
+    'd.enq.chk': 'enqueue({0}): is the queue full? Count = {1}, MaxSize = 6.',
+    'd.enq.chk.lin': 'enqueue({0}): is Rear = MaxSize − 1? Rear = {1}.',
+    'd.full': 'Queue full! Count = {0} = MaxSize: the item is rejected.',
+    'd.full.lin': 'Rear is at the last cell, so a linear queue counts as full — even though {0} cell(s) at the front are empty and can never be reused.',
+    'd.full.lin0': 'Rear is at the last cell: the queue is full.',
+    'd.enq.rear.c': 'Rear = ({1} + 1) MOD 6 = {0}.',
+    'd.enq.rear.wrap': 'Rear = ({1} + 1) MOD 6 = {0}: Rear wraps round to the start of the array!',
+    'd.enq.rear.l': 'Rear moves on: Rear = {0}.',
+    'd.enq.put': 'Store {0} in Queue[{1}]: new items join at the back.',
+    'd.enq.cnt': 'Count = {0}.',
+    'd.deq.chk': 'dequeue(): is the queue empty? Count = {0}.',
+    'd.deq.chk.lin': 'dequeue(): is Front > Rear? Front = {0}, Rear = {1}.',
+    'd.empty': 'Queue empty: there is nothing to dequeue.',
+    'd.deq.get': 'Read {0} from Queue[{1}]: the item that has waited longest comes out first (FIFO).',
+    'd.deq.front.c': 'Front = ({1} + 1) MOD 6 = {0}. The item leaves the queue.',
+    'd.deq.front.wrap': 'Front = ({1} + 1) MOD 6 = {0}: Front wraps round to the start of the array. The item leaves the queue.',
+    'd.deq.front.l': 'Front moves on: Front = {0}. The empty cell behind it is not reused.',
+    'd.deq.cnt': 'Count = {0}.',
+    'd.deq.ret': 'dequeue() returns {0}.',
+    'd.ins.chk': 'insert({0}): is there a free row? FreePointer = {1}.',
+    'd.ins.full': 'List full: FreePointer = -1, there is no free row.',
+    'd.ins.take': 'Take row {0} from the free list: New = {0}, FreePointer = Pointer[{0}] = {1}.',
+    'd.ins.put': 'Store {0} in Data[{1}].',
+    'd.ins.headchk.y': 'The list is empty or {0} is smaller than the first item → it goes at the front.',
+    'd.ins.headchk.n': '{0} is not smaller than the first item {1} → walk along the list to find its place.',
+    'd.ins.head': 'Pointer[{0}] = StartPointer ({1}), then StartPointer = {0}.',
+    'd.ins.walk0': 'Prev = StartPointer = {0}.',
+    'd.ins.walk': 'Pointer[{0}] = {1} and Data[{1}] = {2} < {3} → move on: Prev = {1}.',
+    'd.ins.walkend': 'End of the list (Pointer[{0}] = -1): insert after row {0}.',
+    'd.ins.stop': 'Data[{1}] = {2} is not < {3}: insert after row {0}.',
+    'd.ins.link1': 'Step 1: Pointer[{0}] = Pointer[{1}] = {2}. The new node first points to the node after it.',
+    'd.ins.link2': 'Step 2: Pointer[{0}] = {1}. Now the previous node points to the new node.',
+    'd.del.walk0': 'Prev = -1, Cur = StartPointer = {0}.',
+    'd.del.walk': 'Data[{0}] = {1} ≠ {2} → Prev = {0}, Cur = Pointer[{0}] = {3}.',
+    'd.del.found': 'Data[{0}] = {1} → found it.',
+    'd.del.nf': '{0} is not in the list (Cur = -1).',
+    'd.del.head': 'The first node is deleted: StartPointer = Pointer[{0}] = {1}.',
+    'd.del.unlink': 'Pointer[{0}] = Pointer[{1}] = {2}: the previous node skips over row {1}.',
+    'd.del.free': 'Row {0} goes back to the free list: Pointer[{0}] = {1} (the old FreePointer), then FreePointer = {0}.',
+    'd.sea.walk0': 'Cur = StartPointer = {0}.',
+    'd.sea.walk': 'Data[{0}] = {1} ≠ {2} → Cur = Pointer[{0}] = {3}.',
+    'd.sea.found': 'Found {0} in row {1}.',
+    'd.sea.nf': '{0} is not in the list.'
+  };
+
+  /* ============================== 日本語 ============================== */
+  T.ja = {
+    'ui.title': 'Algo 3D Lab',
+    'ui.sub': 'ソート・スタック・キュー・連結リストを3Dで見る（9618 Ch 19–20）',
+    'tab.sort': 'ソート', 'tab.stack': 'スタック', 'tab.queue': 'キュー', 'tab.list': '連結リスト',
+    'ui.algo': 'アルゴリズム', 'algo.bubble': 'バブル', 'algo.insertion': '挿入', 'algo.quick': 'クイック', 'algo.merge': 'マージ', 'algo.race': 'レース（4つ同時）',
+    'ui.data': 'データ', 'data.random': 'ランダム', 'data.nearly': 'ほぼ整列済み', 'data.reversed': '逆順', 'data.few': '同じ値が多い',
+    'ui.n': '棒の数', 'ui.shuffle': 'データ作り直し',
+    'ui.view': '視点', 'view.front': '正面', 'view.angle': '斜め', 'view.top': '真上',
+    'ui.python': 'Python', 'ui.pseudo': '擬似コード',
+    'ui.watch': '変数', 'ui.stats': '回数', 'stats.cmp': '比較', 'stats.writes': '書き込み',
+    'ui.first': '最初へ', 'ui.prev': '戻る', 'ui.next': '進む', 'ui.play': '再生', 'ui.pause': '一時停止', 'ui.speed': '速さ', 'ui.step': 'ステップ',
+    'ui.stepmode': 'ステップ実行（1行ずつ）',
+    'ui.reset': 'リセット', 'ui.demo': 'デモ', 'ui.value': '値',
+    'op.push': 'Push', 'op.pop': 'Pop', 'op.peek': 'Peek', 'op.enqueue': 'Enqueue', 'op.dequeue': 'Dequeue', 'op.insert': '挿入', 'op.delete': '削除', 'op.search': '検索',
+    'mode.circular': '循環キュー', 'mode.linear': '線形キュー', 'mode.table': '表（配列）', 'mode.node': 'ノード',
+    'ui.model': '表示',
+    'race.title': 'レース結果', 'race.algo': 'アルゴリズム', 'race.ticks': 'ティック', 'race.rank': '順位', 'race.running': '実行中…', 'race.final': '最終',
+    'ui.nowebgl': 'このブラウザでは3D表示が使えません。コードとステップの説明は使えます。',
+    'ui.lang': '言語', 'ui.code': 'コード', 'ui.true': 'True', 'ui.false': 'False',
+    'legend.cmp': '比較中', 'legend.swap': '移動・書き込み', 'legend.sorted': '確定 ✓', 'legend.part': 'ここまで整列済み', 'legend.pivot': 'pivot', 'legend.key': 'key（持ち上げ中）', 'legend.dim': '対象外の範囲',
+    'note.a.bubble': 'バブルソート：隣同士を比べ、順番が逆なら交換。1パスごとに最大値が右端へ運ばれます。交換が1回も無いパスは「整列済み」なので早期終了。最悪 O(n²)。',
+    'note.a.insertion': '挿入ソート：左側はすでに整列済み。次の棒（key）を持ち上げ、大きい棒を右へずらして、空いた所に差し込みます。ほぼ整列済みなら非常に速い。最悪 O(n²)。',
+    'note.a.quick': 'クイックソート：右端を pivot にして、小さい棒を左へ集め、pivot を最終位置に置いてから左右を再帰で整列。平均 O(n log n)。',
+    'note.a.merge': 'マージソート：半分に分け、それぞれ整列してから、奥の列へコピーして併合。常に O(n log n)、追加の領域が必要。',
+    'note.inplace': 'ここではクイック・マージを in-place 版（a, lo, hi）で動かしています（棒を動かして見せるため）。Ch20 guide はリストを返す書き方です。',
+    'note.race': '同じデータを4レーンで同時に実行。1ティック＝各レーンで比較1回または書き込み1回なので、操作回数が少ないレーンが先に終わります。マージの書き込みは手前の列への書き込みだけを数えます。',
+    'note.stack': 'LIFO（Last In, First Out）：最後に push したものが最初に pop されます。出力トレイは「出てきた順」＝入れた順の逆です。',
+    'note.queue.c': 'FIFO（First In, First Out）：Rear に入れて Front から出します。循環キューは MOD で Front/Rear が一周するので空いたセルを再利用でき、Count で満杯と空を区別します。',
+    'note.queue.l': '線形キューは Front と Rear が前へ進むだけ。dequeue で空いた先頭のセルは二度と使われません。デモで「空きがあるのに full」になる様子を見てください。',
+    'note.list': 'StartPointer からポインタをたどると順番どおりに読めます（行番号の順ではありません）。未使用の行は別の鎖＝空きリスト（FreePointer）。挿入・削除はポインタを付け替えるだけです。',
+    's.start': '開始：棒は{0}本。▶ か「進む」で1行ずつ実行します。',
+    's.done': '整列完了！すべての棒が最終位置に入りました。',
+    's.b.pass': 'パス{0}：左から隣同士を比べます。',
+    's.b.gt': 'a[{0}] = {1} > a[{2}] = {3} → 順番が逆なので交換します。',
+    's.b.le': 'a[{0}] = {1} ≤ a[{2}] = {3} → すでに正しい順、交換しません。',
+    's.b.swap': '交換：{1} が左へ、{0} が右へ。',
+    's.b.passend': 'パス{0}終了：未整列の最大値が最終位置に確定 ✓。',
+    's.b.exit': 'このパスは交換ゼロ → 整列済み。早期終了します（swapped が False）。',
+    's.i.start': '左側が整列済みの「手札」。次の棒を取り出して差し込みます。',
+    's.i.take': 'a[{1}] から key = {0} を持ち上げます。',
+    's.i.edge': 'リストの左端に着いたので、比べる相手がもういません。',
+    's.i.gt': 'a[{0}] = {1} > key = {2} → 1つ右へずらします。',
+    's.i.le': 'a[{0}] = {1} ≤ key = {2} → 空いた場所が正しい位置。ここで止まります。',
+    's.i.shift': '{0} を a[{1}] から a[{2}] へずらします。',
+    's.i.insert': 'key = {0} を空いた a[{1}] に差し込みます。',
+    's.q.single': 'この範囲は棒が1本だけ：a[{0}] はすでに正しい位置 ✓。',
+    's.q.base': 'a[{0}..{1}] を整列：2本以上あるので partition（分割）します。',
+    's.q.call': 'Partition：右端の棒が pivot。残りを「pivot より小さい」と「大きい」に分けます。',
+    's.q.pivot': 'pivot = {0}（a[{1}]）。i は「pivot より小さい」ゾーンの右端で、範囲の1つ手前から始まります。',
+    's.q.lt': 'a[{0}] = {1} < pivot {2} → 小さい側へ：i を +1 して、小さいゾーンへ交換します。',
+    's.q.ge': 'a[{0}] = {1} ≥ pivot {2} → 大きい側のままにします。',
+    's.q.swap': 'a[{0}] と a[{1}] を交換します。',
+    's.q.self': 'i と j が同じ棒 a[{0}] なので、動きません。',
+    's.q.place': 'pivot {0} を a[{1}] へ交換：最終位置に確定 ✓。',
+    's.q.left': '左の部分 a[{0}..{1}] を再帰で整列します。',
+    's.q.right': '右の部分 a[{0}..{1}] を再帰で整列します。',
+    's.m.base': 'a[{0}..{1}] を整列：2本以上あるので半分に分けます。',
+    's.m.split': 'mid = {0}：左半分 a[{1}..{2}]、右半分 a[{3}..{4}]。',
+    's.m.left': 'まず左半分 a[{0}..{1}] を整列します。',
+    's.m.right': '次に右半分 a[{0}..{1}] を整列します。',
+    's.m.call': '両方整列済み：a[{0}..{1}] と a[{2}..{3}] を併合します。',
+    's.m.copy': '両半分を奥の列へコピーします（left[] と right[]）。',
+    's.m.le': '{0} ≤ {1} → 左半分の {0} を取ります。',
+    's.m.gt': '{0} > {1} → 右半分の {1} を取ります。',
+    's.m.write': '{0} を手前の列の a[{1}] へ書き戻します。',
+    's.m.rest': '片方を使い切りました：残りの {0} を a[{1}] へコピーします。',
+    's.race.tick': 'ティック{0}：各レーンで比較1回または書き込み1回。4つ中{1}つが完了。',
+    'd.init': '空の状態です。下のボタンを使うか、デモを押してください。',
+    'd.push.chk': 'push({0})：スタックは満杯？ Top = {1}、MaxSize − 1 = 5。',
+    'd.overflow': 'Stack overflow！ Top = {0} = MaxSize − 1：空きが無いので入れられません。',
+    'd.push.inc': 'Top が1つ上がります：Top = {0}。',
+    'd.push.put': '{0} を Stack[{1}] に格納：新しい要素が一番上に載ります。',
+    'd.pop.chk': 'pop()：スタックは空？ Top = {0}。',
+    'd.underflow': 'Stack underflow！ Top = -1：取り出すものがありません。',
+    'd.pop.get': 'Stack[{1}] から {0} を読み出し：最後に push したものが最初に出ます（LIFO）。',
+    'd.pop.dec': 'Top が1つ下がります：Top = {0}。要素はスタックから出ます。',
+    'd.pop.ret': 'pop() は {0} を返します。',
+    'd.peek': 'peek()：Stack[{1}] の {0} を、取り出さずに見ます。',
+    'd.peek.empty': 'peek()：スタックは空で、見るものがありません。',
+    'd.enq.chk': 'enqueue({0})：キューは満杯？ Count = {1}、MaxSize = 6。',
+    'd.enq.chk.lin': 'enqueue({0})：Rear = MaxSize − 1？ Rear = {1}。',
+    'd.full': 'Queue full！ Count = {0} = MaxSize：入れられません。',
+    'd.full.lin': 'Rear が最後のセルにあるので線形キューは満杯扱い。先頭の{0}個の空きセルは二度と使えません。',
+    'd.full.lin0': 'Rear が最後のセルにあり、キューは満杯です。',
+    'd.enq.rear.c': 'Rear = ({1} + 1) MOD 6 = {0}。',
+    'd.enq.rear.wrap': 'Rear = ({1} + 1) MOD 6 = {0}：Rear が配列の先頭へ回り込みました！',
+    'd.enq.rear.l': 'Rear が進みます：Rear = {0}。',
+    'd.enq.put': '{0} を Queue[{1}] に格納：新しい要素は後ろに並びます。',
+    'd.enq.cnt': 'Count = {0}。',
+    'd.deq.chk': 'dequeue()：キューは空？ Count = {0}。',
+    'd.deq.chk.lin': 'dequeue()：Front > Rear？ Front = {0}、Rear = {1}。',
+    'd.empty': 'Queue empty：取り出すものがありません。',
+    'd.deq.get': 'Queue[{1}] から {0} を読み出し：一番長く待った要素が最初に出ます（FIFO）。',
+    'd.deq.front.c': 'Front = ({1} + 1) MOD 6 = {0}。要素はキューから出ます。',
+    'd.deq.front.wrap': 'Front = ({1} + 1) MOD 6 = {0}：Front が配列の先頭へ回り込みました。要素はキューから出ます。',
+    'd.deq.front.l': 'Front が進みます：Front = {0}。後ろに残った空きセルは再利用されません。',
+    'd.deq.cnt': 'Count = {0}。',
+    'd.deq.ret': 'dequeue() は {0} を返します。',
+    'd.ins.chk': 'insert({0})：空いている行はある？ FreePointer = {1}。',
+    'd.ins.full': 'リストは満杯：FreePointer = -1、空き行がありません。',
+    'd.ins.take': '空きリストから行{0}を取ります：New = {0}、FreePointer = Pointer[{0}] = {1}。',
+    'd.ins.put': '{0} を Data[{1}] に格納します。',
+    'd.ins.headchk.y': 'リストが空、または {0} が先頭の値より小さい → 先頭に入れます。',
+    'd.ins.headchk.n': '{0} は先頭の値 {1} より小さくない → リストをたどって入れる位置を探します。',
+    'd.ins.head': 'Pointer[{0}] = StartPointer（{1}）、続いて StartPointer = {0}。',
+    'd.ins.walk0': 'Prev = StartPointer = {0}。',
+    'd.ins.walk': 'Pointer[{0}] = {1}、Data[{1}] = {2} < {3} → 進みます：Prev = {1}。',
+    'd.ins.walkend': 'リストの終わり（Pointer[{0}] = -1）：行{0}の後ろに入れます。',
+    'd.ins.stop': 'Data[{1}] = {2} は {3} より小さくない：行{0}の後ろに入れます。',
+    'd.ins.link1': 'ステップ1：Pointer[{0}] = Pointer[{1}] = {2}。新しいノードを先に「後ろのノード」へつなぎます。',
+    'd.ins.link2': 'ステップ2：Pointer[{0}] = {1}。前のノードから新しいノードへつなぎます。',
+    'd.del.walk0': 'Prev = -1、Cur = StartPointer = {0}。',
+    'd.del.walk': 'Data[{0}] = {1} ≠ {2} → Prev = {0}、Cur = Pointer[{0}] = {3}。',
+    'd.del.found': 'Data[{0}] = {1} → 見つかりました。',
+    'd.del.nf': '{0} はリストにありません（Cur = -1）。',
+    'd.del.head': '先頭のノードを削除：StartPointer = Pointer[{0}] = {1}。',
+    'd.del.unlink': 'Pointer[{0}] = Pointer[{1}] = {2}：前のノードが行{1}を飛び越えます。',
+    'd.del.free': '行{0}を空きリストへ戻します：Pointer[{0}] = {1}（元の FreePointer）、続いて FreePointer = {0}。',
+    'd.sea.walk0': 'Cur = StartPointer = {0}。',
+    'd.sea.walk': 'Data[{0}] = {1} ≠ {2} → Cur = Pointer[{0}] = {3}。',
+    'd.sea.found': '{0} を行{1}で発見。',
+    'd.sea.nf': '{0} はリストにありません。'
+  };
+
+  /* ============================== 中文 ============================== */
+  T.zh = {
+    'ui.title': 'Algo 3D Lab',
+    'ui.sub': '用3D查看排序、栈、队列和链表（9618 Ch 19–20）',
+    'tab.sort': '排序', 'tab.stack': '栈', 'tab.queue': '队列', 'tab.list': '链表',
+    'ui.algo': '算法', 'algo.bubble': '冒泡', 'algo.insertion': '插入', 'algo.quick': '快速', 'algo.merge': '归并', 'algo.race': '比赛（4种同时）',
+    'ui.data': '数据', 'data.random': '随机', 'data.nearly': '接近有序', 'data.reversed': '逆序', 'data.few': '重复值多',
+    'ui.n': '柱子数', 'ui.shuffle': '重新生成',
+    'ui.view': '视角', 'view.front': '正面', 'view.angle': '斜视', 'view.top': '俯视',
+    'ui.python': 'Python', 'ui.pseudo': '伪代码',
+    'ui.watch': '变量', 'ui.stats': '次数', 'stats.cmp': '比较', 'stats.writes': '写入',
+    'ui.first': '回到开头', 'ui.prev': '后退', 'ui.next': '前进', 'ui.play': '播放', 'ui.pause': '暂停', 'ui.speed': '速度', 'ui.step': '步骤',
+    'ui.stepmode': '单步模式（一次一行）',
+    'ui.reset': '重置', 'ui.demo': '演示', 'ui.value': '值',
+    'op.push': 'Push', 'op.pop': 'Pop', 'op.peek': 'Peek', 'op.enqueue': 'Enqueue', 'op.dequeue': 'Dequeue', 'op.insert': '插入', 'op.delete': '删除', 'op.search': '查找',
+    'mode.circular': '循环队列', 'mode.linear': '线性队列', 'mode.table': '表格（数组）', 'mode.node': '节点',
+    'ui.model': '显示',
+    'race.title': '比赛结果', 'race.algo': '算法', 'race.ticks': '时刻', 'race.rank': '名次', 'race.running': '运行中…', 'race.final': '最终',
+    'ui.nowebgl': '此浏览器无法显示3D。代码和步骤说明仍可使用。',
+    'ui.lang': '语言', 'ui.code': '代码', 'ui.true': 'True', 'ui.false': 'False',
+    'legend.cmp': '正在比较', 'legend.swap': '移动 / 写入', 'legend.sorted': '已到最终位置 ✓', 'legend.part': '目前已有序', 'legend.pivot': 'pivot', 'legend.key': 'key（已抬起）', 'legend.dim': '范围之外',
+    'note.a.bubble': '冒泡排序：比较相邻的两个，顺序不对就交换。每一趟都会把最大值送到最右边。如果某一趟没有交换，说明已经有序，可提前结束。最坏 O(n²)。',
+    'note.a.insertion': '插入排序：左边部分已经有序。抬起下一根柱子（key），把更大的向右移，再放进空位。数据接近有序时非常快。最坏 O(n²)。',
+    'note.a.quick': '快速排序：以最右边的柱子为 pivot，把较小的移到左边，把 pivot 放到最终位置，再递归排序左右两部分。平均 O(n log n)。',
+    'note.a.merge': '归并排序：先对半分开，各自排序，再借助后排的副本合并。始终 O(n log n)，需要额外空间。',
+    'note.inplace': '这里的快速排序和归并排序采用原地版本（a, lo, hi），这样才能让柱子移动。Ch20 guide 里是返回新列表的写法。',
+    'note.race': '同样的数据放在四条赛道上。1个时刻 = 每条赛道做一次比较或一次写入，所以操作次数少的赛道先完成。归并排序只统计写入前排的次数。',
+    'note.stack': 'LIFO（Last In, First Out）：最后 push 的最先 pop。输出托盘显示取出的顺序，正好和放入的顺序相反。',
+    'note.queue.c': 'FIFO（First In, First Out）：从 Rear 加入，从 Front 取出。循环队列用 MOD 让 Front 和 Rear 绕回开头，因此空出的格子可以重复使用，并用 Count 区分满和空。',
+    'note.queue.l': '线性队列的 Front 和 Rear 只会向前移动。dequeue 后前面空出的格子再也用不上。用演示可以看到“明明有空格却显示 full”。',
+    'note.list': '从 StartPointer 沿着指针走，就能按顺序读出链表（与行号顺序无关）。未使用的行组成另一条链，即空闲链表（FreePointer）。插入和删除只需改指针。',
+    's.start': '开始：共{0}根柱子。按 ▶ 或“前进”一次执行一行。',
+    's.done': '排序完成！每根柱子都在最终位置。',
+    's.b.pass': '第{0}趟：从左边开始比较相邻的两根。',
+    's.b.gt': 'a[{0}] = {1} > a[{2}] = {3} → 顺序不对，交换。',
+    's.b.le': 'a[{0}] = {1} ≤ a[{2}] = {3} → 顺序正确，不交换。',
+    's.b.swap': '交换：{1} 移到左边，{0} 移到右边。',
+    's.b.passend': '第{0}趟结束：未排序部分的最大值已到最终位置 ✓。',
+    's.b.exit': '这一趟没有交换 → 已经有序，提前结束（swapped 为 False）。',
+    's.i.start': '左边是有序的“手牌”。取出下一根柱子，把它插进去。',
+    's.i.take': '从 a[{1}] 抬起 key = {0}。',
+    's.i.edge': '已到列表最左端，没有可比较的对象了。',
+    's.i.gt': 'a[{0}] = {1} > key = {2} → 向右移一格。',
+    's.i.le': 'a[{0}] = {1} ≤ key = {2} → 空位就是正确位置，停止。',
+    's.i.shift': '把 {0} 从 a[{1}] 移到 a[{2}]。',
+    's.i.insert': '把 key = {0} 放进空位 a[{1}]。',
+    's.q.single': '这一部分只剩一根柱子：a[{0}] 已在正确位置 ✓。',
+    's.q.base': '排序 a[{0}..{1}]：多于一根，所以做 partition（划分）。',
+    's.q.call': 'Partition：最右边的柱子是 pivot，其余的分成“比 pivot 小”和“更大”两部分。',
+    's.q.pivot': 'pivot = {0}（a[{1}]）。i 表示“比 pivot 小”区域的右端，从范围前一格开始。',
+    's.q.lt': 'a[{0}] = {1} < pivot {2} → 属于小的一侧：i 加 1，再交换进小区域。',
+    's.q.ge': 'a[{0}] = {1} ≥ pivot {2} → 留在大的一侧。',
+    's.q.swap': '交换 a[{0}] 和 a[{1}]。',
+    's.q.self': 'i 和 j 是同一根柱子 a[{0}]，不需要移动。',
+    's.q.place': '把 pivot {0} 交换到 a[{1}]：它已在最终位置 ✓。',
+    's.q.left': '递归排序左边部分 a[{0}..{1}]。',
+    's.q.right': '递归排序右边部分 a[{0}..{1}]。',
+    's.m.base': '排序 a[{0}..{1}]：多于一根，所以对半分开。',
+    's.m.split': 'mid = {0}：左半 a[{1}..{2}]，右半 a[{3}..{4}]。',
+    's.m.left': '先排序左半 a[{0}..{1}]。',
+    's.m.right': '再排序右半 a[{0}..{1}]。',
+    's.m.call': '两半都已有序：合并 a[{0}..{1}] 和 a[{2}..{3}]。',
+    's.m.copy': '把两半复制到后排（left[] 和 right[]）。',
+    's.m.le': '{0} ≤ {1} → 取左半的 {0}。',
+    's.m.gt': '{0} > {1} → 取右半的 {1}。',
+    's.m.write': '把 {0} 写回前排的 a[{1}]。',
+    's.m.rest': '有一半已用完：把剩下的 {0} 复制到 a[{1}]。',
+    's.race.tick': '时刻{0}：每条赛道做一次比较或写入。4条中已有{1}条完成。',
+    'd.init': '目前是空的。请使用下面的按钮或点击演示。',
+    'd.push.chk': 'push({0})：栈满了吗？Top = {1}，MaxSize − 1 = 5。',
+    'd.overflow': 'Stack overflow！Top = {0} = MaxSize − 1：没有空位，元素被拒绝。',
+    'd.push.inc': 'Top 上移：Top = {0}。',
+    'd.push.put': '把 {0} 存入 Stack[{1}]：最新的元素在最上面。',
+    'd.pop.chk': 'pop()：栈是空的吗？Top = {0}。',
+    'd.underflow': 'Stack underflow！Top = -1：没有可 pop 的元素。',
+    'd.pop.get': '从 Stack[{1}] 读出 {0}：最后 push 的最先出来（LIFO）。',
+    'd.pop.dec': 'Top 下移：Top = {0}。元素离开栈。',
+    'd.pop.ret': 'pop() 返回 {0}。',
+    'd.peek': 'peek()：查看 Stack[{1}] 里的 {0}，但不取出。',
+    'd.peek.empty': 'peek()：栈是空的，没有可看的。',
+    'd.enq.chk': 'enqueue({0})：队列满了吗？Count = {1}，MaxSize = 6。',
+    'd.enq.chk.lin': 'enqueue({0})：Rear = MaxSize − 1 吗？Rear = {1}。',
+    'd.full': 'Queue full！Count = {0} = MaxSize：元素被拒绝。',
+    'd.full.lin': 'Rear 已在最后一格，线性队列视为已满——即使前面有{0}个空格也永远用不上。',
+    'd.full.lin0': 'Rear 已在最后一格：队列已满。',
+    'd.enq.rear.c': 'Rear = ({1} + 1) MOD 6 = {0}。',
+    'd.enq.rear.wrap': 'Rear = ({1} + 1) MOD 6 = {0}：Rear 绕回了数组开头！',
+    'd.enq.rear.l': 'Rear 前进：Rear = {0}。',
+    'd.enq.put': '把 {0} 存入 Queue[{1}]：新元素排在后面。',
+    'd.enq.cnt': 'Count = {0}。',
+    'd.deq.chk': 'dequeue()：队列是空的吗？Count = {0}。',
+    'd.deq.chk.lin': 'dequeue()：Front > Rear 吗？Front = {0}，Rear = {1}。',
+    'd.empty': 'Queue empty：没有可 dequeue 的元素。',
+    'd.deq.get': '从 Queue[{1}] 读出 {0}：等得最久的最先出来（FIFO）。',
+    'd.deq.front.c': 'Front = ({1} + 1) MOD 6 = {0}。元素离开队列。',
+    'd.deq.front.wrap': 'Front = ({1} + 1) MOD 6 = {0}：Front 绕回了数组开头。元素离开队列。',
+    'd.deq.front.l': 'Front 前进：Front = {0}。后面空出的格子不会被重复使用。',
+    'd.deq.cnt': 'Count = {0}。',
+    'd.deq.ret': 'dequeue() 返回 {0}。',
+    'd.ins.chk': 'insert({0})：还有空闲的行吗？FreePointer = {1}。',
+    'd.ins.full': '链表已满：FreePointer = -1，没有空闲行。',
+    'd.ins.take': '从空闲链表取出第{0}行：New = {0}，FreePointer = Pointer[{0}] = {1}。',
+    'd.ins.put': '把 {0} 存入 Data[{1}]。',
+    'd.ins.headchk.y': '链表为空，或 {0} 比第一个值小 → 放到最前面。',
+    'd.ins.headchk.n': '{0} 不比第一个值 {1} 小 → 沿着链表找位置。',
+    'd.ins.head': 'Pointer[{0}] = StartPointer（{1}），然后 StartPointer = {0}。',
+    'd.ins.walk0': 'Prev = StartPointer = {0}。',
+    'd.ins.walk': 'Pointer[{0}] = {1}，Data[{1}] = {2} < {3} → 继续：Prev = {1}。',
+    'd.ins.walkend': '到达链表末尾（Pointer[{0}] = -1）：插在第{0}行之后。',
+    'd.ins.stop': 'Data[{1}] = {2} 不小于 {3}：插在第{0}行之后。',
+    'd.ins.link1': '第1步：Pointer[{0}] = Pointer[{1}] = {2}。新节点先指向它后面的节点。',
+    'd.ins.link2': '第2步：Pointer[{0}] = {1}。前一个节点再指向新节点。',
+    'd.del.walk0': 'Prev = -1，Cur = StartPointer = {0}。',
+    'd.del.walk': 'Data[{0}] = {1} ≠ {2} → Prev = {0}，Cur = Pointer[{0}] = {3}。',
+    'd.del.found': 'Data[{0}] = {1} → 找到了。',
+    'd.del.nf': '链表中没有 {0}（Cur = -1）。',
+    'd.del.head': '删除第一个节点：StartPointer = Pointer[{0}] = {1}。',
+    'd.del.unlink': 'Pointer[{0}] = Pointer[{1}] = {2}：前一个节点跳过第{1}行。',
+    'd.del.free': '第{0}行回到空闲链表：Pointer[{0}] = {1}（原来的 FreePointer），然后 FreePointer = {0}。',
+    'd.sea.walk0': 'Cur = StartPointer = {0}。',
+    'd.sea.walk': 'Data[{0}] = {1} ≠ {2} → Cur = Pointer[{0}] = {3}。',
+    'd.sea.found': '在第{1}行找到 {0}。',
+    'd.sea.nf': '链表中没有 {0}。'
+  };
+
+  /* ============================== ไทย ============================== */
+  T.th = {
+    'ui.title': 'Algo 3D Lab',
+    'ui.sub': 'ดูการเรียงลำดับ สแตก คิว และลิงก์ลิสต์แบบ 3D (9618 Ch 19–20)',
+    'tab.sort': 'เรียงลำดับ', 'tab.stack': 'สแตก', 'tab.queue': 'คิว', 'tab.list': 'ลิงก์ลิสต์',
+    'ui.algo': 'อัลกอริทึม', 'algo.bubble': 'บับเบิล', 'algo.insertion': 'อินเซอร์ชัน', 'algo.quick': 'ควิก', 'algo.merge': 'เมิร์จ', 'algo.race': 'แข่งกัน (ทั้ง 4)',
+    'ui.data': 'ข้อมูล', 'data.random': 'สุ่ม', 'data.nearly': 'เกือบเรียงแล้ว', 'data.reversed': 'เรียงย้อนกลับ', 'data.few': 'ค่าซ้ำมาก',
+    'ui.n': 'จำนวนแท่ง', 'ui.shuffle': 'สร้างข้อมูลใหม่',
+    'ui.view': 'มุมมอง', 'view.front': 'ด้านหน้า', 'view.angle': 'เฉียง', 'view.top': 'มองจากบน',
+    'ui.python': 'Python', 'ui.pseudo': 'รหัสเทียม',
+    'ui.watch': 'ตัวแปร', 'ui.stats': 'จำนวนครั้ง', 'stats.cmp': 'การเปรียบเทียบ', 'stats.writes': 'การเขียนค่า',
+    'ui.first': 'กลับไปจุดเริ่ม', 'ui.prev': 'ย้อนกลับ', 'ui.next': 'ถัดไป', 'ui.play': 'เล่น', 'ui.pause': 'หยุดชั่วคราว', 'ui.speed': 'ความเร็ว', 'ui.step': 'ขั้นตอน',
+    'ui.stepmode': 'โหมดทีละขั้น (ทีละบรรทัด)',
+    'ui.reset': 'รีเซ็ต', 'ui.demo': 'สาธิต', 'ui.value': 'ค่า',
+    'op.push': 'Push', 'op.pop': 'Pop', 'op.peek': 'Peek', 'op.enqueue': 'Enqueue', 'op.dequeue': 'Dequeue', 'op.insert': 'แทรก', 'op.delete': 'ลบ', 'op.search': 'ค้นหา',
+    'mode.circular': 'คิววงกลม', 'mode.linear': 'คิวเส้นตรง', 'mode.table': 'ตาราง (อาร์เรย์)', 'mode.node': 'โหนด',
+    'ui.model': 'การแสดงผล',
+    'race.title': 'ผลการแข่งขัน', 'race.algo': 'อัลกอริทึม', 'race.ticks': 'จังหวะ', 'race.rank': 'อันดับ', 'race.running': 'กำลังทำงาน…', 'race.final': 'สุดท้าย',
+    'ui.nowebgl': 'เบราว์เซอร์นี้แสดงภาพ 3D ไม่ได้ แต่ยังดูโค้ดและคำอธิบายทีละขั้นได้',
+    'ui.lang': 'ภาษา', 'ui.code': 'โค้ด', 'ui.true': 'True', 'ui.false': 'False',
+    'legend.cmp': 'กำลังเปรียบเทียบ', 'legend.swap': 'กำลังย้าย / เขียนค่า', 'legend.sorted': 'อยู่ตำแหน่งสุดท้าย ✓', 'legend.part': 'เรียงแล้วจนถึงตอนนี้', 'legend.pivot': 'pivot', 'legend.key': 'key (ยกขึ้น)', 'legend.dim': 'นอกช่วงที่ทำอยู่',
+    'note.a.bubble': 'บับเบิลซอร์ต: เปรียบเทียบแท่งที่อยู่ติดกัน ถ้าลำดับผิดให้สลับ ทุกรอบค่าที่มากที่สุดจะลอยไปทางขวา ถ้ารอบไหนไม่มีการสลับเลยแปลว่าเรียงแล้ว หยุดได้ทันที กรณีแย่สุด O(n²)',
+    'note.a.insertion': 'อินเซอร์ชันซอร์ต: ด้านซ้ายเรียงแล้ว ยกแท่งถัดไป (key) ขึ้น เลื่อนแท่งที่ใหญ่กว่าไปทางขวา แล้ววางลงในช่องว่าง เร็วมากถ้าข้อมูลเกือบเรียงอยู่แล้ว กรณีแย่สุด O(n²)',
+    'note.a.quick': 'ควิกซอร์ต: เลือกแท่งขวาสุดเป็น pivot ย้ายแท่งที่เล็กกว่าไปทางซ้าย วาง pivot ไว้ตำแหน่งสุดท้าย แล้วเรียงซ้าย-ขวาด้วยการเรียกซ้ำ เฉลี่ย O(n log n)',
+    'note.a.merge': 'เมิร์จซอร์ต: แบ่งครึ่ง เรียงแต่ละครึ่ง แล้วรวมกันโดยใช้สำเนาในแถวหลัง ได้ O(n log n) เสมอ แต่ต้องใช้พื้นที่เพิ่ม',
+    'note.inplace': 'ที่นี่ควิกและเมิร์จทำงานแบบ in-place (a, lo, hi) เพื่อให้เห็นแท่งเคลื่อนที่ ส่วนใน Ch20 guide เป็นแบบที่คืนลิสต์ใหม่',
+    'note.race': 'ข้อมูลเดียวกันใน 4 เลน 1 จังหวะ = เปรียบเทียบ 1 ครั้งหรือเขียนค่า 1 ครั้งในแต่ละเลน เลนที่ใช้การทำงานน้อยกว่าจึงเสร็จก่อน เมิร์จนับเฉพาะการเขียนลงแถวหน้า',
+    'note.stack': 'LIFO (Last In, First Out): ตัวที่ push ทีหลังสุดจะ pop ออกก่อน ถาดผลลัพธ์แสดงลำดับที่ออกมา ซึ่งตรงข้ามกับลำดับที่ใส่เข้าไป',
+    'note.queue.c': 'FIFO (First In, First Out): เข้าทาง Rear ออกทาง Front คิววงกลมใช้ MOD ให้ Front และ Rear วนกลับมาต้นอาร์เรย์ ช่องที่ว่างจึงใช้ซ้ำได้ และใช้ Count แยกว่าเต็มหรือว่าง',
+    'note.queue.l': 'คิวเส้นตรง Front และ Rear เดินหน้าอย่างเดียว หลัง dequeue ช่องว่างด้านหน้าจะไม่ถูกใช้อีก ลองกดสาธิตเพื่อดูว่าคิวเต็มทั้งที่ยังมีช่องว่าง',
+    'note.list': 'เดินตามพอยน์เตอร์จาก StartPointer จะอ่านลิสต์ตามลำดับ (ไม่เกี่ยวกับลำดับเลขแถว) แถวที่ไม่ได้ใช้จะเป็นอีกสายหนึ่งคือ free list (FreePointer) การแทรกและลบแค่เปลี่ยนพอยน์เตอร์',
+    's.start': 'เริ่มต้น: {0} แท่ง กด ▶ หรือ "ถัดไป" เพื่อทำทีละบรรทัด',
+    's.done': 'เรียงเสร็จแล้ว! ทุกแท่งอยู่ตำแหน่งสุดท้าย',
+    's.b.pass': 'รอบที่ {0}: เปรียบเทียบแท่งที่อยู่ติดกันจากซ้าย',
+    's.b.gt': 'a[{0}] = {1} > a[{2}] = {3} → ลำดับผิด จึงสลับ',
+    's.b.le': 'a[{0}] = {1} ≤ a[{2}] = {3} → ลำดับถูกแล้ว ไม่สลับ',
+    's.b.swap': 'สลับ: {1} ไปทางซ้าย และ {0} ไปทางขวา',
+    's.b.passend': 'จบรอบที่ {0}: ค่าที่มากที่สุดของส่วนที่ยังไม่เรียงอยู่ตำแหน่งสุดท้ายแล้ว ✓',
+    's.b.exit': 'รอบนี้ไม่มีการสลับ → เรียงแล้ว หยุดก่อนได้ (swapped เป็น False)',
+    's.i.start': 'ด้านซ้ายคือ "ไพ่ในมือ" ที่เรียงแล้ว หยิบแท่งถัดไปมาแทรก',
+    's.i.take': 'ยก key = {0} ออกจาก a[{1}]',
+    's.i.edge': 'ถึงปลายซ้ายของลิสต์แล้ว ไม่มีตัวให้เปรียบเทียบอีก',
+    's.i.gt': 'a[{0}] = {1} > key = {2} → เลื่อนไปทางขวา 1 ช่อง',
+    's.i.le': 'a[{0}] = {1} ≤ key = {2} → ช่องว่างคือตำแหน่งที่ถูกต้อง หยุด',
+    's.i.shift': 'เลื่อน {0} จาก a[{1}] ไปที่ a[{2}]',
+    's.i.insert': 'วาง key = {0} ลงในช่องว่าง a[{1}]',
+    's.q.single': 'ช่วงนี้เหลือแท่งเดียว: a[{0}] อยู่ตำแหน่งที่ถูกต้องแล้ว ✓',
+    's.q.base': 'เรียง a[{0}..{1}]: มีมากกว่าหนึ่งแท่ง จึงทำ partition (แบ่ง)',
+    's.q.call': 'Partition: แท่งขวาสุดเป็น pivot แท่งที่เหลือแบ่งเป็นกลุ่ม "เล็กกว่า" และ "ใหญ่กว่า"',
+    's.q.pivot': 'pivot = {0} (a[{1}]) i คือปลายของโซน "เล็กกว่า pivot" เริ่มที่ก่อนช่วงหนึ่งช่อง',
+    's.q.lt': 'a[{0}] = {1} < pivot {2} → อยู่ฝั่งเล็ก: i เพิ่ม 1 แล้วสลับเข้าโซนเล็ก',
+    's.q.ge': 'a[{0}] = {1} ≥ pivot {2} → อยู่ฝั่งใหญ่ต่อไป',
+    's.q.swap': 'สลับ a[{0}] กับ a[{1}]',
+    's.q.self': 'i กับ j เป็นแท่งเดียวกัน a[{0}] จึงไม่ต้องย้าย',
+    's.q.place': 'สลับ pivot {0} ไปที่ a[{1}]: อยู่ตำแหน่งสุดท้ายแล้ว ✓',
+    's.q.left': 'เรียงส่วนซ้าย a[{0}..{1}] ด้วยการเรียกซ้ำ',
+    's.q.right': 'เรียงส่วนขวา a[{0}..{1}] ด้วยการเรียกซ้ำ',
+    's.m.base': 'เรียง a[{0}..{1}]: มีมากกว่าหนึ่งแท่ง จึงแบ่งครึ่ง',
+    's.m.split': 'mid = {0}: ครึ่งซ้าย a[{1}..{2}] ครึ่งขวา a[{3}..{4}]',
+    's.m.left': 'เรียงครึ่งซ้าย a[{0}..{1}] ก่อน',
+    's.m.right': 'ต่อไปเรียงครึ่งขวา a[{0}..{1}]',
+    's.m.call': 'ทั้งสองครึ่งเรียงแล้ว: รวม a[{0}..{1}] กับ a[{2}..{3}]',
+    's.m.copy': 'คัดลอกทั้งสองครึ่งไปแถวหลัง (left[] และ right[])',
+    's.m.le': '{0} ≤ {1} → เอา {0} จากครึ่งซ้าย',
+    's.m.gt': '{0} > {1} → เอา {1} จากครึ่งขวา',
+    's.m.write': 'เขียน {0} กลับไปที่ a[{1}] ในแถวหน้า',
+    's.m.rest': 'ครึ่งหนึ่งหมดแล้ว: คัดลอก {0} ที่เหลือไปที่ a[{1}]',
+    's.race.tick': 'จังหวะที่ {0}: แต่ละเลนเปรียบเทียบหรือเขียนค่า 1 ครั้ง เสร็จแล้ว {1} จาก 4 เลน',
+    'd.init': 'ว่างเปล่า ใช้ปุ่มด้านล่างหรือกดสาธิต',
+    'd.push.chk': 'push({0}): สแตกเต็มหรือไม่? Top = {1}, MaxSize − 1 = 5',
+    'd.overflow': 'Stack overflow! Top = {0} = MaxSize − 1: ไม่มีที่ว่าง จึงไม่รับค่านี้',
+    'd.push.inc': 'Top ขยับขึ้น: Top = {0}',
+    'd.push.put': 'เก็บ {0} ไว้ที่ Stack[{1}]: ตัวใหม่อยู่บนสุด',
+    'd.pop.chk': 'pop(): สแตกว่างหรือไม่? Top = {0}',
+    'd.underflow': 'Stack underflow! Top = -1: ไม่มีอะไรให้ pop',
+    'd.pop.get': 'อ่าน {0} จาก Stack[{1}]: ตัวที่ push ทีหลังสุดออกก่อน (LIFO)',
+    'd.pop.dec': 'Top ขยับลง: Top = {0} ข้อมูลออกจากสแตก',
+    'd.pop.ret': 'pop() คืนค่า {0}',
+    'd.peek': 'peek(): ดู {0} ที่ Stack[{1}] โดยไม่เอาออก',
+    'd.peek.empty': 'peek(): สแตกว่าง ไม่มีอะไรให้ดู',
+    'd.enq.chk': 'enqueue({0}): คิวเต็มหรือไม่? Count = {1}, MaxSize = 6',
+    'd.enq.chk.lin': 'enqueue({0}): Rear = MaxSize − 1 หรือไม่? Rear = {1}',
+    'd.full': 'Queue full! Count = {0} = MaxSize: ไม่รับค่านี้',
+    'd.full.lin': 'Rear อยู่ที่ช่องสุดท้าย คิวเส้นตรงจึงถือว่าเต็ม ทั้งที่ช่องว่างด้านหน้า {0} ช่องจะไม่ถูกใช้อีกเลย',
+    'd.full.lin0': 'Rear อยู่ที่ช่องสุดท้าย: คิวเต็ม',
+    'd.enq.rear.c': 'Rear = ({1} + 1) MOD 6 = {0}',
+    'd.enq.rear.wrap': 'Rear = ({1} + 1) MOD 6 = {0}: Rear วนกลับไปต้นอาร์เรย์!',
+    'd.enq.rear.l': 'Rear เดินหน้า: Rear = {0}',
+    'd.enq.put': 'เก็บ {0} ไว้ที่ Queue[{1}]: ตัวใหม่ต่อท้ายแถว',
+    'd.enq.cnt': 'Count = {0}',
+    'd.deq.chk': 'dequeue(): คิวว่างหรือไม่? Count = {0}',
+    'd.deq.chk.lin': 'dequeue(): Front > Rear หรือไม่? Front = {0}, Rear = {1}',
+    'd.empty': 'Queue empty: ไม่มีอะไรให้ dequeue',
+    'd.deq.get': 'อ่าน {0} จาก Queue[{1}]: ตัวที่รอนานที่สุดออกก่อน (FIFO)',
+    'd.deq.front.c': 'Front = ({1} + 1) MOD 6 = {0} ข้อมูลออกจากคิว',
+    'd.deq.front.wrap': 'Front = ({1} + 1) MOD 6 = {0}: Front วนกลับไปต้นอาร์เรย์ ข้อมูลออกจากคิว',
+    'd.deq.front.l': 'Front เดินหน้า: Front = {0} ช่องว่างด้านหลังจะไม่ถูกใช้ซ้ำ',
+    'd.deq.cnt': 'Count = {0}',
+    'd.deq.ret': 'dequeue() คืนค่า {0}',
+    'd.ins.chk': 'insert({0}): มีแถวว่างหรือไม่? FreePointer = {1}',
+    'd.ins.full': 'ลิสต์เต็ม: FreePointer = -1 ไม่มีแถวว่าง',
+    'd.ins.take': 'เอาแถว {0} จาก free list: New = {0}, FreePointer = Pointer[{0}] = {1}',
+    'd.ins.put': 'เก็บ {0} ไว้ที่ Data[{1}]',
+    'd.ins.headchk.y': 'ลิสต์ว่าง หรือ {0} น้อยกว่าค่าแรก → ใส่ไว้ด้านหน้าสุด',
+    'd.ins.headchk.n': '{0} ไม่น้อยกว่าค่าแรก {1} → เดินตามลิสต์เพื่อหาตำแหน่ง',
+    'd.ins.head': 'Pointer[{0}] = StartPointer ({1}) แล้ว StartPointer = {0}',
+    'd.ins.walk0': 'Prev = StartPointer = {0}',
+    'd.ins.walk': 'Pointer[{0}] = {1} และ Data[{1}] = {2} < {3} → เดินต่อ: Prev = {1}',
+    'd.ins.walkend': 'ถึงท้ายลิสต์ (Pointer[{0}] = -1): แทรกหลังแถว {0}',
+    'd.ins.stop': 'Data[{1}] = {2} ไม่น้อยกว่า {3}: แทรกหลังแถว {0}',
+    'd.ins.link1': 'ขั้นที่ 1: Pointer[{0}] = Pointer[{1}] = {2} โหนดใหม่ชี้ไปที่โหนดถัดไปก่อน',
+    'd.ins.link2': 'ขั้นที่ 2: Pointer[{0}] = {1} แล้วโหนดก่อนหน้าจึงชี้มาที่โหนดใหม่',
+    'd.del.walk0': 'Prev = -1, Cur = StartPointer = {0}',
+    'd.del.walk': 'Data[{0}] = {1} ≠ {2} → Prev = {0}, Cur = Pointer[{0}] = {3}',
+    'd.del.found': 'Data[{0}] = {1} → เจอแล้ว',
+    'd.del.nf': 'ไม่มี {0} ในลิสต์ (Cur = -1)',
+    'd.del.head': 'ลบโหนดแรก: StartPointer = Pointer[{0}] = {1}',
+    'd.del.unlink': 'Pointer[{0}] = Pointer[{1}] = {2}: โหนดก่อนหน้าข้ามแถว {1}',
+    'd.del.free': 'แถว {0} กลับเข้า free list: Pointer[{0}] = {1} (FreePointer เดิม) แล้ว FreePointer = {0}',
+    'd.sea.walk0': 'Cur = StartPointer = {0}',
+    'd.sea.walk': 'Data[{0}] = {1} ≠ {2} → Cur = Pointer[{0}] = {3}',
+    'd.sea.found': 'พบ {0} ที่แถว {1}',
+    'd.sea.nf': 'ไม่มี {0} ในลิสต์'
+  };
+
+  /* t(lang, key, args): {n} replaced; args may be {ix:n} (index) which get +base added */
+  A.t = function (lang, key, args, base) {
+    var s = (T[lang] && T[lang][key]) || T.en[key] || key;
+    if (!args || !args.length) return s;
+    return s.replace(/\{(\d+)\}/g, function (m, i) {
+      var v = args[+i];
+      if (v && typeof v === 'object' && v.ix != null) return String(v.ix + (base || 0));
+      return v == null ? '' : String(v);
+    });
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* code.js — code listings with line keys. A line ends with  ##key  ; lines without a key are never highlighted.
+   Python and pseudocode use the same set of keys per id (checked by _build/test_steps.mjs).
+   Sort pseudocode is 1-based (as in the Ch20 guide); data-structure code is 0-based, null = -1. */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+
+  function L(src) {
+    return src.replace(/^\n/, '').replace(/\n$/, '').split('\n').map(function (l) {
+      var m = l.match(/^(.*?)\s*##(\S*)\s*$/);
+      return m ? [m[2], m[1]] : ['', l];
+    });
+  }
+
+  A.CODE = {
+
+    /* ================= bubble ================= */
+    bubble: {
+      py: L(`
+def bubble_sort(a):
+    n = len(a)  ##init
+    passes = 0  ##init
+    swapped = True  ##init
+    while swapped:  ##while
+        swapped = False  ##reset
+        for i in range(n - 1 - passes):  ##for
+            if a[i] > a[i + 1]:  ##cmp
+                a[i], a[i + 1] = a[i + 1], a[i]  ##swap
+                swapped = True  ##swap
+        passes += 1  ##passend
+    return a  ##done
+`),
+      pseudo: L(`
+PROCEDURE BubbleSort(List, MaxIndex)
+    Passes <- 0  ##init
+    Swapped <- TRUE  ##init
+    WHILE Swapped = TRUE  ##while
+        Swapped <- FALSE  ##reset
+        FOR I <- 1 TO MaxIndex - 1 - Passes  ##for
+            IF List[I] > List[I + 1] THEN  ##cmp
+                Temp <- List[I]  ##swap
+                List[I] <- List[I + 1]  ##swap
+                List[I + 1] <- Temp  ##swap
+                Swapped <- TRUE  ##swap
+            ENDIF
+        NEXT I
+        Passes <- Passes + 1  ##passend
+    ENDWHILE
+ENDPROCEDURE  ##done
+`)
+    },
+
+    /* ================= insertion ================= */
+    insertion: {
+      py: L(`
+def insertion_sort(a):
+    for i in range(1, len(a)):  ##for
+        key = a[i]  ##take
+        j = i - 1  ##take
+        while j >= 0 and a[j] > key:  ##cmp
+            a[j + 1] = a[j]  ##shift
+            j -= 1  ##shift
+        a[j + 1] = key  ##insert
+    return a  ##done
+`),
+      pseudo: L(`
+PROCEDURE InsertionSort(List, MaxIndex)
+    FOR I <- 2 TO MaxIndex  ##for
+        Key <- List[I]  ##take
+        J <- I - 1  ##take
+        WHILE J >= 1 AND List[J] > Key  ##cmp
+            List[J + 1] <- List[J]  ##shift
+            J <- J - 1  ##shift
+        ENDWHILE
+        List[J + 1] <- Key  ##insert
+    NEXT I
+ENDPROCEDURE  ##done
+`)
+    },
+
+    /* ================= quick (in place, Lomuto, pivot = last) ================= */
+    quick: {
+      py: L(`
+def quick_sort(a, lo, hi):
+    if lo < hi:  ##base
+        p = partition(a, lo, hi)  ##call
+        quick_sort(a, lo, p - 1)  ##left
+        quick_sort(a, p + 1, hi)  ##right
+
+def partition(a, lo, hi):
+    pivot = a[hi]  ##pivot
+    i = lo - 1  ##pivot
+    for j in range(lo, hi):  ##pfor
+        if a[j] < pivot:  ##cmp
+            i += 1  ##swap
+            a[i], a[j] = a[j], a[i]  ##swap
+    a[i + 1], a[hi] = a[hi], a[i + 1]  ##place
+    return i + 1  ##place
+`),
+      pseudo: L(`
+PROCEDURE QuickSort(List, Lo, Hi)
+    IF Lo < Hi THEN  ##base
+        P <- Partition(List, Lo, Hi)  ##call
+        CALL QuickSort(List, Lo, P - 1)  ##left
+        CALL QuickSort(List, P + 1, Hi)  ##right
+    ENDIF
+ENDPROCEDURE
+
+FUNCTION Partition(List, Lo, Hi) RETURNS INTEGER
+    Pivot <- List[Hi]  ##pivot
+    I <- Lo - 1  ##pivot
+    FOR J <- Lo TO Hi - 1  ##pfor
+        IF List[J] < Pivot THEN  ##cmp
+            I <- I + 1  ##swap
+            Temp <- List[I]  ##swap
+            List[I] <- List[J]  ##swap
+            List[J] <- Temp  ##swap
+        ENDIF
+    NEXT J
+    Temp <- List[I + 1]  ##place
+    List[I + 1] <- List[Hi]  ##place
+    List[Hi] <- Temp  ##place
+    RETURN I + 1  ##place
+ENDFUNCTION
+`)
+    },
+
+    /* ================= merge ================= */
+    merge: {
+      py: L(`
+def merge_sort(a, lo, hi):
+    if lo < hi:  ##base
+        mid = (lo + hi) // 2  ##split
+        merge_sort(a, lo, mid)  ##left
+        merge_sort(a, mid + 1, hi)  ##right
+        merge(a, lo, mid, hi)  ##call
+
+def merge(a, lo, mid, hi):
+    left = a[lo:mid + 1]  ##copy
+    right = a[mid + 1:hi + 1]  ##copy
+    i = j = 0  ##copy
+    k = lo  ##copy
+    while i < len(left) and j < len(right):  ##mwhile
+        if left[i] <= right[j]:  ##cmp
+            a[k] = left[i]  ##takeL
+            i += 1  ##takeL
+        else:
+            a[k] = right[j]  ##takeR
+            j += 1  ##takeR
+        k += 1  ##mwhile
+    while i < len(left):  ##restL
+        a[k] = left[i]  ##restL
+        i += 1; k += 1  ##restL
+    while j < len(right):  ##restR
+        a[k] = right[j]  ##restR
+        j += 1; k += 1  ##restR
+`),
+      pseudo: L(`
+PROCEDURE MergeSort(List, Lo, Hi)
+    IF Lo < Hi THEN  ##base
+        Mid <- (Lo + Hi) DIV 2  ##split
+        CALL MergeSort(List, Lo, Mid)  ##left
+        CALL MergeSort(List, Mid + 1, Hi)  ##right
+        CALL Merge(List, Lo, Mid, Hi)  ##call
+    ENDIF
+ENDPROCEDURE
+
+PROCEDURE Merge(List, Lo, Mid, Hi)
+    NL <- Mid - Lo + 1  ##copy
+    NR <- Hi - Mid  ##copy
+    FOR X <- 1 TO NL  ##copy
+        Left[X] <- List[Lo + X - 1]  ##copy
+    NEXT X  ##copy
+    FOR X <- 1 TO NR  ##copy
+        Right[X] <- List[Mid + X]  ##copy
+    NEXT X  ##copy
+    I <- 1  ##copy
+    J <- 1  ##copy
+    K <- Lo  ##copy
+    WHILE I <= NL AND J <= NR  ##mwhile
+        IF Left[I] <= Right[J] THEN  ##cmp
+            List[K] <- Left[I]  ##takeL
+            I <- I + 1  ##takeL
+        ELSE
+            List[K] <- Right[J]  ##takeR
+            J <- J + 1  ##takeR
+        ENDIF
+        K <- K + 1  ##mwhile
+    ENDWHILE
+    WHILE I <= NL  ##restL
+        List[K] <- Left[I]  ##restL
+        I <- I + 1  ##restL
+        K <- K + 1  ##restL
+    ENDWHILE
+    WHILE J <= NR  ##restR
+        List[K] <- Right[J]  ##restR
+        J <- J + 1  ##restR
+        K <- K + 1  ##restR
+    ENDWHILE
+ENDPROCEDURE
+`)
+    },
+
+    /* ================= stack (array + Top) ================= */
+    stack: {
+      py: L(`
+class Stack:
+    def __init__(self, size):
+        self.size = size
+        self.data = [None] * size
+        self.top = -1
+
+    def push(self, item):
+        if self.top == self.size - 1:  ##push.chk
+            print("overflow")  ##push.err
+            return False  ##push.err
+        self.top += 1  ##push.inc
+        self.data[self.top] = item  ##push.put
+        return True
+
+    def pop(self):
+        if self.top == -1:  ##pop.chk
+            print("underflow")  ##pop.err
+            return None  ##pop.err
+        item = self.data[self.top]  ##pop.get
+        self.top -= 1  ##pop.dec
+        return item  ##pop.ret
+
+    def peek(self):
+        if self.top == -1:  ##peek
+            return None  ##peek
+        return self.data[self.top]  ##peek
+`),
+      pseudo: L(`
+PROCEDURE Push(Item)
+    IF Top = MaxSize - 1 THEN  ##push.chk
+        OUTPUT "Stack is full"  ##push.err
+    ELSE
+        Top <- Top + 1  ##push.inc
+        Stack[Top] <- Item  ##push.put
+    ENDIF
+ENDPROCEDURE
+
+FUNCTION Pop() RETURNS STRING
+    IF Top = -1 THEN  ##pop.chk
+        OUTPUT "Stack is empty"  ##pop.err
+        RETURN ""  ##pop.err
+    ELSE
+        Item <- Stack[Top]  ##pop.get
+        Top <- Top - 1  ##pop.dec
+        RETURN Item  ##pop.ret
+    ENDIF
+ENDFUNCTION
+
+FUNCTION Peek() RETURNS STRING
+    IF Top = -1 THEN  ##peek
+        RETURN ""  ##peek
+    ENDIF
+    RETURN Stack[Top]  ##peek
+ENDFUNCTION
+`)
+    },
+
+    /* ================= circular queue ================= */
+    queue: {
+      py: L(`
+class CircularQueue:
+    def __init__(self, size):
+        self.size = size
+        self.data = [None] * size
+        self.front = 0
+        self.rear = -1
+        self.count = 0
+
+    def enqueue(self, item):
+        if self.count == self.size:  ##enq.chk
+            print("full")  ##enq.err
+            return False  ##enq.err
+        self.rear = (self.rear + 1) % self.size  ##enq.rear
+        self.data[self.rear] = item  ##enq.put
+        self.count += 1  ##enq.cnt
+        return True
+
+    def dequeue(self):
+        if self.count == 0:  ##deq.chk
+            print("empty")  ##deq.err
+            return None  ##deq.err
+        item = self.data[self.front]  ##deq.get
+        self.data[self.front] = None  ##deq.get
+        self.front = (self.front + 1) % self.size  ##deq.front
+        self.count -= 1  ##deq.cnt
+        return item  ##deq.ret
+`),
+      pseudo: L(`
+PROCEDURE Enqueue(Item)
+    IF Count = MaxSize THEN  ##enq.chk
+        OUTPUT "Queue is full"  ##enq.err
+    ELSE
+        Rear <- (Rear + 1) MOD MaxSize  ##enq.rear
+        Queue[Rear] <- Item  ##enq.put
+        Count <- Count + 1  ##enq.cnt
+    ENDIF
+ENDPROCEDURE
+
+FUNCTION Dequeue() RETURNS STRING
+    IF Count = 0 THEN  ##deq.chk
+        OUTPUT "Queue is empty"  ##deq.err
+        RETURN ""  ##deq.err
+    ELSE
+        Item <- Queue[Front]  ##deq.get
+        Queue[Front] <- ""  ##deq.get
+        Front <- (Front + 1) MOD MaxSize  ##deq.front
+        Count <- Count - 1  ##deq.cnt
+        RETURN Item  ##deq.ret
+    ENDIF
+ENDFUNCTION
+`)
+    },
+
+    /* ================= linear queue ================= */
+    queue_linear: {
+      py: L(`
+class LinearQueue:
+    def __init__(self, size):
+        self.size = size
+        self.data = [None] * size
+        self.front = 0
+        self.rear = -1
+
+    def enqueue(self, item):
+        if self.rear == self.size - 1:  ##enq.chk
+            print("full")  ##enq.err
+            return False  ##enq.err
+        self.rear += 1  ##enq.rear
+        self.data[self.rear] = item  ##enq.put
+        return True
+
+    def dequeue(self):
+        if self.front > self.rear:  ##deq.chk
+            print("empty")  ##deq.err
+            return None  ##deq.err
+        item = self.data[self.front]  ##deq.get
+        self.data[self.front] = None  ##deq.get
+        self.front += 1  ##deq.front
+        return item  ##deq.ret
+`),
+      pseudo: L(`
+PROCEDURE Enqueue(Item)
+    IF Rear = MaxSize - 1 THEN  ##enq.chk
+        OUTPUT "Queue is full"  ##enq.err
+    ELSE
+        Rear <- Rear + 1  ##enq.rear
+        Queue[Rear] <- Item  ##enq.put
+    ENDIF
+ENDPROCEDURE
+
+FUNCTION Dequeue() RETURNS STRING
+    IF Front > Rear THEN  ##deq.chk
+        OUTPUT "Queue is empty"  ##deq.err
+        RETURN ""  ##deq.err
+    ELSE
+        Item <- Queue[Front]  ##deq.get
+        Queue[Front] <- ""  ##deq.get
+        Front <- Front + 1  ##deq.front
+        RETURN Item  ##deq.ret
+    ENDIF
+ENDFUNCTION
+`)
+    },
+
+    /* ================= linked list in two arrays ================= */
+    list: {
+      py: L(`
+SIZE = 6
+data = [None] * SIZE
+ptr = [1, 2, 3, 4, 5, -1]
+start = -1
+free = 0
+
+def insert_sorted(value):
+    global start, free
+    if free == -1:  ##ins.chk
+        print("full")  ##ins.err
+        return  ##ins.err
+    new = free  ##ins.take
+    free = ptr[new]  ##ins.take
+    data[new] = value  ##ins.put
+    if start == -1 or value < data[start]:  ##ins.headchk
+        ptr[new] = start  ##ins.head
+        start = new  ##ins.head
+        return  ##ins.head
+    prev = start  ##ins.walk
+    while ptr[prev] != -1 and data[ptr[prev]] < value:  ##ins.walk
+        prev = ptr[prev]  ##ins.walk
+    ptr[new] = ptr[prev]  ##ins.link1
+    ptr[prev] = new  ##ins.link2
+
+def delete(value):
+    global start, free
+    prev, cur = -1, start  ##del.walk
+    while cur != -1 and data[cur] != value:  ##del.walk
+        prev, cur = cur, ptr[cur]  ##del.walk
+    if cur == -1:  ##del.nf
+        print("not found")  ##del.nf
+        return  ##del.nf
+    if prev == -1:  ##del.head
+        start = ptr[cur]  ##del.head
+    else:
+        ptr[prev] = ptr[cur]  ##del.unlink
+    data[cur] = None  ##del.free
+    ptr[cur] = free  ##del.free
+    free = cur  ##del.free
+
+def search(value):
+    cur = start  ##sea.walk
+    while cur != -1 and data[cur] != value:  ##sea.walk
+        cur = ptr[cur]  ##sea.walk
+    if cur == -1:  ##sea.nf
+        return -1  ##sea.nf
+    return cur  ##sea.found
+`),
+      pseudo: L(`
+PROCEDURE Insert(Value)
+    IF FreePointer = -1 THEN  ##ins.chk
+        OUTPUT "List is full"  ##ins.err
+    ELSE
+        New <- FreePointer  ##ins.take
+        FreePointer <- Pointer[New]  ##ins.take
+        Data[New] <- Value  ##ins.put
+        IF StartPointer = -1 OR Value < Data[StartPointer] THEN  ##ins.headchk
+            Pointer[New] <- StartPointer  ##ins.head
+            StartPointer <- New  ##ins.head
+        ELSE
+            Prev <- StartPointer  ##ins.walk
+            WHILE Pointer[Prev] <> -1 AND Data[Pointer[Prev]] < Value  ##ins.walk
+                Prev <- Pointer[Prev]  ##ins.walk
+            ENDWHILE
+            Pointer[New] <- Pointer[Prev]  ##ins.link1
+            Pointer[Prev] <- New  ##ins.link2
+        ENDIF
+    ENDIF
+ENDPROCEDURE
+
+PROCEDURE Delete(Value)
+    Prev <- -1  ##del.walk
+    Cur <- StartPointer  ##del.walk
+    WHILE Cur <> -1 AND Data[Cur] <> Value  ##del.walk
+        Prev <- Cur  ##del.walk
+        Cur <- Pointer[Cur]  ##del.walk
+    ENDWHILE
+    IF Cur = -1 THEN  ##del.nf
+        OUTPUT "Value not found"  ##del.nf
+    ELSE
+        IF Prev = -1 THEN  ##del.head
+            StartPointer <- Pointer[Cur]  ##del.head
+        ELSE
+            Pointer[Prev] <- Pointer[Cur]  ##del.unlink
+        ENDIF
+        Data[Cur] <- ""  ##del.free
+        Pointer[Cur] <- FreePointer  ##del.free
+        FreePointer <- Cur  ##del.free
+    ENDIF
+ENDPROCEDURE
+
+FUNCTION Search(Value) RETURNS INTEGER
+    Cur <- StartPointer  ##sea.walk
+    WHILE Cur <> -1 AND Data[Cur] <> Value  ##sea.walk
+        Cur <- Pointer[Cur]  ##sea.walk
+    ENDWHILE
+    IF Cur = -1 THEN  ##sea.nf
+        RETURN -1  ##sea.nf
+    ENDIF
+    RETURN Cur  ##sea.found
+ENDFUNCTION
+`)
+    }
+  };
+
+  /* names shown in the watch table for pseudocode (default: capitalise the first letter) */
+  A.PSEUDO_NAMES = { start: 'StartPointer', free: 'FreePointer', new: 'New', passes: 'Passes', swapped: 'Swapped', pivot: 'Pivot', key: 'Key', depth: 'depth', count: 'Count', top: 'Top', front: 'Front', rear: 'Rear', item: 'Item', value: 'Value' };
+  A.INDEX_VARS = ['i', 'j', 'k', 'lo', 'hi', 'mid', 'p'];     // 0-based in Python, shown +1 in sort pseudocode
+  A.BOOL_VARS = ['swapped'];
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* steps_sort.js — pure step generators for the four sorts (no DOM, no three.js).
+   Step = {pos:[{slot,row}], state:[...], range, line, msg:[key,...args], vars, stats:{cmp,moves}, op}
+   Index arguments in msg are wrapped as {ix:n} so the UI can add the 1-based offset for pseudocode. */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+
+  function ix(n) { return { ix: n }; }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  /* small seeded generator (LCG) so the same hash always gives the same picture */
+  function rng(seed) {
+    var s = (seed >>> 0) || 1;
+    return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  }
+  A.rng = rng;
+
+  A.makeData = function (kind, n, seed) {
+    var r = rng(seed || 7), a = [], i, j, t;
+    for (i = 0; i < n; i++) a.push(i + 1);
+    if (kind === 'reversed') {
+      a.reverse();
+    } else if (kind === 'nearly') {
+      var k = Math.max(1, Math.round(n / 8));
+      for (i = 0; i < k; i++) { j = Math.floor(r() * (n - 1)); t = a[j]; a[j] = a[j + 1]; a[j + 1] = t; }
+    } else if (kind === 'few') {
+      var levels = [0.25, 0.5, 0.75, 1];
+      a = a.map(function () { return Math.max(1, Math.round(n * levels[Math.floor(r() * 4)])); });
+    } else {
+      for (i = n - 1; i > 0; i--) { j = Math.floor(r() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; }
+    }
+    return a;
+  };
+
+  /* ---------- recorder ---------- */
+  function Rec(values) {
+    var n = values.length, i;
+    this.n = n;
+    this.vals = values.slice();
+    this.a = [];            // a[slot] = bar id
+    this.pos = [];          // pos[id] = {slot,row}
+    this.base = [];         // persistent state: idle | part | sorted
+    for (i = 0; i < n; i++) { this.a.push(i); this.pos.push({ slot: i, row: 0 }); this.base.push('idle'); }
+    this.stats = { cmp: 0, moves: 0 };
+    this.range = null;
+    this.vars = {};
+    this.pivot = -1;
+    this.steps = [];
+  }
+  Rec.prototype.snap = function (line, msg, op, over) {
+    var st = [], i, p, s;
+    for (i = 0; i < this.n; i++) {
+      s = this.base[i];
+      p = this.pos[i];
+      if (s !== 'sorted') {
+        if (i === this.pivot) s = 'pivot';
+        else if (s === 'idle' && this.range && p.row === 0 && (p.slot < this.range[0] || p.slot > this.range[1])) s = 'dim';
+      }
+      st.push(s);
+    }
+    if (over) { for (var k in over) { if (Object.prototype.hasOwnProperty.call(over, k)) st[+k] = over[k]; } }
+    this.steps.push({
+      pos: this.pos.map(function (q) { return { slot: q.slot, row: q.row }; }),
+      state: st,
+      range: this.range ? this.range.slice() : null,
+      line: line,
+      msg: msg,
+      vars: clone(this.vars),
+      stats: { cmp: this.stats.cmp, moves: this.stats.moves },
+      op: !!op
+    });
+  };
+  Rec.prototype.allSorted = function () { for (var i = 0; i < this.n; i++) this.base[i] = 'sorted'; };
+  function ov() { var o = {}; for (var i = 0; i < arguments.length; i += 2) o[arguments[i]] = arguments[i + 1]; return o; }
+
+  /* ---------- bubble sort (with early-exit flag) ---------- */
+  function bubble(vals) {
+    var R = new Rec(vals), n = R.n, a = R.a, v = R.vals, passes = 0, swapped = true, i;
+    R.vars = { passes: 0 };
+    R.snap('init', ['s.start', n], false);
+    while (swapped) {
+      swapped = false;
+      R.vars = { passes: passes, swapped: 0 };
+      R.snap('reset', ['s.b.pass', passes + 1], false);
+      for (i = 0; i < n - 1 - passes; i++) {
+        var x = a[i], y = a[i + 1], gt = v[x] > v[y];
+        R.vars = { passes: passes, swapped: swapped ? 1 : 0, i: i };
+        R.stats.cmp++;
+        R.snap('cmp', [gt ? 's.b.gt' : 's.b.le', ix(i), v[x], ix(i + 1), v[y]], true, ov(x, 'cmp', y, 'cmp'));
+        if (gt) {
+          a[i] = y; a[i + 1] = x; R.pos[x].slot = i + 1; R.pos[y].slot = i;
+          swapped = true; R.stats.moves += 2;
+          R.vars.swapped = 1;
+          R.snap('swap', ['s.b.swap', v[x], v[y]], true, ov(x, 'swap', y, 'swap'));
+        }
+      }
+      R.base[a[n - 1 - passes]] = 'sorted';
+      passes++;
+      R.vars = { passes: passes, swapped: swapped ? 1 : 0 };
+      R.snap('passend', ['s.b.passend', passes], false);
+      if (!swapped) R.snap('while', ['s.b.exit'], false);
+    }
+    R.allSorted(); R.vars = {};
+    R.snap('done', ['s.done'], false);
+    return R.steps;
+  }
+
+  /* ---------- insertion sort ---------- */
+  function insertion(vals) {
+    var R = new Rec(vals), n = R.n, a = R.a, v = R.vals, i, j, s;
+    R.snap('', ['s.start', n], false);
+    R.base[a[0]] = 'part';
+    R.vars = {};
+    R.snap('for', ['s.i.start'], false);
+    for (i = 1; i < n; i++) {
+      var k = a[i], keyv = v[k];
+      R.pos[k] = { slot: i, row: 2 };
+      R.vars = { i: i, key: keyv };
+      R.snap('take', ['s.i.take', keyv, ix(i)], false, ov(k, 'key'));
+      j = i - 1;
+      for (;;) {
+        R.vars = { i: i, j: j, key: keyv };
+        if (j < 0) { R.snap('cmp', ['s.i.edge'], false, ov(k, 'key')); break; }
+        var x = a[j], gt = v[x] > keyv;
+        R.stats.cmp++;
+        R.snap('cmp', [gt ? 's.i.gt' : 's.i.le', ix(j), v[x], keyv], true, ov(k, 'key', x, 'cmp'));
+        if (!gt) break;
+        a[j + 1] = x; R.pos[x].slot = j + 1; R.stats.moves++;
+        var from = j;
+        j--;
+        R.vars = { i: i, j: j, key: keyv };
+        R.snap('shift', ['s.i.shift', v[x], ix(from), ix(from + 1)], true, ov(k, 'key', x, 'swap'));
+      }
+      a[j + 1] = k; R.pos[k] = { slot: j + 1, row: 0 }; R.stats.moves++;
+      for (s = 0; s <= i; s++) R.base[a[s]] = 'part';
+      R.vars = { i: i, j: j, key: keyv };
+      R.snap('insert', ['s.i.insert', keyv, ix(j + 1)], true, ov(k, 'swap'));
+    }
+    R.allSorted(); R.vars = {};
+    R.snap('done', ['s.done'], false);
+    return R.steps;
+  }
+
+  /* ---------- quick sort: in place, Lomuto partition, pivot = a[hi] ---------- */
+  function quick(vals) {
+    var R = new Rec(vals), n = R.n, a = R.a, v = R.vals;
+    R.snap('', ['s.start', n], false);
+    function qs(lo, hi, depth) {
+      if (lo > hi) return;
+      R.range = [lo, hi];
+      R.vars = { lo: lo, hi: hi, depth: depth };
+      if (lo === hi) { R.base[a[lo]] = 'sorted'; R.snap('base', ['s.q.single', ix(lo)], false); return; }
+      R.snap('base', ['s.q.base', ix(lo), ix(hi)], false);
+      R.snap('call', ['s.q.call'], false);
+      var pid = a[hi], pv = v[pid], i = lo - 1, j;
+      R.pivot = pid;
+      R.vars = { lo: lo, hi: hi, depth: depth, pivot: pv, i: i };
+      R.snap('pivot', ['s.q.pivot', pv, ix(hi)], false);
+      for (j = lo; j < hi; j++) {
+        var x = a[j], lt = v[x] < pv;
+        R.stats.cmp++;
+        R.vars = { lo: lo, hi: hi, depth: depth, pivot: pv, i: i, j: j };
+        R.snap('cmp', [lt ? 's.q.lt' : 's.q.ge', ix(j), v[x], pv], true, ov(x, 'cmp'));
+        if (lt) {
+          i++;
+          var y = a[i];
+          a[i] = x; a[j] = y; R.pos[x].slot = i; R.pos[y].slot = j;
+          if (i !== j) R.stats.moves += 2;
+          R.vars = { lo: lo, hi: hi, depth: depth, pivot: pv, i: i, j: j };
+          R.snap('swap', [i === j ? 's.q.self' : 's.q.swap', ix(i), ix(j)], i !== j, ov(x, 'swap', y, 'swap'));
+        }
+      }
+      var p = i + 1, y2 = a[p];
+      a[p] = pid; a[hi] = y2; R.pos[pid].slot = p; R.pos[y2].slot = hi;
+      if (p !== hi) R.stats.moves += 2;
+      R.base[pid] = 'sorted'; R.pivot = -1;
+      R.vars = { lo: lo, hi: hi, depth: depth, p: p };
+      R.snap('place', ['s.q.place', pv, ix(p)], p !== hi, p !== hi ? ov(y2, 'swap') : null);
+      if (lo <= p - 1) {
+        R.range = [lo, hi]; R.vars = { lo: lo, hi: hi, depth: depth, p: p };
+        R.snap('left', ['s.q.left', ix(lo), ix(p - 1)], false);
+        qs(lo, p - 1, depth + 1);
+      }
+      if (p + 1 <= hi) {
+        R.range = [lo, hi]; R.vars = { lo: lo, hi: hi, depth: depth, p: p };
+        R.snap('right', ['s.q.right', ix(p + 1), ix(hi)], false);
+        qs(p + 1, hi, depth + 1);
+      }
+    }
+    qs(0, n - 1, 0);
+    R.range = null; R.allSorted(); R.vars = {};
+    R.snap('', ['s.done'], false);
+    return R.steps;
+  }
+
+  /* ---------- merge sort: halves are copied to the back row, merged into the front row ---------- */
+  function merge(vals) {
+    var R = new Rec(vals), n = R.n, a = R.a, v = R.vals;
+    R.snap('', ['s.start', n], false);
+
+    function mergeStep(lo, mid, hi, depth) {
+      var L = [], Q = [], s, whole = (lo === 0 && hi === n - 1);
+      for (s = lo; s <= mid; s++) L.push(a[s]);
+      for (s = mid + 1; s <= hi; s++) Q.push(a[s]);
+      for (s = lo; s <= hi; s++) R.pos[a[s]].row = 1;
+      var i = 0, j = 0, k = lo;
+      function vars() { R.vars = { lo: lo, hi: hi, mid: mid, i: i, j: j, k: k, depth: depth }; }
+      R.range = [lo, hi]; vars();
+      R.snap('copy', ['s.m.copy'], false);
+      function write(id, line, msg) {
+        a[k] = id; R.pos[id] = { slot: k, row: 0 }; R.stats.moves++;
+        R.base[id] = whole ? 'sorted' : 'part';
+        vars();
+        R.snap(line, msg, true, ov(id, 'swap'));
+      }
+      while (i < L.length && j < Q.length) {
+        var x = L[i], y = Q[j], le = v[x] <= v[y];
+        R.stats.cmp++; vars();
+        R.snap('cmp', [le ? 's.m.le' : 's.m.gt', v[x], v[y]], true, ov(x, 'cmp', y, 'cmp'));
+        if (le) { i++; write(x, 'takeL', ['s.m.write', v[x], ix(k)]); }
+        else { j++; write(y, 'takeR', ['s.m.write', v[y], ix(k)]); }
+        k++;
+      }
+      while (i < L.length) { var xl = L[i]; i++; write(xl, 'restL', ['s.m.rest', v[xl], ix(k)]); k++; }
+      while (j < Q.length) { var yq = Q[j]; j++; write(yq, 'restR', ['s.m.rest', v[yq], ix(k)]); k++; }
+    }
+
+    function ms(lo, hi, depth) {
+      if (lo >= hi) return;
+      R.range = [lo, hi]; R.vars = { lo: lo, hi: hi, depth: depth };
+      R.snap('base', ['s.m.base', ix(lo), ix(hi)], false);
+      var mid = (lo + hi) >> 1;
+      R.vars = { lo: lo, hi: hi, mid: mid, depth: depth };
+      R.snap('split', ['s.m.split', ix(mid), ix(lo), ix(mid), ix(mid + 1), ix(hi)], false);
+      if (lo < mid) { R.snap('left', ['s.m.left', ix(lo), ix(mid)], false); ms(lo, mid, depth + 1); }
+      R.range = [lo, hi]; R.vars = { lo: lo, hi: hi, mid: mid, depth: depth };
+      if (mid + 1 < hi) { R.snap('right', ['s.m.right', ix(mid + 1), ix(hi)], false); ms(mid + 1, hi, depth + 1); }
+      R.range = [lo, hi]; R.vars = { lo: lo, hi: hi, mid: mid, depth: depth };
+      R.snap('call', ['s.m.call', ix(lo), ix(mid), ix(mid + 1), ix(hi)], false);
+      mergeStep(lo, mid, hi, depth);
+    }
+    ms(0, n - 1, 0);
+    R.range = null; R.allSorted(); R.vars = {};
+    R.snap('', ['s.done'], false);
+    return R.steps;
+  }
+
+  var ALGOS = { bubble: bubble, insertion: insertion, quick: quick, merge: merge };
+  A.SORTS = ['bubble', 'insertion', 'quick', 'merge'];
+  A.sortSteps = function (algo, values) { return ALGOS[algo](values); };
+
+  /* ---------- race: same data, 4 lanes, 1 tick = 1 comparison or write per lane ---------- */
+  A.raceSteps = function (values) {
+    var lanes = A.SORTS.map(function (algo) {
+      var st = A.sortSteps(algo, values), idx = [0], i;
+      for (i = 1; i < st.length; i++) if (st[i].op) idx.push(i);
+      if (idx[idx.length - 1] !== st.length - 1) idx.push(st.length - 1);
+      var last = st[st.length - 1];
+      return { algo: algo, steps: st, idx: idx, ticks: idx.length - 1, total: { cmp: last.stats.cmp, moves: last.stats.moves } };
+    });
+    var T = 0;
+    lanes.forEach(function (l) { if (l.ticks > T) T = l.ticks; });
+    lanes.forEach(function (l) {
+      l.rank = 1 + lanes.filter(function (o) { return o.ticks < l.ticks; }).length;
+    });
+    var out = [];
+    for (var t = 0; t <= T; t++) {
+      var done = 0;
+      var ls = lanes.map(function (l) {
+        var d = t >= l.ticks; if (d) done++;
+        var step = l.steps[l.idx[Math.min(t, l.ticks)]];
+        return { step: step, done: d, cmp: step.stats.cmp, moves: step.stats.moves };
+      });
+      out.push({ t: t, lanes: ls, line: '', msg: ['s.race.tick', t, done], vars: {}, stats: { cmp: 0, moves: 0 }, op: true });
+    }
+    return { steps: out, lanes: lanes.map(function (l) { return { algo: l.algo, ticks: l.ticks, total: l.total, rank: l.rank }; }) };
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* steps_ds.js — pure step generators for stack / queue / linked list (array + pointer model).
+   MaxSize = 6, null pointer = -1, indices start at 0 (same as the Ch20 coding guide).
+   dsSteps(kind, state, op, arg) -> {steps:[{state,line,msg,marks,vars}], state:finalState} */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+  var SIZE = 6;
+  A.DS_SIZE = SIZE;
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  A.dsInit = function (kind, opt) {
+    opt = opt || {};
+    var s = { nid: 1, data: [] }, i;
+    for (i = 0; i < SIZE; i++) s.data.push(null);
+    if (kind === 'stack') { s.top = -1; s.out = []; }
+    else if (kind === 'queue') { s.mode = opt.mode || 'circular'; s.front = 0; s.rear = -1; s.count = 0; s.out = []; }
+    else { s.ptr = [1, 2, 3, 4, 5, -1]; s.start = -1; s.free = 0; }
+    return s;
+  };
+
+  /* the two chains of the array-based linked list (guarded against cycles) */
+  A.listChains = function (s) {
+    var seen = {}, used = [], free = [], r;
+    r = s.start;
+    while (r !== -1 && r != null && !seen[r] && used.length <= SIZE) { seen[r] = 1; used.push(r); r = s.ptr[r]; }
+    r = s.free;
+    while (r !== -1 && r != null && !seen[r] && free.length <= SIZE) { seen[r] = 1; free.push(r); r = s.ptr[r]; }
+    return { used: used, free: free };
+  };
+
+  function baseVars(kind, s) {
+    if (kind === 'stack') return { top: s.top };
+    if (kind === 'queue') return s.mode === 'linear' ? { front: s.front, rear: s.rear } : { front: s.front, rear: s.rear, count: s.count };
+    return { start: s.start, free: s.free };
+  }
+
+  A.dsInitStep = function (kind, state) {
+    return { state: clone(state), line: '', msg: ['d.init'], marks: {}, vars: baseVars(kind, state) };
+  };
+
+  A.dsSteps = function (kind, state, op, arg) {
+    var s = clone(state), steps = [], V = {};
+    function P(line, msg, marks) {
+      var vars = baseVars(kind, s), k;
+      for (k in V) if (Object.prototype.hasOwnProperty.call(V, k)) vars[k] = V[k];
+      steps.push({ state: clone(s), line: line, msg: msg, marks: marks || {}, vars: vars });
+    }
+
+    /* ---------- stack ---------- */
+    function stack() {
+      var item, it, old;
+      if (op === 'push') {
+        V = { item: arg };
+        P('push.chk', ['d.push.chk', arg, s.top]);
+        if (s.top === SIZE - 1) { P('push.err', ['d.overflow', s.top], { error: 'overflow' }); return; }
+        item = { v: arg, id: s.nid++ };
+        s.top++; P('push.inc', ['d.push.inc', s.top]);
+        s.data[s.top] = item; P('push.put', ['d.push.put', arg, s.top], { cell: s.top });
+      } else if (op === 'pop') {
+        P('pop.chk', ['d.pop.chk', s.top]);
+        if (s.top === -1) { P('pop.err', ['d.underflow'], { error: 'underflow' }); return; }
+        it = s.data[s.top]; V = { item: it.v };
+        P('pop.get', ['d.pop.get', it.v, s.top], { cell: s.top });
+        old = s.top; s.top--; s.data[old] = null; s.out.push(it);
+        P('pop.dec', ['d.pop.dec', s.top]);
+        P('pop.ret', ['d.pop.ret', it.v]);
+      } else if (op === 'peek') {
+        if (s.top === -1) { P('peek', ['d.peek.empty'], { error: 'underflow' }); return; }
+        it = s.data[s.top]; V = { item: it.v };
+        P('peek', ['d.peek', it.v, s.top], { cell: s.top });
+      }
+    }
+
+    /* ---------- queue (circular or linear) ---------- */
+    function queue() {
+      var circ = s.mode !== 'linear', item, it, old, wrap;
+      if (op === 'enqueue') {
+        V = { item: arg };
+        if (circ) {
+          P('enq.chk', ['d.enq.chk', arg, s.count]);
+          if (s.count === SIZE) { P('enq.err', ['d.full', s.count], { error: 'full' }); return; }
+        } else {
+          P('enq.chk', ['d.enq.chk.lin', arg, s.rear]);
+          if (s.rear === SIZE - 1) { P('enq.err', [s.front > 0 ? 'd.full.lin' : 'd.full.lin0', s.front], { error: 'full' }); return; }
+        }
+        item = { v: arg, id: s.nid++ };
+        if (circ) {
+          wrap = (s.rear === SIZE - 1); old = s.rear;
+          s.rear = (s.rear + 1) % SIZE;
+          P('enq.rear', [wrap ? 'd.enq.rear.wrap' : 'd.enq.rear.c', s.rear, old]);
+        } else {
+          s.rear++; P('enq.rear', ['d.enq.rear.l', s.rear]);
+        }
+        s.data[s.rear] = item;
+        if (!circ) s.count++;
+        P('enq.put', ['d.enq.put', arg, s.rear], { cell: s.rear });
+        if (circ) { s.count++; P('enq.cnt', ['d.enq.cnt', s.count]); }
+      } else if (op === 'dequeue') {
+        if (circ) {
+          P('deq.chk', ['d.deq.chk', s.count]);
+          if (s.count === 0) { P('deq.err', ['d.empty'], { error: 'empty' }); return; }
+        } else {
+          P('deq.chk', ['d.deq.chk.lin', s.front, s.rear]);
+          if (s.front > s.rear) { P('deq.err', ['d.empty'], { error: 'empty' }); return; }
+        }
+        it = s.data[s.front]; V = { item: it.v };
+        P('deq.get', ['d.deq.get', it.v, s.front], { cell: s.front });
+        old = s.front;
+        if (circ) {
+          wrap = (s.front === SIZE - 1);
+          s.front = (s.front + 1) % SIZE; s.data[old] = null; s.out.push(it);
+          P('deq.front', [wrap ? 'd.deq.front.wrap' : 'd.deq.front.c', s.front, old]);
+          s.count--; P('deq.cnt', ['d.deq.cnt', s.count]);
+        } else {
+          s.front++; s.data[old] = null; s.out.push(it); s.count--;
+          P('deq.front', ['d.deq.front.l', s.front]);
+        }
+        P('deq.ret', ['d.deq.ret', it.v]);
+      }
+    }
+
+    /* ---------- linked list (Data[] / Pointer[] / StartPointer / FreePointer) ---------- */
+    function list() {
+      var value = arg, nw, prev, cur, nx, headFirst, ns;
+      V = { value: value };
+      if (op === 'insert') {
+        P('ins.chk', ['d.ins.chk', value, s.free]);
+        if (s.free === -1) { P('ins.err', ['d.ins.full'], { error: 'full' }); return; }
+        nw = s.free; s.free = s.ptr[nw]; V.new = nw;
+        P('ins.take', ['d.ins.take', nw, s.free], { new: nw });
+        s.data[nw] = { v: value, id: s.nid++ };
+        P('ins.put', ['d.ins.put', value, nw], { new: nw });
+        headFirst = (s.start === -1 || value < s.data[s.start].v);
+        P('ins.headchk', [headFirst ? 'd.ins.headchk.y' : 'd.ins.headchk.n', value, s.start === -1 ? -1 : s.data[s.start].v], { new: nw });
+        if (headFirst) {
+          var oldStart = s.start;
+          s.ptr[nw] = s.start; s.start = nw;
+          P('ins.head', ['d.ins.head', nw, oldStart], { new: nw });
+          return;
+        }
+        prev = s.start; V.prev = prev;
+        P('ins.walk', ['d.ins.walk0', prev], { new: nw, prev: prev });
+        while (s.ptr[prev] !== -1 && s.data[s.ptr[prev]].v < value) {
+          nx = s.ptr[prev];
+          var oldPrev = prev; prev = nx; V.prev = prev;
+          P('ins.walk', ['d.ins.walk', oldPrev, nx, s.data[nx].v, value], { new: nw, prev: prev });
+        }
+        nx = s.ptr[prev];
+        if (nx === -1) P('ins.walk', ['d.ins.walkend', prev], { new: nw, prev: prev });
+        else P('ins.walk', ['d.ins.stop', prev, nx, s.data[nx].v, value], { new: nw, prev: prev });
+        s.ptr[nw] = s.ptr[prev];
+        P('ins.link1', ['d.ins.link1', nw, prev, s.ptr[nw]], { new: nw, prev: prev });
+        s.ptr[prev] = nw;
+        P('ins.link2', ['d.ins.link2', prev, nw], { new: nw, prev: prev });
+      } else if (op === 'delete') {
+        prev = -1; cur = s.start; V.prev = prev; V.cur = cur;
+        P('del.walk', ['d.del.walk0', cur], { prev: prev, cur: cur });
+        while (cur !== -1 && s.data[cur].v !== value) {
+          nx = s.ptr[cur];
+          P_walk(cur, nx);
+          prev = cur; cur = nx; V.prev = prev; V.cur = cur;
+        }
+        function P_walk(c, n2) { V.prev = c; V.cur = n2; P('del.walk', ['d.del.walk', c, s.data[c].v, value, n2], { prev: c, cur: n2 }); }
+        if (cur === -1) { P('del.nf', ['d.del.nf', value], { error: 'notfound', prev: prev }); return; }
+        P('del.walk', ['d.del.found', cur, value], { prev: prev, cur: cur });
+        if (prev === -1) {
+          ns = s.ptr[cur]; s.start = ns;
+          P('del.head', ['d.del.head', cur, ns], { cur: cur });
+        } else {
+          s.ptr[prev] = s.ptr[cur];
+          P('del.unlink', ['d.del.unlink', prev, cur, s.ptr[prev]], { prev: prev, cur: cur });
+        }
+        s.data[cur] = null; s.ptr[cur] = s.free; s.free = cur;
+        P('del.free', ['d.del.free', cur, s.ptr[cur]], { cur: cur });
+      } else if (op === 'search') {
+        cur = s.start; V.cur = cur;
+        P('sea.walk', ['d.sea.walk0', cur], { cur: cur });
+        while (cur !== -1 && s.data[cur].v !== value) {
+          nx = s.ptr[cur];
+          P('sea.walk', ['d.sea.walk', cur, s.data[cur].v, value, nx], { cur: nx });
+          cur = nx; V.cur = cur;
+        }
+        if (cur === -1) P('sea.nf', ['d.sea.nf', value], { error: 'notfound' });
+        else P('sea.found', ['d.sea.found', value, cur], { cur: cur });
+      }
+    }
+
+    if (kind === 'stack') stack(); else if (kind === 'queue') queue(); else list();
+    return { steps: steps, state: s };
+  };
+
+  /* Demo sequences (op, arg) */
+  A.DEMO = {
+    stack: [['push', 'A'], ['push', 'B'], ['push', 'C'], ['pop'], ['pop'], ['push', 'D'], ['push', 'E'], ['push', 'F'], ['push', 'G'], ['push', 'H'], ['push', 'I']],
+    queue_circular: [['enqueue', 'A'], ['enqueue', 'B'], ['enqueue', 'C'], ['enqueue', 'D'], ['enqueue', 'E'], ['enqueue', 'F'], ['enqueue', 'G'],
+                     ['dequeue'], ['dequeue'], ['enqueue', 'G'], ['enqueue', 'H']],
+    queue_linear: [['enqueue', 'A'], ['enqueue', 'B'], ['enqueue', 'C'], ['enqueue', 'D'], ['enqueue', 'E'], ['enqueue', 'F'],
+                   ['dequeue'], ['dequeue'], ['dequeue'], ['enqueue', 'G']],
+    list: [['insert', 30], ['insert', 10], ['insert', 20], ['delete', 10], ['insert', 25]]
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* engine.js — three.js stage, tiny tween manager, sprite labels, step Player */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+  var THREE = root.THREE;
+
+  var reduce = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  A.reduceMotion = reduce;
+
+  /* palette (light only) */
+  A.COL = { idle: 0xA9CCEA, cmp: 0xF6C667, swap: 0xF29E8E, sorted: 0x86D3A8, part: 0xBDE6D0, pivot: 0xC3A6E8, key: 0xB7D3A8, dim: 0xDDE3EC,
+            err: 0xE0707A, ink: 0x22304A, accent: 0x3B6FD4, grey: 0x93A4BF, tile: 0xE6ECF5 };
+  A.BLOCKS = [0xF6C667, 0xA9CCEA, 0xF29E8E, 0xB7D3A8, 0xC3A6E8, 0xF2B8D0, 0x9FD8D8, 0xF4D6A0];
+
+  /* ---------- tween manager (one rAF loop in Stage calls A.tick) ---------- */
+  var anims = [];
+  function easeIO(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+  A.anim = function (owner, key, ms, fn, done) {
+    var i;
+    for (i = anims.length - 1; i >= 0; i--) if (anims[i].o === owner && anims[i].k === key) anims.splice(i, 1);
+    if (!ms || reduce) { fn(1); if (done) done(); return; }
+    anims.push({ o: owner, k: key, t0: -1, ms: ms, fn: fn, done: done });
+  };
+  A.tick = function (now) {
+    var i, a, t, fin = [];
+    for (i = 0; i < anims.length; i++) {
+      a = anims[i];
+      if (a.t0 < 0) a.t0 = now;
+      t = Math.min(1, (now - a.t0) / a.ms);
+      a.fn(easeIO(t));
+      if (t >= 1) fin.push(a);
+    }
+    fin.forEach(function (a2) { var k = anims.indexOf(a2); if (k >= 0) anims.splice(k, 1); if (a2.done) a2.done(); });
+  };
+  A.stopAnims = function (owner) { for (var i = anims.length - 1; i >= 0; i--) if (!owner || anims[i].o === owner) anims.splice(i, 1); };
+
+  A.moveTo = function (obj, x, y, z, ms, arcY, arcZ) {
+    var p = obj.position, sx = p.x, sy = p.y, sz = p.z;
+    if (sx === x && sy === y && sz === z) { A.anim(obj, 'pos', 0, function () { }); return; }   // already there: also cancel a tween that was just started
+    A.anim(obj, 'pos', ms, function (t) {
+      var s = Math.sin(Math.PI * t);
+      p.set(sx + (x - sx) * t, sy + (y - sy) * t + (arcY || 0) * s, sz + (z - sz) * t + (arcZ || 0) * s);
+    });
+  };
+  A.scaleTo = function (obj, s, ms, done) {
+    var sc = obj.scale, s0 = sc.x;
+    A.anim(obj, 'scale', ms, function (t) { var v = s0 + (s - s0) * t; sc.set(v, v, v); }, done);
+  };
+  A.colorTo = function (mat, hex, ms) {
+    if (mat.userData.hex === hex) return;
+    mat.userData.hex = hex;
+    var c0 = mat.color.clone(), c1 = new THREE.Color(hex);
+    A.anim(mat, 'col', ms, function (t) { mat.color.copy(c0).lerp(c1, t); });
+  };
+  A.shake = function (obj, ms) {
+    var x0 = obj.userData.x0 != null ? obj.userData.x0 : (obj.userData.x0 = obj.position.x);
+    A.anim(obj, 'shake', ms, function (t) { obj.position.x = x0 + Math.sin(t * Math.PI * 6) * 0.28 * (1 - t); }, function () { obj.position.x = x0; });
+  };
+
+  /* ---------- sprite labels ---------- */
+  var texCache = {};
+  var FONT = 'system-ui, -apple-system, "Segoe UI", "Noto Sans Thai", "PingFang SC", "Hiragino Sans", sans-serif';
+  A.labelTex = function (text, o) {
+    o = o || {};
+    var key = text + '|' + (o.color || '') + '|' + (o.bg || '') + '|' + (o.bold === false ? 0 : 1);
+    if (texCache[key]) return texCache[key];
+    var px = 56, pad = o.bg ? 26 : 10, c = document.createElement('canvas'), g = c.getContext('2d');
+    var font = (o.bold === false ? '500 ' : '700 ') + px + 'px ' + FONT;
+    g.font = font;
+    var w = Math.ceil(g.measureText(text).width) + pad * 2, h = 84;
+    c.width = Math.max(w, 24); c.height = h;
+    g = c.getContext('2d'); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+    if (o.bg) {
+      g.fillStyle = o.bg; var r = 26, x = 3, y = 6, ww = c.width - 6, hh = h - 12;
+      g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + ww, y, x + ww, y + hh, r); g.arcTo(x + ww, y + hh, x, y + hh, r);
+      g.arcTo(x, y + hh, x, y, r); g.arcTo(x, y, x + ww, y, r); g.closePath(); g.fill();
+    }
+    g.fillStyle = o.color || '#22304A';
+    g.fillText(text, c.width / 2, h / 2 + 3);
+    var tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
+    tex.userData = { shared: true };
+    return (texCache[key] = { tex: tex, aspect: c.width / h });
+  };
+  A.label = function (text, h, o) {
+    var L = A.labelTex(text, o);
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: L.tex, transparent: true, depthTest: false, depthWrite: false }));
+    sp.scale.set(h * L.aspect, h, 1);
+    sp.renderOrder = 10; sp.userData.h = h; sp.userData.txt = text; sp.userData.o = o;
+    return sp;
+  };
+  /* changes the text; the label keeps its style unless a new style object is passed */
+  A.setLabel = function (sp, text, o) {
+    o = o || sp.userData.o;
+    if (sp.userData.txt === text && sp.userData.o === o) return;
+    var L = A.labelTex(text, o);
+    sp.material.map = L.tex; sp.material.needsUpdate = true;
+    sp.scale.set(sp.userData.h * L.aspect, sp.userData.h, 1);
+    sp.userData.txt = text; sp.userData.o = o;
+  };
+
+  /* dispose a subtree (shared label textures are kept) */
+  A.disposeTree = function (obj) {
+    obj.traverse(function (o) {
+      A.stopAnims(o);
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) {
+        A.stopAnims(o.material);
+        if (o.material.map && !(o.material.map.userData && o.material.map.userData.shared)) o.material.map.dispose();
+        o.material.dispose();
+      }
+    });
+  };
+
+  /* ---------- stage ---------- */
+  A.Stage = function (canvas) {
+    var self = this;
+    this.canvas = canvas; this.ok = true;
+    try {
+      this.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, preserveDrawingBuffer: false });
+    } catch (e) { this.ok = false; return; }
+    var r = this.renderer;
+    r.setPixelRatio(Math.min(2, root.devicePixelRatio || 1));
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(40, 1.5, 0.1, 300);
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0xB0BCCF, 0.78));
+    var dl = new THREE.DirectionalLight(0xffffff, 0.5); dl.position.set(5, 12, 9); this.scene.add(dl);
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.MeshLambertMaterial({ color: 0xE9EEF6 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = -0.06; this.scene.add(floor); this.floor = floor;
+    this.controls = new THREE.OrbitControls(this.camera, canvas);
+    this.controls.enableDamping = true; this.controls.dampingFactor = 0.12; this.controls.enablePan = false;
+    this.controls.minDistance = 6; this.controls.maxDistance = 70; this.controls.maxPolarAngle = Math.PI * 0.495;
+    this.root = new THREE.Group(); this.scene.add(this.root);
+    this.view = null;
+    this.resize();
+    if (root.ResizeObserver) new root.ResizeObserver(function () { self.resize(); }).observe(canvas.parentNode);
+    else root.addEventListener('resize', function () { self.resize(); });
+    function frame(now) {
+      A.tick(now);
+      self.controls.update();
+      r.render(self.scene, self.camera);
+      root.requestAnimationFrame(frame);
+    }
+    root.requestAnimationFrame(frame);
+  };
+  A.Stage.prototype.resize = function () {
+    var p = this.canvas.parentNode, w = Math.max(80, p.clientWidth), h = Math.max(80, p.clientHeight);
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+    if (this.view) this.setView(this.view, false);
+  };
+  A.Stage.prototype.clear = function () {
+    this.floor.visible = true;
+    var ch = this.root.children.slice();
+    for (var i = 0; i < ch.length; i++) { this.root.remove(ch[i]); A.disposeTree(ch[i]); }
+  };
+  /* view = {dir:[x,y,z], target:[x,y,z], need:[width,height]} — distance is fitted to the canvas aspect */
+  A.Stage.prototype.setView = function (v, animate) {
+    this.view = v;
+    var wantFov = v.fov || 40;
+    if (this.camera.fov !== wantFov) { this.camera.fov = wantFov; this.camera.updateProjectionMatrix(); }
+    var fov = this.camera.fov * Math.PI / 180, asp = this.camera.aspect;
+    var dh = v.need[1] / (2 * Math.tan(fov / 2)), dw = v.need[0] / (2 * Math.tan(fov / 2) * asp);
+    var d = Math.max(dh, dw, 7);
+    var dir = new THREE.Vector3(v.dir[0], v.dir[1], v.dir[2]).normalize();
+    var tgt = new THREE.Vector3(v.target[0], v.target[1], v.target[2]);
+    var pos = tgt.clone().add(dir.multiplyScalar(d));
+    var cam = this.camera, ct = this.controls;
+    var p0 = cam.position.clone(), t0 = ct.target.clone();
+    A.anim(this, 'cam', animate === false ? 0 : 550, function (t) {
+      cam.position.copy(p0).lerp(pos, t); ct.target.copy(t0).lerp(tgt, t); cam.lookAt(ct.target);
+    });
+  };
+
+  /* ---------- Player: plays a list of steps, can step back / seek ---------- */
+  A.Player = function () {
+    this.steps = []; this.idx = 0; this.playing = false; this.speed = 1; this.timer = null; this.cb = null; this.onState = null;
+  };
+  A.Player.prototype.interval = function () { return 850 / this.speed; };
+  A.Player.prototype.dur = function () { return Math.min(650, this.interval() * 0.8); };
+  A.Player.prototype.emit = function (animate) { if (this.cb && this.steps.length) this.cb(this.steps[this.idx], this.idx, animate); };
+  A.Player.prototype.load = function (steps, idx) {
+    this.pause(); this.steps = steps; this.idx = Math.max(0, Math.min(steps.length - 1, idx || 0)); this.emit(false); this.changed();
+  };
+  A.Player.prototype.append = function (steps) { for (var i = 0; i < steps.length; i++) this.steps.push(steps[i]); this.changed(); };
+  A.Player.prototype.changed = function () { if (this.onState) this.onState(); };
+  A.Player.prototype.next = function () {
+    if (this.idx >= this.steps.length - 1) { this.pause(); return false; }
+    this.idx++; this.emit(true); this.changed(); return true;
+  };
+  A.Player.prototype.prev = function () {
+    if (this.idx <= 0) return false;
+    this.idx--; this.emit(true); this.changed(); return true;
+  };
+  A.Player.prototype.seek = function (n) {
+    n = Math.max(0, Math.min(this.steps.length - 1, n)); if (n === this.idx) return;
+    this.idx = n; this.emit(false); this.changed();
+  };
+  A.Player.prototype.play = function () {
+    var self = this;
+    if (this.playing) return;
+    if (this.idx >= this.steps.length - 1) { if (this.steps.length > 1 && !this.noRestart) { this.idx = 0; this.emit(false); } else return; }
+    this.playing = true; this.changed();
+    (function loop() {
+      if (!self.playing) return;
+      if (!self.next()) { self.pause(); return; }
+      self.timer = setTimeout(loop, self.interval());
+    })();
+  };
+  A.Player.prototype.pause = function () {
+    var was = this.playing;
+    this.playing = false; if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+    if (was) this.changed();
+  };
+  A.Player.prototype.setSpeed = function (s) { this.speed = s; };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* view_sort.js — 3D bar chart lane (one lane = single view, four lanes = race) */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+  var THREE = root.THREE;
+
+  /* o: {values, width, maxH, depth, auxZ, z, showVals, valH, name, idxLabels} */
+  function Lane(parent, o) {
+    this.o = o;
+    this.g = new THREE.Group(); this.g.position.z = o.z || 0; parent.add(this.g);
+    var n = this.n = o.values.length, i;
+    this.pitch = o.width / n;
+    this.bw = this.pitch * 0.78;
+    var maxv = Math.max.apply(null, o.values);
+    this.bars = [];
+    this.markH = Math.min(0.62, Math.max(0.3, this.pitch * 0.7));
+    for (i = 0; i < n; i++) {
+      var h = o.values[i] / maxv * o.maxH;
+      var bg = new THREE.Group();
+      var mat = new THREE.MeshLambertMaterial({ color: A.COL.idle });
+      mat.userData.hex = A.COL.idle;
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(this.bw, h, o.depth), mat);
+      mesh.position.y = h / 2; bg.add(mesh);
+      var val = null;
+      if (o.showVals) {
+        val = A.label(String(o.values[i]), o.valH || 0.6);
+        val.position.set(0, h + (o.valH || 0.6) * 0.75, o.depth * 0.5 + 0.1); bg.add(val);
+      }
+      var mark = A.label('✓', this.markH, { color: '#1E7A4B' });
+      mark.position.set(0, h + (o.showVals ? (o.valH || 0.6) * 1.6 : 0.5) + this.markH * 0.3, o.depth * 0.5 + 0.1);
+      mark.visible = false; bg.add(mark);
+      bg.position.set(this.slotX(i), 0, 0);
+      this.g.add(bg);
+      this.bars.push({ g: bg, mesh: mesh, mat: mat, mark: mark, h: h, slot: i, row: 0, state: 'idle', markTxt: '✓' });
+    }
+    /* range plate */
+    this.plate = new THREE.Mesh(new THREE.BoxGeometry(1, 0.05, o.depth + 1.4),
+      new THREE.MeshBasicMaterial({ color: A.COL.accent, transparent: true, opacity: 0.16 }));
+    this.plate.position.y = 0; this.plate.visible = false; this.g.add(this.plate);
+    /* index labels (under each slot) */
+    this.idx = [];
+    this.base = 0;
+    if (o.idxLabels !== false) {
+      for (i = 0; i < n; i++) {
+        var l = A.label(String(i), Math.min(0.55, this.pitch * 0.6), { color: '#5B6B86', bold: false });
+        l.position.set(this.slotX(i), -0.55, o.depth * 0.5 + 0.9); this.g.add(l); this.idx.push(l);
+      }
+    }
+    if (o.name) {
+      this.nameL = A.label(o.name, 0.8);
+      this.nameL.position.set(-o.width / 2 - 2.5, 0.8, 0); this.g.add(this.nameL);
+    }
+  }
+  Lane.prototype.slotX = function (s) { return (s - (this.n - 1) / 2) * this.pitch; };
+  Lane.prototype.setBase = function (b) {
+    if (b === this.base) return; this.base = b;
+    for (var i = 0; i < this.idx.length; i++) A.setLabel(this.idx[i], String(i + b));
+  };
+  Lane.prototype.setName = function (txt) { if (this.nameL) A.setLabel(this.nameL, txt); };
+  Lane.prototype.apply = function (step, animate, ms) {
+    var i, b, p, st, o = this.o, tms = animate ? ms : 0, y, z, arc;
+    for (i = 0; i < this.n; i++) {
+      b = this.bars[i]; p = step.pos[i]; st = step.state[i];
+      y = (p.row === 2 ? o.maxH * 0.36 + 0.3 : 0) + (st === 'cmp' || st === 'swap' ? o.maxH * 0.07 : 0);
+      z = p.row === 1 ? o.auxZ : 0;
+      arc = 0;
+      if (animate && p.slot !== b.slot && p.row === b.row && st === 'swap') arc = (p.slot > b.slot ? 1 : -1) * Math.min(2.2, o.depth * 1.3 + 0.5);
+      A.moveTo(b.g, this.slotX(p.slot), y, z, tms, o.maxH * 0.05, arc);
+      A.colorTo(b.mat, A.COL[st] != null ? A.COL[st] : A.COL.idle, animate ? 160 : 0);
+      var mt = st === 'sorted' ? '✓' : (st === 'pivot' ? 'pivot' : (st === 'key' ? 'key' : null));
+      if (mt) {
+        if (b.markTxt !== mt) { A.setLabel(b.mark, mt, mt === '✓' ? { color: '#1E7A4B' } : { color: '#4A3A7A' }); b.markTxt = mt; }
+        b.mark.visible = true;
+      } else b.mark.visible = false;
+      b.slot = p.slot; b.row = p.row; b.state = st;
+    }
+    if (step.range) {
+      var lo = step.range[0], hi = step.range[1];
+      this.plate.visible = true;
+      this.plate.scale.x = (hi - lo + 1) * this.pitch;
+      this.plate.position.x = (this.slotX(lo) + this.slotX(hi)) / 2;
+    } else this.plate.visible = false;
+  };
+
+  /* ---------- view: single lane or race ---------- */
+  var VIEWS = {
+    single: { front: { dir: [0, 0.35, 1], target: [0, 2.6, 0], need: [19, 11] }, angle: { dir: [0, 0.78, 1], target: [0, 2.2, -0.8], need: [19, 12] }, top: { dir: [0, 1, 0.12], target: [0, 0, -1.2], need: [19, 12] } },
+    race: { front: { fov: 24, dir: [0, 0.5, 1], target: [-1.2, 1.5, -6.9], need: [25, 12] }, angle: { fov: 24, dir: [0, 1.05, 1], target: [-1.2, 0.5, -6.9], need: [25, 15] }, top: { fov: 24, dir: [0, 1, 0.08], target: [-1.2, 0, -6.9], need: [25, 17] } }
+  };
+  var NAMES = { bubble: 'Bubble', insertion: 'Insertion', quick: 'Quick', merge: 'Merge' };
+
+  A.SortView = function (stage, mode, values) {
+    this.stage = stage; this.mode = mode; this.lanes = [];
+    stage.clear();
+    var n = values.length;
+    if (mode === 'single') {
+      this.lanes.push(new Lane(stage.root, { values: values, width: 15, maxH: 6, depth: 1.4, auxZ: -4.4, showVals: n <= 16, valH: n <= 8 ? 0.85 : 0.6 }));
+    } else {
+      var self = this;
+      A.SORTS.forEach(function (a, k) {
+        self.lanes.push(new Lane(stage.root, { values: values, width: 15, maxH: 3.2, depth: 0.9, auxZ: -2.0, z: -k * 4.6, showVals: n <= 16, valH: 0.45, name: NAMES[a], idxLabels: false }));
+      });
+    }
+    this.views = VIEWS[mode];
+  };
+  A.SortView.prototype.setBase = function (b) { this.lanes.forEach(function (l) { l.setBase(b); }); };
+  A.SortView.prototype.applySingle = function (step, animate, ms) { this.lanes[0].apply(step, animate, ms); };
+  A.SortView.prototype.applyRace = function (step, animate, ms, info) {
+    var self = this;
+    step.lanes.forEach(function (l, k) {
+      self.lanes[k].apply(l.step, animate, ms);
+      var nm = NAMES[A.SORTS[k]] + (l.done ? ' ✓' : '');
+      self.lanes[k].setName(nm);
+    });
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* view_ds.js — 3D views for stack, queue (circular / linear) and the array-based linked list.
+   Every view renders from a step's full state, so stepping back / seeking just re-applies a step. */
+(function (root) {
+  'use strict';
+  var A = root.A3D = root.A3D || {};
+  var THREE = root.THREE;
+  var AMBER = 0xE0A020, RED = A.COL.err, CELLBG = 0xDCE4F0;
+
+  function mkBlock(item, w, h, d) {
+    var g = new THREE.Group();
+    var mat = new THREE.MeshLambertMaterial({ color: A.BLOCKS[item.id % A.BLOCKS.length] });
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat));
+    var lab = A.label(String(item.v), Math.min(0.7, h * 0.7));
+    lab.position.z = d / 2 + 0.05; g.add(lab);
+    return g;
+  }
+  function frameBox(w, h, d, color) {
+    return new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)), new THREE.LineBasicMaterial({ color: color }));
+  }
+  function mesh(geo, color, opts) {
+    var m = new THREE.MeshLambertMaterial(Object.assign({ color: color }, opts || {}));
+    return new THREE.Mesh(geo, m);
+  }
+  function cone(color, r, h) { return new THREE.Mesh(new THREE.ConeGeometry(r, h, 14), new THREE.MeshLambertMaterial({ color: color })); }
+  function removeObj(parent, obj, animate) {
+    if (!animate) { parent.remove(obj); A.disposeTree(obj); return; }
+    A.scaleTo(obj, 0.01, 200, function () { parent.remove(obj); A.disposeTree(obj); });
+  }
+  /* keep a set of free blocks (keyed by item id) in sync with the wanted layout */
+  function syncBlocks(V, want, animate, ms, spawn) {
+    var id, b, w;
+    for (id in want) {
+      w = want[id]; b = V.blocks[id];
+      if (!b) {
+        b = mkBlock(w.item, V.bw, V.bh, V.bd);
+        var sp = spawn(w); b.position.set(sp[0], sp[1], sp[2]);
+        if (!animate) b.position.set(w.x, w.y, w.z);
+        V.g.add(b); V.blocks[id] = b;
+      }
+      A.moveTo(b, w.x, w.y, w.z, animate ? ms : 0, w.arc || 0);
+      A.scaleTo(b, w.scale || 1, animate ? ms : 0);
+    }
+    for (id in V.blocks) if (!want[id]) { removeObj(V.g, V.blocks[id], animate); delete V.blocks[id]; }
+  }
+  var TP = 1.45, TS = 0.62;          // tray slot pitch and block scale
+  function trayPlate(g, x0, z, perRow) {
+    var w = perRow * TP + 0.5;
+    var p = mesh(new THREE.BoxGeometry(w, 0.08, 1.5), 0xCBD5E4); p.position.set(x0 + (perRow - 1) * TP / 2, -0.02, z); g.add(p);
+    var l = A.label('output', 0.55, { color: '#5B6B86' }); l.position.set(x0 - 1.75, 0.45, z); g.add(l);
+  }
+
+  /* ======================= STACK ======================= */
+  var CH = 1.15, CW = 2.7;
+  function StackView(stage) {
+    this.stage = stage; stage.clear();
+    this.g = new THREE.Group(); stage.root.add(this.g);
+    this.blocks = {}; this.bw = 2.3; this.bh = 0.95; this.bd = 1.2;
+    this.bg = []; this.frames = [];
+    var i, y;
+    for (i = 0; i < 6; i++) {
+      y = i * CH + CH / 2;
+      var bgm = mesh(new THREE.BoxGeometry(CW, CH * 0.94, 1.5), CELLBG, { transparent: true, opacity: 0.55 });
+      bgm.position.set(0, y, 0); this.g.add(bgm); this.bg.push(bgm);
+      var fr = frameBox(CW, CH * 0.96, 1.6, A.COL.grey); fr.position.set(0, y, 0); this.g.add(fr); this.frames.push(fr);
+      var il = A.label(String(i), 0.5, { color: '#5B6B86' }); il.position.set(-CW / 2 - 0.65, y, 0.9); this.g.add(il);
+    }
+    var base = mesh(new THREE.BoxGeometry(CW + 0.7, 0.14, 2.2), 0xCBD5E4); base.position.y = -0.07; this.g.add(base);
+    this.mark = new THREE.Group();
+    var c = cone(A.COL.accent, 0.24, 0.6); c.rotation.z = Math.PI / 2; this.mark.add(c);
+    this.markL = A.label('Top = -1', 0.6, { color: '#1B4FB0' }); this.markL.position.set(1.45, 0, 0); this.mark.add(this.markL);
+    this.mark.position.set(CW / 2 + 0.95, -0.5, 0.4); this.g.add(this.mark);
+    trayPlate(this.g, 4.9, 0, 6);
+  }
+  StackView.prototype.trayPos = function (k) { return [4.9 + (k % 6) * TP, 0.4, Math.floor(k / 6) * 1.6]; };
+  StackView.prototype.apply = function (step, animate, ms) {
+    var s = step.state, m = step.marks || {}, want = {}, i, k;
+    for (i = 0; i < 6; i++) if (s.data[i]) want[s.data[i].id] = { item: s.data[i], x: 0, y: i * CH + CH / 2, z: 0 };
+    for (k = 0; k < s.out.length; k++) { var p = this.trayPos(k); want[s.out[k].id] = { item: s.out[k], x: p[0], y: p[1], z: p[2], arc: 1.6, scale: TS }; }
+    syncBlocks(this, want, animate, ms, function (w) { return [0, 8.2, 0]; });
+    var ty = s.top === -1 ? -0.5 : s.top * CH + CH / 2;
+    A.moveTo(this.mark, this.mark.position.x, ty, this.mark.position.z, animate ? ms : 0);
+    A.setLabel(this.markL, 'Top = ' + s.top);
+    for (i = 0; i < 6; i++) {
+      var col = m.error ? RED : (m.cell === i ? AMBER : CELLBG);
+      this.bg[i].material.color.setHex(col); this.bg[i].material.opacity = (m.error || m.cell === i) ? 0.85 : 0.55;
+      this.frames[i].material.color.setHex(m.error ? RED : (m.cell === i ? AMBER : A.COL.grey));
+    }
+    if (m.error && animate) A.shake(this.g, 420);
+  };
+
+  /* ======================= QUEUE ======================= */
+  var R = 3.4;
+  function QueueView(stage, mode) {
+    this.stage = stage; stage.clear(); this.mode = mode;
+    this.g = new THREE.Group(); stage.root.add(this.g);
+    this.blocks = {}; this.bw = 1.5; this.bh = 0.9; this.bd = 1.5;
+    this.tiles = []; this.cross = [];
+    var i, p;
+    for (i = 0; i < 6; i++) {
+      p = this.cellPos(i);
+      var t = mesh(new THREE.BoxGeometry(1.9, 0.22, 1.9), A.COL.tile); t.position.set(p[0], 0.11, p[2]);
+      if (mode === 'circular') t.rotation.y = -i * Math.PI / 3;
+      this.g.add(t); this.tiles.push(t);
+      var ed = frameBox(1.9, 0.22, 1.9, A.COL.grey); ed.position.copy(t.position); ed.rotation.copy(t.rotation); this.g.add(ed);
+      var il = A.label(String(i), 0.62, { color: '#5B6B86' });
+      if (mode === 'circular') il.position.set(p[0] * 0.5, 0.12, p[2] * 0.5); else il.position.set(p[0], 0.1, p[2] + 1.35);
+      this.g.add(il);
+      var x = A.label('✕', 0.9, { color: '#6F7D94' }); x.position.set(p[0], 0.8, p[2]); x.visible = false; this.g.add(x); this.cross.push(x);
+    }
+    this.F = this.marker('Front', 0x3B6FD4, '#1B4FB0');
+    this.Rr = this.marker('Rear', 0xE0705A, '#A33A28');
+    this.countL = A.label('Count = 0', 0.7, { color: '#22304A' });
+    this.countL.position.set(0, 0.25, 0); this.countL.visible = mode === 'circular'; this.g.add(this.countL);
+    this.trayZ = mode === 'circular' ? 6.3 : 3.7;
+    trayPlate(this.g, -3.6, this.trayZ, 6);
+  }
+  QueueView.prototype.marker = function (name, hex, css) {
+    var g = new THREE.Group();
+    var c = cone(hex, 0.3, 0.8); g.add(c);
+    var l = A.label(name, 0.7, { color: css }); l.position.y = 0.85; g.add(l);
+    g.userData.l = l; g.userData.c = c; this.g.add(g); return g;
+  };
+  QueueView.prototype.cellPos = function (i) {
+    if (this.mode === 'circular') { var a = i * Math.PI / 3; return [R * Math.sin(a), 0.11, -R * Math.cos(a)]; }
+    return [(i - 2.5) * 2.15, 0.11, 0];
+  };
+  QueueView.prototype.trayPos = function (k) { return [-3.6 + (k % 6) * TP, 0.4, this.trayZ + Math.floor(k / 6) * 1.6]; };
+  QueueView.prototype.apply = function (step, animate, ms) {
+    var s = step.state, m = step.marks || {}, want = {}, i, k, p, circ = this.mode === 'circular';
+    for (i = 0; i < 6; i++) if (s.data[i]) { p = this.cellPos(i); want[s.data[i].id] = { item: s.data[i], x: p[0], y: 0.22 + this.bh / 2, z: p[2] }; }
+    for (k = 0; k < s.out.length; k++) { p = this.trayPos(k); want[s.out[k].id] = { item: s.out[k], x: p[0], y: p[1], z: p[2], arc: 1.6, scale: TS }; }
+    var self = this;
+    syncBlocks(this, want, animate, ms, function (w) { return circ ? [w.x, 5.5, w.z] : [w.x, 5.5, 0]; });
+    /* front / rear markers */
+    var fi = ((s.front % 6) + 6) % 6, ri = ((s.rear % 6) + 6) % 6;
+    var same = fi === ri, ms2 = animate ? ms : 0;
+    var UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(1, 0, 0);
+    function put(mk, idx, side) {
+      var c = mk.userData.c, l = mk.userData.l;
+      if (circ) {
+        var a = idx * Math.PI / 3, sx = Math.sin(a), cz = -Math.cos(a), off = same ? side * 1.0 : 0;
+        A.moveTo(mk, sx * (R + 1.8) + Math.cos(a) * off, 0.55, cz * (R + 1.8) + Math.sin(a) * off, ms2);   // outside the ring; off = tangential shift when Front = Rear
+        c.quaternion.setFromUnitVectors(UP, new THREE.Vector3(-sx, 0, -cz).normalize());
+        l.position.y = 0.85;
+      } else {
+        var p = self.cellPos(idx), dx = same ? side * 0.6 : 0;
+        A.moveTo(mk, p[0] + dx, 1.6, p[2], ms2);
+        c.quaternion.setFromAxisAngle(DOWN, Math.PI);
+        l.position.y = same && side > 0 ? 1.7 : 0.85;
+      }
+    }
+    put(this.F, fi, -1); put(this.Rr, ri, 1);
+    A.setLabel(this.F.userData.l, 'Front = ' + s.front);
+    A.setLabel(this.Rr.userData.l, 'Rear = ' + s.rear);
+    if (circ) A.setLabel(this.countL, 'Count = ' + s.count);
+    for (i = 0; i < 6; i++) {
+      var wasted = !circ && i < s.front && !s.data[i];
+      var col = wasted ? 0xC9D1DE : (m.error ? RED : (m.cell === i ? AMBER : A.COL.tile));
+      this.tiles[i].material.color.setHex(col);
+      this.cross[i].visible = wasted;
+    }
+    if (m.error && animate) A.shake(this.g, 420);
+  };
+
+  /* ======================= LINKED LIST ======================= */
+  var LCH = 1.15, NODE_S = 0.62, NODE_DX = 3.4;
+  var CHAIN_COL = { used: 0x3B6FD4, free: 0x8A97AB, orphan: AMBER };
+  function ListView(stage, mode) {
+    this.stage = stage; stage.clear(); this.mode = mode || 'table'; stage.floor.visible = false; this.M = 3;
+    this.g = new THREE.Group(); stage.root.add(this.g);
+    this.rows = [];
+    var r;
+    for (r = 0; r < 6; r++) {
+      var g = new THREE.Group();
+      var dt = mesh(new THREE.BoxGeometry(1.7, 0.95, 0.2), A.COL.tile); dt.position.x = -0.95; g.add(dt);
+      var pt = mesh(new THREE.BoxGeometry(1.7, 0.95, 0.2), A.COL.tile); pt.position.x = 0.95; g.add(pt);
+      var e1 = frameBox(1.7, 0.95, 0.2, A.COL.grey); e1.position.x = -0.95; g.add(e1);
+      var e2 = frameBox(1.7, 0.95, 0.2, A.COL.grey); e2.position.x = 0.95; g.add(e2);
+      var pl = A.label('-1', 0.55); pl.position.set(0.95, 0, 0.16); g.add(pl);
+      var il = A.label(String(r), 0.55, { color: '#5B6B86' }); il.position.set(-2.45, 0, 0); g.add(il);
+      var flags = {};
+      [['prev', '#FFE7B0', '#7A5200'], ['cur', '#FFC9BE', '#8A2E1C'], ['new', '#C9EFD9', '#17623D']].forEach(function (f) {
+        var s = A.label(f[0], 0.34, { bg: f[1], color: f[2] }); s.visible = false; g.add(s); flags[f[0]] = s;
+      });
+      this.g.add(g);
+      this.rows.push({ g: g, dt: dt, pt: pt, pl: pl, il: il, flags: flags, block: null, blockId: null });
+    }
+    this.heads = ['Row', 'Data', 'Pointer'].map(function (t, k) {
+      var l = A.label(t, 0.45, { color: '#5B6B86', bold: false }); l.position.set([-2.45, -0.95, 0.95][k], 3.75, 0); this.g.add(l); return l;
+    }, this);
+    this.arrows = new THREE.Group(); this.g.add(this.arrows);
+    this.sMark = this.pmark('StartPointer', 0x3B6FD4, '#1B4FB0');
+    this.fMark = this.pmark('FreePointer', 0x8A97AB, '#46546D');
+    this.nulls = [A.label('null', 0.4, { color: '#8A97AB', bold: false }), A.label('null', 0.4, { color: '#8A97AB', bold: false })];
+    this.nulls.forEach(function (n) { n.visible = false; this.g.add(n); }, this);
+    this.last = null;
+  }
+  ListView.prototype.pmark = function (name, hex, css) {
+    var g = new THREE.Group(), c = cone(hex, 0.22, 0.55); g.add(c);
+    var l = A.label(name, 0.55, { color: css }); g.add(l);
+    g.userData = { c: c, l: l, name: name }; this.g.add(g); return g;
+  };
+  ListView.prototype.setMode = function (m) { this.mode = m; };
+  ListView.prototype.needW = function () { return Math.max(this.M, 3) * NODE_DX + 4.8; };
+  ListView.prototype.rowPos = function (r, ch) {
+    if (this.mode === 'table') return { x: 0, y: (2.5 - r) * LCH, z: 0, s: 1 };
+    var ui = ch.used.indexOf(r), fi = ch.free.indexOf(r), x0 = -(this.M - 1) / 2 * NODE_DX;
+    if (ui >= 0) return { x: x0 + ui * NODE_DX, y: 1.6, z: 0, s: NODE_S };
+    if (fi >= 0) return { x: x0 + fi * NODE_DX, y: -2.1, z: 0, s: NODE_S };
+    return { x: 0, y: -0.25, z: 0.6, s: NODE_S };
+  };
+  ListView.prototype.arrow = function (p0, pc, p1, hex, rad) {
+    var curve = new THREE.QuadraticBezierCurve3(p0, pc, p1);
+    var tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, rad, 6, false), new THREE.MeshBasicMaterial({ color: hex }));
+    var tan = curve.getTangent(1).normalize();
+    var head = new THREE.Mesh(new THREE.ConeGeometry(rad * 3.4, rad * 9, 12), new THREE.MeshBasicMaterial({ color: hex }));
+    head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tan);
+    head.position.copy(p1).addScaledVector(tan, -rad * 4.5);
+    this.arrows.add(tube); this.arrows.add(head);
+  };
+  ListView.prototype.apply = function (step, animate, ms) {
+    var s = step.state, m = step.marks || {}, ch = A.listChains(s), r, self = this, tms = animate ? ms : 0, table = this.mode === 'table';
+    var inUsed = {}, inFree = {};
+    this.M = Math.max(ch.used.length, ch.free.length, 3);
+    ch.used.forEach(function (x) { inUsed[x] = 1; }); ch.free.forEach(function (x) { inFree[x] = 1; });
+    var pos = [];
+    for (r = 0; r < 6; r++) {
+      var row = this.rows[r], P = this.rowPos(r, ch); pos.push(P);
+      A.moveTo(row.g, P.x, P.y, P.z, tms); A.scaleTo(row.g, P.s, tms);
+      /* data block */
+      var it = s.data[r], id = it ? it.id : null;
+      if (row.blockId !== id) {
+        if (row.block) removeObj(row.g, row.block, animate);
+        row.block = null; row.blockId = null;
+        if (it) {
+          var b = mkBlock(it, 1.5, 0.8, 0.25); b.position.set(-0.95, 0, 0.22); row.g.add(b);
+          if (animate) { b.scale.set(0.01, 0.01, 0.01); A.scaleTo(b, 1, ms); }
+          row.block = b; row.blockId = id;
+        }
+      }
+      A.setLabel(row.pl, String(s.ptr[r]));
+      var ptCol = inUsed[r] ? 0xCFE0F7 : (inFree[r] ? 0xE4E8EE : 0xFBE8C0);
+      row.pt.material.color.setHex(m.error ? 0xF6C7CB : ptCol);
+      row.dt.material.color.setHex(m.error ? 0xF6C7CB : (inFree[r] && !it ? 0xEEF1F5 : A.COL.tile));
+      /* row number label and flags: counter-scaled so they keep their size inside a shrunken node */
+      var k = 0, f = 1 / P.s;
+      A.setLabel(row.il, (table ? '' : 'row ') + r);
+      row.il.scale.set(row.il.userData.h * f * A.labelTex(row.il.userData.txt, row.il.userData.o).aspect, row.il.userData.h * f, 1);
+      row.il.position.set(table ? -2.45 : 0, table ? 0 : -0.95, 0);
+      ['prev', 'cur', 'new'].forEach(function (nm) {
+        var sp = row.flags[nm], on = m[nm] === r;
+        sp.visible = on;
+        if (on) {
+          var L = A.labelTex(nm, sp.userData.o);
+          sp.scale.set(sp.userData.h * f * L.aspect, sp.userData.h * f, 1);
+          if (table) sp.position.set(-3.55, 0.32 - k * 0.32, 0.2); else sp.position.set(0, 0.95 + k * 0.4, 0.3);
+          k++;
+        }
+      });
+    }
+    this.heads.forEach(function (h) { h.visible = table; });
+    /* arrows */
+    this.g.remove(this.arrows); A.disposeTree(this.arrows); this.arrows = new THREE.Group(); this.g.add(this.arrows);
+    for (r = 0; r < 6; r++) {
+      var t = s.ptr[r]; if (t === -1) continue;
+      var kind = inUsed[r] ? 'used' : (inFree[r] ? 'free' : 'orphan');
+      var p0, pc, p1, a = pos[r], b2 = pos[t];
+      if (table) {
+        var dr = Math.abs(t - r);
+        p0 = new THREE.Vector3(1.8, a.y, 0.2); p1 = new THREE.Vector3(1.86, b2.y, 0.2);
+        pc = new THREE.Vector3(1.8 + 1.05 + 0.45 * dr, (a.y + b2.y) / 2, 0.2);
+      } else {
+        var half = 1.8 * NODE_S;
+        p0 = new THREE.Vector3(a.x + half, a.y, a.z + 0.15); p1 = new THREE.Vector3(b2.x - half, b2.y, b2.z + 0.15);
+        var dxx = Math.abs(p1.x - p0.x);
+        pc = new THREE.Vector3((p0.x + p1.x) / 2, (p0.y + p1.y) / 2 + (a.y === b2.y ? 0.45 + 0.1 * dxx : 0.6), a.z + 0.15);
+        if (p1.x < p0.x) { p0.x = a.x - half; pc.y += 0.4; }
+      }
+      this.arrow(p0, pc, p1, CHAIN_COL[kind], kind === 'free' ? 0.035 : 0.05);
+    }
+    /* Start / Free markers and null labels */
+    function place(mk, rowIdx, rowOr, defaultXY) {
+      var d = mk.userData; d.l.visible = true;
+      if (rowIdx === -1) {
+        d.c.visible = false; A.setLabel(d.l, d.name + ' = -1'); d.l.position.set(0, 0, 0);
+        mk.position.set(defaultXY[0], defaultXY[1], 0.2); A.stopAnims(mk);
+      } else {
+        d.c.visible = true; A.setLabel(d.l, d.name);
+        var P = pos[rowIdx];
+        if (table) {
+          d.c.rotation.set(0, 0, -Math.PI / 2); d.c.position.set(0, 0, 0); d.l.position.set(-1.9, 0, 0);
+          A.moveTo(mk, -4.15, P.y, 0.2, tms);
+        } else {
+          d.c.rotation.set(Math.PI, 0, 0); d.c.position.set(0, 0, 0); d.l.position.set(0, 0.7, 0);
+          A.moveTo(mk, P.x, P.y + 1.0, 0.2, tms);
+        }
+      }
+    }
+    place(this.sMark, s.start, 'used', table ? [-5.4, 3.75] : [0, 2.9]);
+    place(this.fMark, s.free, 'free', table ? [-5.4, -3.75] : [0, -3.2]);
+    this.nulls.forEach(function (n) { n.visible = false; });
+    if (!table) {
+      [['used', 0, 1.5], ['free', 1, -2.0]].forEach(function (c) {
+        var arr = ch[c[0]]; if (!arr.length) return;
+        var last = arr[arr.length - 1];
+        if (s.ptr[last] === -1) { var n = self.nulls[c[1]]; n.visible = true; n.position.set(pos[last].x + 1.8 * NODE_S + 0.55, c[2], 0.2); }
+      });
+    }
+    if (m.error && animate) A.shake(this.g, 420);
+  };
+
+  /* ---------- views ---------- */
+  A.DS_VIEWS = {
+    stack: { angle: { dir: [0.12, 0.5, 1], target: [4.6, 3.1, 0], need: [17.5, 9.8] }, front: { dir: [0, 0.2, 1], target: [4.6, 3.1, 0], need: [17.5, 9.8] }, top: { dir: [0, 1, 0.15], target: [4.6, 0, 0], need: [17.5, 9] } },
+    queue_circular: { angle: { dir: [0, 0.95, 1], target: [0, 0.5, 1.7], need: [11.5, 12.5] }, front: { dir: [0, 0.3, 1], target: [0, 1.2, 1.5], need: [11.5, 8] }, top: { dir: [0, 1, 0.1], target: [0, 0, 1.7], need: [11.5, 13.5] } },
+    queue_linear: { angle: { dir: [0, 0.85, 1], target: [0, 0.6, 1.3], need: [16, 8.5] }, front: { dir: [0, 0.3, 1], target: [0, 1, 1.3], need: [16, 7] }, top: { dir: [0, 1, 0.1], target: [0, 0, 1.4], need: [16, 9] } },
+    list_table: { angle: { dir: [0.04, 0.12, 1], target: [-1.9, 0, 0], need: [14.2, 8.8] }, front: { dir: [0, 0, 1], target: [-1.9, 0, 0], need: [14.2, 8.8] }, top: { dir: [0, 1, 0.2], target: [-1.9, 0, 0], need: [14.2, 8.8] } },
+    list_node: { angle: { dir: [0, 0.12, 1], target: [0, -0.2, 0], need: [19, 8.6] }, front: { dir: [0, 0, 1], target: [0, -0.2, 0], need: [19, 8.6] }, top: { dir: [0, 1, 0.2], target: [0, -0.2, 0], need: [19, 8.6] } }
+  };
+  A.StackView = StackView; A.QueueView = QueueView; A.ListView = ListView;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* main.js — tabs, language, hash, controls, code panel, watch table, wiring of views and Player */
+(function () {
+  'use strict';
+  var A = window.A3D;
+  var LANGS = [['en', 'EN'], ['ja', '日本語'], ['zh', '中文'], ['th', 'ไทย']];
+  var TABS = ['sort', 'stack', 'queue', 'list'];
+  var SPEEDS = [0.25, 0.5, 1, 2, 4, 8];
+  var LISTSEQ = [30, 10, 20, 25, 15, 35, 5, 40];
+  var SORT_ORDER = ['passes', 'swapped', 'i', 'j', 'key', 'pivot', 'lo', 'hi', 'mid', 'p', 'k', 'depth'];
+
+  var S = { tab: 'sort', lang: 'en', code: 'py', algo: 'bubble', dkind: 'random', n: 8, seed: 7, qmode: 'circular', lview: 'table', cam: 'angle', stepMode: false, letter: {}, val: '' };
+  var H = {};                       // per-structure history {state, steps}
+  var lastNeedW = 0, stage, view = null, player = new A.Player(), curStep = null, raceInfo = null, hashTimer = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag), k;
+    for (k in (attrs || {})) {
+      if (k === 'text') e.textContent = attrs[k];
+      else if (k === 'on') { for (var ev in attrs.on) e.addEventListener(ev, attrs.on[ev]); }
+      else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k] === true ? '' : attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+  function tr(key) { return A.t(S.lang, key); }
+  function base() { return (S.code === 'pseudo' && S.tab === 'sort') ? 1 : 0; }
+  function dsKey() { return S.tab === 'queue' ? 'queue_' + S.qmode : S.tab; }
+  function codeId() {
+    if (S.tab === 'sort') return S.algo === 'race' ? null : S.algo;
+    if (S.tab === 'queue') return S.qmode === 'linear' ? 'queue_linear' : 'queue';
+    return S.tab;
+  }
+  function seg(items, cur, fn, extra) {
+    var d = el('div', { class: 'seg' + (extra ? ' ' + extra : '') });
+    items.forEach(function (it) {
+      d.appendChild(el('button', { type: 'button', text: it[1], 'aria-pressed': String(it[0] === cur), on: { click: function () { fn(it[0]); } } }));
+    });
+    return d;
+  }
+  function grp(label, node) { return el('div', { class: 'grp' }, [label ? el('span', { class: 'glabel', text: label }) : null, node]); }
+
+  /* ---------------------------------------------------------------- hash */
+  function parseHash() {
+    var h = (location.hash || '').replace(/^#/, ''), start = null, demo = false;
+    if (!h) return { start: null, demo: false };
+    h.split('-').forEach(function (t, i) {
+      if (i === 0 && TABS.indexOf(t) >= 0) S.tab = t;
+      else if (['en', 'ja', 'zh', 'th'].indexOf(t) >= 0) S.lang = t;
+      else if (A.SORTS.indexOf(t) >= 0) { S.algo = t; S.tab = 'sort'; }
+      else if (t === 'race') { S.algo = 'race'; S.tab = 'sort'; if (S.n < 16) S.n = 16; }
+      else if (t === 'circular' || t === 'linear') { S.qmode = t; }
+      else if (t === 'table' || t === 'node') { S.lview = t; }
+      else if (t === 'demo') demo = true;
+      else if (t === 'pseudo') S.code = 'pseudo';
+      else if (['random', 'nearly', 'reversed', 'few'].indexOf(t) >= 0) S.dkind = t;
+      else if (/^n\d+$/.test(t)) S.n = Math.max(2, Math.min(32, +t.slice(1)));
+      else if (/^s\d+$/.test(t)) start = +t.slice(1);
+    });
+    return { start: start, demo: demo };
+  }
+  function writeHash() {
+    clearTimeout(hashTimer);
+    hashTimer = setTimeout(function () {
+      var parts = [S.tab, S.lang];
+      if (S.tab === 'sort') parts.push(S.algo, 's' + player.idx);
+      else if (S.tab === 'queue') parts.push(S.qmode);
+      else if (S.tab === 'list') parts.push(S.lview);
+      try { history.replaceState(null, '', '#' + parts.join('-')); } catch (e) { /* ignore */ }
+    }, 250);
+  }
+
+  /* ---------------------------------------------------------------- text parts */
+  function renderHeader() {
+    $('ttl').textContent = tr('ui.title'); $('sub').textContent = tr('ui.sub');
+    var tabs = $('tabs'); tabs.innerHTML = '';
+    TABS.forEach(function (t) {
+      tabs.appendChild(el('button', { type: 'button', role: 'tab', text: tr('tab.' + t), 'aria-pressed': String(t === S.tab), on: { click: function () { setTab(t); } } }));
+    });
+    var langs = $('langs'); langs.innerHTML = '';
+    LANGS.forEach(function (l) {
+      langs.appendChild(el('button', { type: 'button', text: l[1], lang: l[0], 'aria-pressed': String(l[0] === S.lang), on: { click: function () { setLang(l[0]); } } }));
+    });
+    var views = $('views'); views.innerHTML = '';
+    [['front', 'view.front'], ['angle', 'view.angle'], ['top', 'view.top']].forEach(function (v) {
+      views.appendChild(el('button', { type: 'button', text: tr(v[1]), 'aria-pressed': String(S.cam === v[0]), on: { click: function () { S.cam = v[0]; renderHeader(); applyCamera(true); } } }));
+    });
+    $('bFirst').textContent = '⏮ ' + tr('ui.first'); $('bPrev').textContent = '◀ ' + tr('ui.prev'); $('bNext').textContent = tr('ui.next') + ' ▶';
+    $('spdL').textContent = tr('ui.speed'); $('scrub').setAttribute('aria-label', tr('ui.step'));
+    $('codeseg').innerHTML = '';
+    $('codeseg').appendChild(seg([['py', tr('ui.python')], ['pseudo', tr('ui.pseudo')]], S.code, setCode));
+    document.documentElement.lang = S.lang;
+    document.title = tr('ui.title');
+    updateControls();
+  }
+
+  function renderSubbar() {
+    var sb = $('subbar'), keep = $('valin') ? $('valin').value : S.val;
+    S.val = keep; sb.innerHTML = '';
+    if (S.tab === 'sort') {
+      sb.appendChild(grp(tr('ui.algo'), seg([['bubble', tr('algo.bubble')], ['insertion', tr('algo.insertion')], ['quick', tr('algo.quick')], ['merge', tr('algo.merge')], ['race', tr('algo.race')]], S.algo, function (a) {
+        S.algo = a; if (a === 'race' && S.n < 16) S.n = 16; if (a !== 'race' && S.n > 16 && false) S.n = 8; renderSubbar(); renderHeader(); build(); })));
+      sb.appendChild(grp(tr('ui.data'), seg([['random', tr('data.random')], ['nearly', tr('data.nearly')], ['reversed', tr('data.reversed')], ['few', tr('data.few')]], S.dkind, function (k) { S.dkind = k; renderSubbar(); build(); })));
+      sb.appendChild(grp(tr('ui.n'), seg((S.algo === 'race' ? [16, 32] : [8, 16, 32]).map(function (n) { return [n, String(n)]; }), S.n, function (n) { S.n = n; renderSubbar(); build(); })));
+      sb.appendChild(el('button', { type: 'button', class: 'tool', text: '🔀 ' + tr('ui.shuffle'), on: { click: function () { S.seed = (S.seed * 7 + 13) % 9973; build(); } } }));
+      return;
+    }
+    var kind = S.tab, op = function (name, label, main) { return el('button', { type: 'button', class: 'opbtn' + (main ? ' main' : ''), 'data-op': name, text: label, on: { click: function () { doOp(name); } } }); };
+    if (kind === 'queue') sb.appendChild(grp('', seg([['circular', tr('mode.circular')], ['linear', tr('mode.linear')]], S.qmode, function (m) { S.qmode = m; renderSubbar(); build(); })));
+    if (kind === 'list') sb.appendChild(grp(tr('ui.model'), seg([['table', tr('mode.table')], ['node', tr('mode.node')]], S.lview, function (m) {
+      S.lview = m; if (view && view.setMode) { view.setMode(m); view.apply(curStep, true, player.dur()); } renderSubbar(); applyCamera(true); writeHash(); })));
+    var vi = el('input', { type: 'text', id: 'valin', maxlength: kind === 'list' ? '3' : '4', placeholder: placeholder(), 'aria-label': tr('ui.value'), inputmode: kind === 'list' ? 'numeric' : 'text', autocomplete: 'off',
+      on: { keydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); var b = document.querySelector('.opbtn.main'); if (b && !b.disabled) b.click(); } } } });
+    vi.value = S.val || '';
+    sb.appendChild(grp(tr('ui.value'), vi));
+    var ops = kind === 'stack' ? [['push', 1], ['pop'], ['peek']] : kind === 'queue' ? [['enqueue', 1], ['dequeue']] : [['insert', 1], ['delete'], ['search']];
+    var og = el('div', { class: 'grp' });
+    ops.forEach(function (o) { og.appendChild(op(o[0], tr('op.' + o[0]), o[1])); });
+    sb.appendChild(og);
+    var chk = el('input', { type: 'checkbox', id: 'stepchk', on: { change: function (e) { S.stepMode = e.target.checked; } } }); chk.checked = S.stepMode;
+    sb.appendChild(el('label', { class: 'chk' }, [chk, el('span', { text: tr('ui.stepmode') })]));
+    sb.appendChild(el('button', { type: 'button', class: 'tool', text: '↺ ' + tr('ui.reset'), on: { click: resetDS } }));
+    sb.appendChild(el('button', { type: 'button', class: 'tool', text: '▶▶ ' + tr('ui.demo'), on: { click: function () { loadDemo(true); } } }));
+    updateControls();
+  }
+  function placeholder() {
+    if (S.tab === 'list') return String(LISTSEQ[(S.letter.list || 0) % LISTSEQ.length]);
+    var k = dsKey(); return String.fromCharCode(65 + ((S.letter[k] || 0) % 26));
+  }
+
+  function renderLegend() {
+    var lg = $('legend'); lg.innerHTML = '';
+    if (S.tab !== 'sort') return;
+    var items = [['cmp', 'legend.cmp'], ['swap', 'legend.swap']];
+    if (S.algo === 'insertion') items.push(['key', 'legend.key'], ['part', 'legend.part']);
+    if (S.algo === 'quick') items.push(['pivot', 'legend.pivot'], ['dim', 'legend.dim']);
+    if (S.algo === 'merge') items.push(['part', 'legend.part'], ['dim', 'legend.dim']);
+    if (S.algo === 'race') items.push(['part', 'legend.part'], ['pivot', 'legend.pivot']);
+    items.push(['sorted', 'legend.sorted']);
+    var col = { cmp: '#F6C667', swap: '#F29E8E', key: '#B7D3A8', part: '#BDE6D0', pivot: '#C3A6E8', dim: '#DDE3EC', sorted: '#86D3A8' };
+    items.forEach(function (it) { lg.appendChild(el('span', {}, [el('i', { style: 'background:' + col[it[0]] }), document.createTextNode(tr(it[1]))])); });
+  }
+
+  function noteText() {
+    if (S.tab === 'sort') return S.algo === 'race' ? tr('note.race') : tr('note.a.' + S.algo) + ((S.algo === 'quick' || S.algo === 'merge') ? ' ' + tr('note.inplace') : '');
+    if (S.tab === 'queue') return tr(S.qmode === 'linear' ? 'note.queue.l' : 'note.queue.c');
+    return tr('note.' + S.tab);
+  }
+  function renderMsg() {
+    var m = $('msgtxt');
+    if (!curStep) { m.textContent = ''; return; }
+    m.textContent = A.t(S.lang, curStep.msg[0], curStep.msg.slice(1), base());
+    m.className = 'msgtxt' + (curStep.marks && curStep.marks.error ? ' err' : '');
+    $('note').textContent = noteText();
+  }
+
+  /* ---------------------------------------------------------------- code panel */
+  var codeBuilt = '';
+  function renderCode() {
+    var id = codeId(), box = $('code'), race = S.algo === 'race' && S.tab === 'sort';
+    $('code').style.display = $('watch').style.display = $('codeseg').style.display = race ? 'none' : '';
+    $('race').style.display = race ? '' : 'none';
+    $('stats').style.display = (S.tab === 'sort' && !race) ? '' : 'none';
+    if (race) { codeBuilt = ''; return; }
+    var sig = id + '/' + S.code;
+    if (codeBuilt !== sig) {
+      codeBuilt = sig; box.innerHTML = '';
+      A.CODE[id][S.code].forEach(function (l, i) {
+        var d = el('div', { class: 'ln', 'data-k': l[0] }); d.textContent = l[1] === '' ? ' ' : l[1]; box.appendChild(d);
+      });
+      box.scrollTop = 0;
+    }
+    hiliteCode();
+  }
+  function hiliteCode() {
+    var box = $('code'), key = curStep ? curStep.line : '', first = null;
+    Array.prototype.forEach.call(box.children, function (d) {
+      var on = key !== '' && d.getAttribute('data-k') === key;
+      d.classList.toggle('hl', on);
+      if (on && !first) first = d;
+    });
+    if (first) {
+      var top = first.offsetTop - box.offsetTop, bot = top + first.offsetHeight;
+      if (top < box.scrollTop + 8) box.scrollTop = Math.max(0, top - 40);
+      else if (bot > box.scrollTop + box.clientHeight - 8) box.scrollTop = bot - box.clientHeight + 60;
+    }
+  }
+  function renderWatch() {
+    var w = $('watch'); w.innerHTML = '';
+    if (S.algo === 'race' && S.tab === 'sort') return;
+    var v = (curStep && curStep.vars) || {}, names = Object.keys(v), b = base(), pseudo = S.code === 'pseudo';
+    if (S.tab === 'sort') names.sort(function (x, y) { var a = SORT_ORDER.indexOf(x), c = SORT_ORDER.indexOf(y); return (a < 0 ? 99 : a) - (c < 0 ? 99 : c); });
+    if (!names.length) return;
+    w.appendChild(el('div', { class: 't', text: tr('ui.watch') }));
+    names.forEach(function (n) {
+      var val = v[n];
+      if (S.tab === 'sort' && A.INDEX_VARS.indexOf(n) >= 0) val = val + b;
+      if (A.BOOL_VARS.indexOf(n) >= 0) val = val ? (pseudo ? 'TRUE' : 'True') : (pseudo ? 'FALSE' : 'False');
+      var label = pseudo ? (A.PSEUDO_NAMES[n] || n.charAt(0).toUpperCase() + n.slice(1)) : n;
+      w.appendChild(el('span', { class: 'v' }, [el('b', { text: label }), document.createTextNode(' = ' + val)]));
+    });
+  }
+  function renderStats() {
+    var s = $('stats'); s.innerHTML = '';
+    if (S.tab !== 'sort' || S.algo === 'race' || !curStep) return;
+    s.appendChild(el('span', { class: 's' }, [document.createTextNode(tr('stats.cmp') + ' '), el('b', { text: curStep.stats.cmp })]));
+    s.appendChild(el('span', { class: 's' }, [document.createTextNode(tr('stats.writes') + ' '), el('b', { text: curStep.stats.moves })]));
+  }
+  function renderRace() {
+    var r = $('race'); r.innerHTML = '';
+    if (!(S.algo === 'race' && S.tab === 'sort') || !curStep || !raceInfo) return;
+    var t = el('table'), names = { bubble: 'algo.bubble', insertion: 'algo.insertion', quick: 'algo.quick', merge: 'algo.merge' };
+    t.appendChild(el('caption', { text: tr('race.title') }));
+    var hr = el('tr'); ['race.algo', 'stats.cmp', 'stats.writes', 'race.ticks', 'race.rank'].forEach(function (k) { hr.appendChild(el('th', { text: tr(k) })); });
+    t.appendChild(hr);
+    curStep.lanes.forEach(function (l, i) {
+      var info = raceInfo[i], tr_ = el('tr', { class: l.done ? 'done' : '' });
+      tr_.appendChild(el('td', { text: tr(names[info.algo]) }));
+      tr_.appendChild(el('td', { text: l.cmp })); tr_.appendChild(el('td', { text: l.moves }));
+      tr_.appendChild(el('td', { text: l.done ? info.ticks : tr('race.running') }));
+      tr_.appendChild(el('td', { class: 'rk', text: l.done ? '✓ #' + info.rank : '' }));
+      t.appendChild(tr_);
+    });
+    r.appendChild(t);
+  }
+
+  /* ---------------------------------------------------------------- controls */
+  function updateControls() {
+    var n = player.steps.length, last = Math.max(0, n - 1);
+    var sc = $('scrub'); sc.max = last; sc.value = player.idx;
+    $('stepno').textContent = player.idx + ' / ' + last;
+    $('bPlay').textContent = player.playing ? '⏸ ' + tr('ui.pause') : '▶ ' + tr('ui.play');
+    $('bFirst').disabled = $('bPrev').disabled = player.idx <= 0;
+    $('bNext').disabled = player.idx >= last;
+    var dis = player.playing;
+    Array.prototype.forEach.call(document.querySelectorAll('.subbar .opbtn'), function (b) { b.disabled = dis; });
+  }
+  function applyCamera(animate) {
+    if (!stage || !stage.ok || !view) return;
+    var v;
+    if (S.tab === 'sort') v = view.views[S.cam];
+    else if (S.tab === 'list') { v = A.DS_VIEWS['list_' + S.lview][S.cam]; if (S.lview === 'node' && view.needW) { v = { dir: v.dir, target: v.target, need: [view.needW(), v.need[1]] }; lastNeedW = v.need[0]; } }
+    else v = A.DS_VIEWS[dsKey()][S.cam];
+    stage.setView(v, animate);
+  }
+
+  function onStep(step, idx, animate) {
+    curStep = step;
+    if (view) {
+      var ms = animate ? player.dur() : 0;
+      if (S.tab === 'sort') { if (S.algo === 'race') view.applyRace(step, animate, ms, raceInfo); else view.applySingle(step, animate, ms); }
+      else view.apply(step, animate, ms);
+      if (S.tab === 'list' && S.lview === 'node' && view.needW && view.needW() !== lastNeedW) applyCamera(animate);
+    }
+    renderMsg(); renderCode(); renderWatch(); renderStats(); renderRace(); writeHash();
+  }
+  player.cb = onStep; player.onState = updateControls;
+
+  /* ---------------------------------------------------------------- build / switch */
+  function build(startIdx) {
+    player.pause();
+    codeBuilt = '';
+    renderLegend();
+    if (S.tab === 'sort') {
+      var vals = A.makeData(S.dkind, S.n, S.seed), race = S.algo === 'race';
+      if (stage.ok) { view = new A.SortView(stage, race ? 'race' : 'single', vals); view.setBase(base()); applyCamera(false); }
+      var steps;
+      if (race) { var rd = A.raceSteps(vals); raceInfo = rd.lanes; steps = rd.steps; }
+      else { raceInfo = null; steps = A.sortSteps(S.algo, vals); }
+      player.noRestart = false;
+      player.load(steps, startIdx || 0);
+    } else {
+      var key = dsKey();
+      if (!H[key]) {
+        var st = A.dsInit(S.tab, { mode: S.qmode });
+        H[key] = { state: st, steps: [A.dsInitStep(S.tab, st)] };
+      }
+      if (stage.ok) {
+        view = S.tab === 'stack' ? new A.StackView(stage) : S.tab === 'queue' ? new A.QueueView(stage, S.qmode) : new A.ListView(stage, S.lview);
+        applyCamera(false);
+      }
+      raceInfo = null; player.noRestart = true;
+      player.load(H[key].steps, startIdx != null ? startIdx : H[key].steps.length - 1);
+    }
+    $('msg').hidden = false;
+  }
+  function setTab(t) { if (t === S.tab) return; S.tab = t; renderHeader(); renderSubbar(); build(); }
+  function setLang(l) {
+    S.lang = l; renderHeader(); renderSubbar(); renderLegend();
+    if (curStep) { renderMsg(); renderWatch(); renderStats(); renderRace(); }
+    writeHash();
+  }
+  function setCode(c) {
+    S.code = c; renderHeader();
+    if (view && view.setBase) view.setBase(base());
+    codeBuilt = ''; renderCode(); renderMsg(); renderWatch();
+  }
+
+  /* ---------------------------------------------------------------- data-structure operations */
+  function nextValue(kind) {
+    var raw = ($('valin') ? $('valin').value : '').trim();
+    if (kind === 'list') {
+      var n = parseInt(raw, 10);
+      if (isNaN(n)) { n = LISTSEQ[(S.letter.list || 0) % LISTSEQ.length]; S.letter.list = (S.letter.list || 0) + 1; }
+      return n;
+    }
+    if (raw) return raw;
+    var k = dsKey(), c = S.letter[k] || 0; S.letter[k] = c + 1;
+    return String.fromCharCode(65 + (c % 26));
+  }
+  function doOp(op) {
+    if (player.playing || S.tab === 'sort') return;
+    var kind = S.tab, h = H[dsKey()], arg;
+    if (op === 'push' || op === 'enqueue' || op === 'insert') arg = nextValue(kind);
+    else if (op === 'delete' || op === 'search') {
+      var raw = ($('valin') ? $('valin').value : '').trim(), n = parseInt(raw, 10);
+      if (isNaN(n)) { var ch = A.listChains(h.state); n = ch.used.length ? h.state.data[ch.used[0]].v : 10; }
+      arg = n;
+    }
+    if ($('valin') && (op === 'push' || op === 'enqueue' || op === 'insert' || op === 'delete' || op === 'search')) { $('valin').value = ''; S.val = ''; $('valin').placeholder = placeholder(); }
+    if (player.idx < h.steps.length - 1) player.seek(h.steps.length - 1);
+    var r = A.dsSteps(kind, h.state, op, arg);
+    h.state = r.state;
+    player.append(r.steps);
+    player.noRestart = true;
+    player.next();
+    if (!S.stepMode) player.play();
+  }
+  function resetDS() {
+    if (S.tab === 'sort') return;
+    delete H[dsKey()]; S.letter[dsKey()] = 0; if (S.tab === 'list') S.letter.list = 0;
+    build(); renderSubbar();
+  }
+  function loadDemo(autoplay, seekTo) {
+    var kind = S.tab, key = dsKey();
+    if (kind === 'sort') return;
+    var st = A.dsInit(kind, { mode: S.qmode }), steps = [A.dsInitStep(kind, st)];
+    var seq = kind === 'queue' ? A.DEMO['queue_' + S.qmode] : A.DEMO[kind];
+    seq.forEach(function (o) { var r = A.dsSteps(kind, st, o[0], o[1]); st = r.state; r.steps.forEach(function (s) { steps.push(s); }); });
+    H[key] = { state: st, steps: steps };
+    S.letter[key] = 0; if (kind === 'list') S.letter.list = 0;
+    build(0);
+    if (seekTo != null) { player.seek(Math.min(seekTo, steps.length - 1)); return; }
+    if (autoplay) { player.noRestart = false; player.play(); player.noRestart = true; }
+  }
+
+  /* ---------------------------------------------------------------- init */
+  function init() {
+    var hs = parseHash();
+    renderHeader(); renderSubbar();
+    var cv = $('cv');
+    stage = new A.Stage(cv);
+    if (!stage.ok) { $('nogl').hidden = false; $('nogl').textContent = tr('ui.nowebgl'); cv.style.display = 'none'; }
+    $('bPlay').addEventListener('click', function () { if (player.playing) player.pause(); else player.play(); });
+    $('bNext').addEventListener('click', function () { player.pause(); player.next(); });
+    $('bPrev').addEventListener('click', function () { player.pause(); player.prev(); });
+    $('bFirst').addEventListener('click', function () { player.pause(); player.seek(0); });
+    $('spd').addEventListener('input', function (e) { var s = SPEEDS[+e.target.value]; player.setSpeed(s); $('spdV').textContent = s + '×'; });
+    $('scrub').addEventListener('input', function (e) { player.pause(); player.seek(+e.target.value); });
+    document.addEventListener('keydown', function (e) {
+      var t = e.target && e.target.tagName;
+      if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+      if (e.key === ' ' && t !== 'BUTTON') { e.preventDefault(); if (player.playing) player.pause(); else player.play(); }
+      else if (e.key === 'ArrowRight') { player.pause(); player.next(); }
+      else if (e.key === 'ArrowLeft') { player.pause(); player.prev(); }
+      else if (e.key === 'Home') { player.pause(); player.seek(0); }
+    });
+    if (hs.demo && S.tab !== 'sort') loadDemo(false, hs.start != null ? hs.start : 1e9);
+    else build(hs.start);
+    renderHeader(); renderSubbar();
+    window.__lab = { S: S, player: player, H: H };
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+</script>
+</body>
+</html>
